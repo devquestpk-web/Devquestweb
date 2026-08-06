@@ -658,3 +658,309 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
     margin: 6px 0 10px;
   }
 }
+
+/* Mobile layout hardening
+   Keep every section inside the viewport and turn the desktop hero collage
+   into a real two-column mobile composition instead of scaling a 690px canvas. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.dq-home,
+.dq-course-hero,
+.dq-course-grid,
+.dq-course-copy,
+.dq-portrait-collage,
+.dq-nav,
+.dq-footer,
+.dq-footer-grid,
+.dq-contact-page,
+.dq-about-page,
+.portal-hub,
+.team-portal-shell {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dq-course-grid > *,
+.dq-impact-grid > *,
+.dq-home-cta-grid > *,
+.dq-events-head > *,
+.dq-contact-card > *,
+.dq-about-grid > *,
+.dq-footer-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .dq-shell {
+    width: calc(100% - 32px);
+    max-width: 620px;
+  }
+
+  .dq-nav {
+    gap: 14px;
+  }
+
+  .dq-brand {
+    min-width: 0;
+    gap: 10px;
+    font-size: clamp(1.18rem, 5.4vw, 1.45rem);
+  }
+
+  .dq-brand-mark {
+    width: 43px;
+    height: 42px;
+    transform: scale(.9);
+    transform-origin: left center;
+  }
+
+  .dq-mobile-nav nav {
+    width: min(280px, calc(100vw - 32px));
+  }
+
+  .dq-course-hero {
+    display: block;
+  }
+
+  .dq-course-grid {
+    width: calc(100% - 32px);
+    padding: 64px 0 72px;
+    gap: 52px;
+  }
+
+  .dq-course-copy h1 {
+    max-width: 100%;
+    font-size: clamp(2.7rem, 12vw, 4rem);
+    line-height: .96;
+    letter-spacing: -.06em;
+    overflow-wrap: normal;
+  }
+
+  .dq-course-copy h1 br {
+    display: none;
+  }
+
+  .dq-course-copy > p {
+    margin: 24px 0;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .dq-course-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    margin-bottom: 34px;
+  }
+
+  .dq-course-actions .dq-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .dq-hero-stats {
+    width: 100%;
+    max-width: none;
+    gap: 10px;
+  }
+
+  .dq-hero-stats span {
+    overflow-wrap: anywhere;
+  }
+
+  .dq-category-grid {
+    width: 100%;
+    max-width: none;
+    gap: 12px 18px;
+  }
+
+  .dq-portrait-collage {
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    transform: none;
+  }
+
+  .dq-portrait,
+  .dq-portrait.p-one,
+  .dq-portrait.p-two,
+  .dq-portrait.p-three,
+  .dq-portrait.p-four {
+    width: 100%;
+    height: 250px;
+    position: relative;
+    inset: auto;
+    border-radius: 999px;
+  }
+
+  .dq-portrait.p-one {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .dq-portrait.p-two {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .dq-portrait.p-three {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .dq-portrait.p-four {
+    width: calc(50% - 8px);
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: center;
+  }
+
+  .dq-next-event {
+    width: 100%;
+    min-width: 0;
+    position: relative;
+    inset: auto;
+    grid-column: 2;
+    grid-row: 1;
+    padding: 18px;
+    transform: none;
+  }
+
+  .dq-dot {
+    display: none;
+  }
+
+  .dq-events-head h2 br,
+  .dq-sponsors h2 br,
+  .dq-about-partners h2 br,
+  .dq-home-cta h2 br {
+    display: none;
+  }
+
+  .dq-event-cta,
+  .dq-inline-cta,
+  .dq-home-cta-grid > div > div {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .dq-event-cta a,
+  .dq-inline-cta a,
+  .dq-home-cta-grid .dq-btn {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .dq-program-section h2,
+  .dq-sponsors h2,
+  .dq-events-head h2,
+  .dq-about-partners h2,
+  .dq-impact-grid h2,
+  .dq-section-heading h2,
+  .dq-home-cta h2,
+  .dq-careers-heading h2 {
+    font-size: clamp(2.5rem, 11vw, 3.5rem);
+    overflow-wrap: normal;
+  }
+
+  .dq-contact-intro h1,
+  .dq-about-grid h1,
+  .portal-hub-hero h1 {
+    font-size: clamp(2.65rem, 12vw, 4rem);
+    overflow-wrap: normal;
+  }
+
+  .dq-contact-card {
+    width: 100%;
+    gap: 18px;
+  }
+
+  .dq-contact-info,
+  .dq-contact-form,
+  .auth-main,
+  .portal-choice,
+  .portal-panel,
+  .student-coming-card,
+  .portal-state > section {
+    min-width: 0;
+  }
+
+  :where(.dq-home, .dq-about-page, .dq-contact-page, .portal-hub, .team-portal-shell) :where(h1, h2, h3, p, a, strong, span) {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .dq-shell,
+  .dq-course-grid {
+    width: calc(100% - 24px);
+  }
+
+  .dq-course-grid {
+    padding-top: 52px;
+  }
+
+  .dq-course-copy h1 {
+    font-size: clamp(2.45rem, 12.7vw, 3.25rem);
+  }
+
+  .dq-hero-kicker {
+    align-items: flex-start;
+    font-size: .62rem !important;
+    line-height: 1.45;
+  }
+
+  .dq-portrait-collage {
+    gap: 12px;
+  }
+
+  .dq-portrait,
+  .dq-portrait.p-one,
+  .dq-portrait.p-two,
+  .dq-portrait.p-three,
+  .dq-portrait.p-four {
+    height: 220px;
+  }
+
+  .dq-next-event {
+    padding: 15px;
+  }
+
+  .dq-next-event > span {
+    width: 38px;
+    height: 38px;
+    margin-bottom: 11px;
+  }
+
+  .dq-next-event strong {
+    font-size: .94rem;
+  }
+
+  .dq-next-event p,
+  .dq-next-event a {
+    font-size: .64rem;
+  }
+
+  .dq-category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dq-program-section h2,
+  .dq-sponsors h2,
+  .dq-events-head h2,
+  .dq-about-partners h2,
+  .dq-impact-grid h2,
+  .dq-section-heading h2,
+  .dq-home-cta h2,
+  .dq-careers-heading h2 {
+    font-size: clamp(2.25rem, 11.5vw, 3rem);
+  }
+}

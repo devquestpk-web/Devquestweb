@@ -70,7 +70,7 @@ export default function Home() {
         <div className="dq-shell dq-course-grid">
           <div className="dq-course-copy">
             <p className="dq-hero-kicker"><Sparkles /> COMMUNITY · TECHNOLOGY · INNOVATION</p>
-            <h1>Bridging Academia<br />and the Global<br />Tech Industry.</h1>
+            <h1>Bridging Academia<br />{" "}and the Global<br />{" "}Tech Industry.</h1>
             <p>DevQuest empowers students, early-career developers, and technology enthusiasts through practical learning, collaborative events, and impactful solutions.</p>
             <div className="dq-course-actions"><Link className="dq-btn dq-btn-blue" href="/services">Explore Services <ArrowRight /></Link><a className="dq-btn dq-btn-slate" href={joinLink} target="_blank" rel="noreferrer">Join Community <ArrowUpRight /></a></div>
             <div className="dq-hero-stats" aria-label="DevQuest community statistics">
