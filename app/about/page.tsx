@@ -9,7 +9,6 @@ export const metadata: Metadata = { title: "About Us", description: "Meet the De
 const officials = [
   { name: "Hamid Ali", role: "Founder & CEO", detail: "DevOps Engineer, former AWS SBG BZU Lead, and Stanford University Section Leader", image: "/figma/official-2.png", accent: "cyan" },
   { name: "Muhammad Ryan", role: "Co-Founder", detail: "Community leadership, partnerships, and growth", image: "/figma/official-3.png", accent: "purple" },
-  { name: "Rao Taha Javed", role: "Co-Founder & Operations", detail: "Director of Operations and event host", image: "/figma/official-1.png", accent: "green" },
 ];
 
 const team = [
