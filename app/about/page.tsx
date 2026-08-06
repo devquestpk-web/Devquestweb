@@ -7,7 +7,7 @@ import { SponsorMarquee } from "../components/sponsor-marquee";
 export const metadata: Metadata = { title: "About Us", description: "Meet the DevQuest Pakistan leadership and community core team." };
 
 const officials = [
-  { name: "Hamid Ali", role: "Founder & CEO", detail: "DevOps Engineer, former AWS SBG BZU Lead, and Stanford University Section Leader", image: "/figma/official-3.png", accent: "cyan" },
+  { name: "Hamid Ali", role: "Founder & CEO", detail: "DevOps Engineer, former AWS SBG BZU Lead, and Stanford University Section Leader", image: "/figma/founder-hamid-v2.png", accent: "cyan" },
   { name: "Muhammad Ryan", role: "Co-Founder", detail: "Community leadership, partnerships, and growth", image: "/figma/official-2.png", accent: "purple" },
 ];
 
