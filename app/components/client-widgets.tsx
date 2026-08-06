@@ -4,6 +4,7 @@ import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { AlertCircle, CheckCircle2, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, ShieldCheck, UserPlus, UserRound, X } from "lucide-react";
+import { deliverWebsiteForm } from "../lib/form-delivery";
 
 let browserClient: SupabaseClient | null | undefined;
 function getSupabase() {
@@ -25,16 +26,66 @@ export function ThemeToggle() {
   return <div className="dq-theme-toggle" aria-label="Color theme"><button className={theme === "dark" ? "active" : ""} onClick={() => choose("dark")} type="button">Dark</button><button className={theme === "light" ? "active" : ""} onClick={() => choose("light")} type="button">Light</button></div>;
 }
 
+type DeliveryState = "idle" | "sending" | "sent" | "error";
+
+function DeliveryMessage({ state, error }: { state: DeliveryState; error: string }) {
+  if (state === "sent") return <div className="form-delivery-status success" role="status"><CheckCircle2 /> Thank you. Your message has been emailed to DevQuest.</div>;
+  if (state === "error") return <div className="form-delivery-status error" role="alert"><AlertCircle /> {error}</div>;
+  return null;
+}
+
 export function ContactForm({ compact = false }: { compact?: boolean }) {
-  const [sent, setSent] = useState(false);
-  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const data = new FormData(event.currentTarget); const name = String(data.get("name") || ""); const email = String(data.get("email") || ""); const scope = String(data.get("scope") || "General enquiry"); setSent(true); window.location.href = `mailto:devquestpk@gmail.com?subject=${encodeURIComponent(`DevQuest enquiry from ${name}`)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nProject / message:\n${scope}`)}`; }
-  return <form className={`contact-form ${compact ? "contact-form-compact" : ""}`} onSubmit={submit}><p className="eyebrow">START A CONVERSATION</p><h2>{compact ? "Tell us what you are building." : "Let's build something meaningful."}</h2><label><span>Your name</span><input name="name" required placeholder="Full name" autoComplete="name" /></label><label><span>Work email</span><input name="email" type="email" required placeholder="you@company.com" autoComplete="email" /></label><label><span>What can we help with?</span><textarea name="scope" required placeholder="Tell us about your project, partnership, event, or idea." rows={compact ? 3 : 4} /></label><div className="privacy-note"><ShieldCheck /> Your details stay private. No spam.</div><button className="button button-primary button-wide" type="submit">{sent ? "Opening your email" : "Send enquiry"}</button></form>;
+  const [state, setState] = useState<DeliveryState>("idle");
+  const [error, setError] = useState("");
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setState("sending");
+    setError("");
+    try {
+      await deliverWebsiteForm("contact", {
+        name: String(data.get("name") || ""),
+        email: String(data.get("email") || ""),
+        enquiry: String(data.get("scope") || "General enquiry"),
+      }, String(data.get("website") || ""));
+      form.reset();
+      setState("sent");
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "We could not send your form. Please try again.");
+      setState("error");
+    }
+  }
+  return <form className={`contact-form ${compact ? "contact-form-compact" : ""}`} onSubmit={submit}><p className="eyebrow">START A CONVERSATION</p><h2>{compact ? "Tell us what you are building." : "Let's build something meaningful."}</h2><label><span>Your name</span><input name="name" required placeholder="Full name" autoComplete="name" /></label><label><span>Work email</span><input name="email" type="email" required placeholder="you@company.com" autoComplete="email" /></label><label><span>What can we help with?</span><textarea name="scope" required placeholder="Tell us about your project, partnership, event, or idea." rows={compact ? 3 : 4} /></label><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><div className="privacy-note"><ShieldCheck /> Your details go directly to devquestpk@gmail.com.</div><DeliveryMessage state={state} error={error} /><button className="button button-primary button-wide" type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending..." : state === "sent" ? "Message sent" : "Send enquiry"}</button></form>;
 }
 
 export function FigmaContactForm() {
-  const [sent, setSent] = useState(false);
-  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const data = new FormData(event.currentTarget); const name = `${data.get("firstName") || ""} ${data.get("lastName") || ""}`.trim(); const email = String(data.get("email") || ""); const phone = String(data.get("phone") || ""); const company = String(data.get("company") || "Not provided"); const budget = String(data.get("budget") || "Not selected"); const subject = String(data.get("subject") || "General Inquiry"); const message = String(data.get("message") || ""); setSent(true); window.location.href = `mailto:devquestpk@gmail.com?subject=${encodeURIComponent(`${subject} from ${name}`)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\nPhone: ${phone}\nCompany / organization: ${company}\nEstimated budget: ${budget}\n\nProject or enquiry details:\n${message}`)}`; }
-  return <form className="dq-contact-form" onSubmit={submit}><div className="dq-form-pair"><label>First Name<input name="firstName" required autoComplete="given-name" /></label><label>Last Name<input name="lastName" required autoComplete="family-name" /></label></div><div className="dq-form-pair"><label>Business Email<input name="email" type="email" required autoComplete="email" /></label><label>Phone Number<input name="phone" type="tel" placeholder="+92" autoComplete="tel" /></label></div><div className="dq-form-pair"><label>Company or University<input name="company" autoComplete="organization" /></label><label>Estimated Budget<select name="budget" defaultValue=""><option value="" disabled>Select a range</option><option>Community / free event</option><option>Under PKR 100,000</option><option>PKR 100,000–500,000</option><option>PKR 500,000+</option><option>Let&apos;s discuss</option></select></label></div><fieldset><legend>How can we help?</legend><label><input type="radio" name="subject" value="General Inquiry" defaultChecked /> General</label><label><input type="radio" name="subject" value="Software Development" /> Development</label><label><input type="radio" name="subject" value="UI/UX Design" /> UI/UX</label><label><input type="radio" name="subject" value="Talent Augmentation" /> Talent</label><label><input type="radio" name="subject" value="Academy or Event" /> Academy</label><label><input type="radio" name="subject" value="Partnership" /> Partnership</label></fieldset><label>Project or Enquiry Details<textarea name="message" required rows={4} placeholder="Tell us about your project, event, partnership, or community idea..." /></label><button type="submit">{sent ? "Opening email..." : "Send Message"}</button></form>;
+  const [state, setState] = useState<DeliveryState>("idle");
+  const [error, setError] = useState("");
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setState("sending");
+    setError("");
+    try {
+      await deliverWebsiteForm("contact", {
+        name: `${data.get("firstName") || ""} ${data.get("lastName") || ""}`.trim(),
+        email: String(data.get("email") || ""),
+        phone: String(data.get("phone") || "Not provided"),
+        companyOrUniversity: String(data.get("company") || "Not provided"),
+        estimatedBudget: String(data.get("budget") || "Not selected"),
+        enquiryType: String(data.get("subject") || "General Inquiry"),
+        enquiryDetails: String(data.get("message") || ""),
+      }, String(data.get("website") || ""));
+      form.reset();
+      setState("sent");
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "We could not send your form. Please try again.");
+      setState("error");
+    }
+  }
+  return <form className="dq-contact-form" onSubmit={submit}><div className="dq-form-pair"><label>First Name<input name="firstName" required autoComplete="given-name" /></label><label>Last Name<input name="lastName" required autoComplete="family-name" /></label></div><div className="dq-form-pair"><label>Business Email<input name="email" type="email" required autoComplete="email" /></label><label>Phone Number<input name="phone" type="tel" placeholder="+92" autoComplete="tel" /></label></div><div className="dq-form-pair"><label>Company or University<input name="company" autoComplete="organization" /></label><label>Estimated Budget<select name="budget" defaultValue=""><option value="" disabled>Select a range</option><option>Community / free event</option><option>Under PKR 100,000</option><option>PKR 100,000–500,000</option><option>PKR 500,000+</option><option>Let&apos;s discuss</option></select></label></div><fieldset><legend>How can we help?</legend><label><input type="radio" name="subject" value="General Inquiry" defaultChecked /> General</label><label><input type="radio" name="subject" value="Software Development" /> Development</label><label><input type="radio" name="subject" value="UI/UX Design" /> UI/UX</label><label><input type="radio" name="subject" value="Talent Augmentation" /> Talent</label><label><input type="radio" name="subject" value="Academy or Event" /> Academy</label><label><input type="radio" name="subject" value="Partnership" /> Partnership</label></fieldset><label>Project or Enquiry Details<textarea name="message" required rows={4} placeholder="Tell us about your project, event, partnership, or community idea..." /></label><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><DeliveryMessage state={state} error={error} /><button type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending..." : state === "sent" ? "Message sent" : "Send Message"}</button></form>;
 }
 
 type Mode = "signin" | "signup";

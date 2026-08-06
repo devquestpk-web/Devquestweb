@@ -1,38 +1,40 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { CheckCircle2, Send, ShieldCheck } from "lucide-react";
+import { AlertCircle, CheckCircle2, Send, ShieldCheck } from "lucide-react";
+import { deliverWebsiteForm } from "../lib/form-delivery";
 
 export function AmbassadorForm() {
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [error, setError] = useState("");
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const application = [
-      "DevQuest Campus Ambassador Application",
-      "",
-      `Name: ${data.get("fullName")}`,
-      `Email: ${data.get("email")}`,
-      `WhatsApp: ${data.get("phone")}`,
-      `City: ${data.get("city")}`,
-      `University: ${data.get("university")}`,
-      `Degree / program: ${data.get("degree")}`,
-      `Current semester: ${data.get("semester")}`,
-      `LinkedIn: ${data.get("linkedin") || "Not provided"}`,
-      `Weekly availability: ${data.get("availability")}`,
-      `Relevant experience: ${data.get("experience") || "Not provided"}`,
-      "",
-      "Why I want to become an ambassador:",
-      String(data.get("motivation") || ""),
-      "",
-      "An initiative I would bring to my campus:",
-      String(data.get("initiative") || ""),
-    ].join("\n");
-    const url = `https://wa.me/923704489589?text=${encodeURIComponent(application)}`;
-    setSubmitted(true);
-    const whatsapp = window.open(url, "_blank", "noopener,noreferrer");
-    if (!whatsapp) window.location.href = url;
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setStatus("sending");
+    setError("");
+    try {
+      await deliverWebsiteForm("ambassador", {
+        fullName: String(data.get("fullName") || ""),
+        email: String(data.get("email") || ""),
+        whatsapp: String(data.get("phone") || ""),
+        city: String(data.get("city") || ""),
+        university: String(data.get("university") || ""),
+        degreeOrProgram: String(data.get("degree") || ""),
+        currentSemester: String(data.get("semester") || ""),
+        linkedIn: String(data.get("linkedin") || "Not provided"),
+        weeklyAvailability: String(data.get("availability") || ""),
+        relevantExperience: String(data.get("experience") || "Not provided"),
+        motivation: String(data.get("motivation") || ""),
+        campusInitiative: String(data.get("initiative") || ""),
+      }, String(data.get("website") || ""));
+      form.reset();
+      setStatus("sent");
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "We could not send your application. Please try again.");
+      setStatus("error");
+    }
   }
 
   return (
@@ -73,10 +75,12 @@ export function AmbassadorForm() {
         </div>
       </fieldset>
 
+      <input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <label className="ambassador-consent"><input type="checkbox" required /> <span>I confirm that the information is accurate and I agree that DevQuest may contact me about this application.</span></label>
-      {submitted ? <div className="ambassador-success" role="status"><CheckCircle2 /> Your application is ready. Please send the prepared message in WhatsApp to complete your registration.</div> : null}
-      <button className="ambassador-submit" type="submit">Submit via official WhatsApp <Send /></button>
-      <p className="ambassador-privacy"><ShieldCheck /> Your application goes directly to DevQuest at +92 370 4489589.</p>
+      {status === "sent" ? <div className="ambassador-success" role="status"><CheckCircle2 /> Application received. It has been emailed to the DevQuest team.</div> : null}
+      {status === "error" ? <div className="ambassador-success ambassador-error" role="alert"><AlertCircle /> {error}</div> : null}
+      <button className="ambassador-submit" type="submit" disabled={status === "sending"}>{status === "sending" ? "Sending application..." : status === "sent" ? "Application sent" : <>Submit application <Send /></>}</button>
+      <p className="ambassador-privacy"><ShieldCheck /> Your application goes directly to devquestpk@gmail.com.</p>
     </form>
   );
 }

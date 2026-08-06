@@ -368,7 +368,14 @@ svg { width: 1.15em; height: 1.15em; stroke-width: 1.8; }
 .ambassador-submit:hover { background: linear-gradient(135deg, #2f74f5, #183eb2); }
 .ambassador-success { margin-bottom: 16px; padding: 14px; display: flex; gap: 10px; align-items: flex-start; color: #126245; background: #ebfaf3; border: 1px solid #bde8d3; border-radius: 10px; font-size: .8rem; line-height: 1.5; }
 .ambassador-success svg { flex: none; margin-top: 1px; }
+.ambassador-success.ambassador-error { color: #a43131; background: #fff1f1; border-color: #efc5c5; }
 .ambassador-privacy { margin: 14px 0 0; display: flex; align-items: center; justify-content: center; gap: 7px; color: #7d8aa3; font-size: .72rem; text-align: center; }
+.form-honeypot { width: 1px !important; height: 1px !important; position: absolute !important; left: -10000px !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+.form-delivery-status { margin: 14px 0; padding: 12px 14px; display: flex; align-items: flex-start; gap: 9px; border: 1px solid; border-radius: 9px; font-size: .78rem; line-height: 1.45; }
+.form-delivery-status svg { width: 18px; height: 18px; flex: none; }
+.form-delivery-status.success { color: #126245; background: #ebfaf3; border-color: #bde8d3; }
+.form-delivery-status.error { color: #a43131; background: #fff1f1; border-color: #efc5c5; }
+.ambassador-submit:disabled, .contact-form button:disabled, .dq-contact-form button:disabled { cursor: wait; opacity: .72; }
 
 @media (max-width: 900px) {
   .ambassador-hero-grid, .ambassador-application-grid { grid-template-columns: 1fr; gap: 48px; }
