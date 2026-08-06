@@ -4,6 +4,7 @@ import { MessageCircle } from "lucide-react";
 import "./globals.css";
 import { SiteHeader } from "./components/site-header";
 import { SiteFooter } from "./components/site-footer";
+import { AuthDock } from "./components/auth-dock";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -39,6 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />
+        <AuthDock />
         <a
           className="floating-contact"
           href="https://wa.me/923704489589?text=Hello%20DevQuest%2C%20I%20would%20like%20to%20connect."
