@@ -46,6 +46,21 @@ const eventImages = [
   { src: "/figma/event-2.png", alt: "DevQuest learners collaborating" },
 ];
 
+const universities = [
+  "BZU",
+  "MNS-UET",
+  "NFC",
+  "IET",
+  "NUST",
+  "FAST",
+  "Air University",
+  "Bahria University",
+  "Superior University",
+  "GIKI",
+  "SMIU Karachi",
+  "Sir Syed University",
+];
+
 export default function Home() {
   const joinLink = "https://wa.me/923704489589?text=Hello%20DevQuest%2C%20I%20would%20like%20to%20join%20the%20community.";
 
@@ -79,7 +94,17 @@ export default function Home() {
         <ThemeToggle />
       </section>
 
-      <section className="dq-network-strip" aria-label="DevQuest collaborators"><div className="dq-shell"><span>BUILDING LEARNING ECOSYSTEMS WITH</span><strong>BZU</strong><i /><strong>MNS-UET Multan</strong><i /><strong>TazQ Solutions</strong></div></section>
+      <section className="dq-network-strip" aria-label="DevQuest university network">
+        <div className="dq-shell dq-network-layout">
+          <span className="dq-network-label">BUILDING LEARNING ECOSYSTEMS WITH</span>
+          <div className="dq-university-marquee">
+            <div className="dq-university-track">
+              <div className="dq-university-set">{universities.map((university) => <strong key={university}>{university}</strong>)}</div>
+              <div className="dq-university-set" aria-hidden="true">{universities.map((university) => <strong key={`copy-${university}`}>{university}</strong>)}</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="dq-impact-section" id="about">
         <div className="dq-shell dq-impact-grid">
