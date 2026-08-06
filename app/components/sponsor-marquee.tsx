@@ -17,7 +17,9 @@ function SponsorSet({ duplicate = false }: { duplicate?: boolean }) {
     <div className="dq-sponsor-set" aria-hidden={duplicate || undefined}>
       {sponsors.map((sponsor) => (
         <div className="dq-sponsor-card" key={`${duplicate ? "duplicate" : "primary"}-${sponsor.src}`}>
-          <Image src={sponsor.src} alt={duplicate ? "" : sponsor.alt} width={248} height={120} />
+          <div className="dq-sponsor-logo">
+            <Image src={sponsor.src} alt={duplicate ? "" : sponsor.alt} fill sizes="(max-width: 760px) 184px, 244px" />
+          </div>
         </div>
       ))}
     </div>
