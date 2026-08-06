@@ -42,7 +42,7 @@ export function AmbassadorForm() {
       <div className="ambassador-form-head">
         <p className="eyebrow">CAMPUS AMBASSADOR APPLICATION</p>
         <h2>Tell us about yourself.</h2>
-        <p>Complete the form carefully. Your application will be prepared and sent to the official DevQuest WhatsApp account.</p>
+        <p>Complete the form carefully. Your application will be sent to the official DevQuest team email.</p>
       </div>
 
       <fieldset>

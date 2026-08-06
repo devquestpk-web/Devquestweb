@@ -402,23 +402,33 @@ svg { width: 1.15em; height: 1.15em; stroke-width: 1.8; }
 .dq-careers-hero h1 { margin: 0; font-size: clamp(4rem, 7vw, 7rem); line-height: .9; letter-spacing: -.075em; font-weight: 480; }
 .dq-careers-hero h1 span { color: #6fdfff; }
 .dq-careers-hero-grid > div:last-child > p { margin: 0 0 28px; color: #c6d5e6; font-size: 1.05rem; line-height: 1.75; }
+.dq-careers-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.dq-careers-hero-actions .dq-btn { display: inline-flex; align-items: center; gap: 9px; }
 .dq-careers-list { padding: 110px 0 125px; }
+.dq-careers-ambassador { padding: 105px 0; background: radial-gradient(circle at 84% 18%, rgba(67, 202, 255, .2), transparent 29%), linear-gradient(125deg, #0b2440, #123b74 58%, #1836a1); }
+.dq-careers-ambassador-grid { display: grid; grid-template-columns: 1.08fr .92fr; gap: 86px; align-items: center; }
+.dq-careers-ambassador .dq-kicker { display: flex; align-items: center; gap: 8px; }
+.dq-careers-ambassador h2 { max-width: 720px; margin: 0; font-size: clamp(3.5rem, 6vw, 6rem); line-height: .92; letter-spacing: -.065em; font-weight: 480; }
+.dq-careers-ambassador h2 span { color: #78dfff; }
+.dq-careers-ambassador-grid > div:first-child > p:not(.dq-kicker) { max-width: 650px; margin: 26px 0 31px; color: #c7d9e7; font-size: 1.02rem; line-height: 1.75; }
 .dq-careers-cta { padding: 110px 0; text-align: center; background: linear-gradient(125deg, #25165e, #153f98); }
 .dq-careers-cta h2 { max-width: 820px; margin: 0 auto; font-size: clamp(3rem, 5vw, 5rem); line-height: .98; letter-spacing: -.055em; }
 .dq-careers-cta > div > p:not(.dq-kicker) { max-width: 620px; margin: 24px auto 30px; color: #ccdaee; line-height: 1.7; }
 
 @media (max-width: 900px) {
-  .dq-careers-heading, .dq-careers-hero-grid { grid-template-columns: 1fr; gap: 34px; }
+  .dq-careers-heading, .dq-careers-hero-grid, .dq-careers-ambassador-grid { grid-template-columns: 1fr; gap: 42px; }
   .dq-careers-hero-grid { min-height: auto; padding-block: 80px; }
   .dq-careers-hero-grid > div:last-child { max-width: 650px; }
 }
 
 @media (max-width: 680px) {
-  .dq-careers-home, .dq-careers-list, .dq-careers-cta { padding-block: 76px; }
+  .dq-careers-home, .dq-careers-list, .dq-careers-ambassador, .dq-careers-cta { padding-block: 76px; }
   .dq-career-grid { grid-template-columns: 1fr; margin-top: 42px; }
   .dq-career-card { min-height: 360px; padding: 25px; }
   .dq-career-all { grid-column: auto; }
   .dq-careers-hero h1 { font-size: clamp(3.3rem, 15vw, 4.5rem); }
+  .dq-careers-ambassador h2 { font-size: clamp(3rem, 14vw, 4.4rem); }
+  .dq-careers-hero-actions { display: grid; }
 }
 
 @media (max-width: 900px) {
