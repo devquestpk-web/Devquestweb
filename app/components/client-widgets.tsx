@@ -176,7 +176,7 @@ export function AuthDock() {
               {message && <Status {...message} />}
               <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : mode === "signup" ? <>Create student account <UserPlus /></> : <>Open {portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
             </form>
-            {portalRole === "team" && <p className="auth-team-note"><ShieldCheck /> Team accounts are issued and approved by DevQuest administrators.</p>}
+            {portalRole === "team" && <><p className="auth-team-note"><ShieldCheck /> Team accounts are issued and approved by DevQuest administrators.</p><a className="auth-preview-link" href="/portal/team?preview=1">Preview the Team Portal <ChevronRight /></a></>}
           </>}
         </div>
         {portalRole === "student" && mode === "signup" && !user && <aside className="auth-art"><Image src="/figma/signup-art.png" alt="Abstract three-dimensional blocks" fill sizes="50vw" /></aside>}

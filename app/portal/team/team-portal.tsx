@@ -76,6 +76,24 @@ function formatTime(value: string | null) {
   return new Intl.DateTimeFormat("en-PK", { hour: "numeric", minute: "2-digit" }).format(new Date(value));
 }
 
+const demoTasks: Task[] = [
+  { id: "demo-1", title: "Finalize Tech Series speaker list", description: "Confirm availability and collect speaker introductions.", assignee_name: "Operations Team", priority: "high", status: "in_progress", due_date: "2026-08-10", created_at: "2026-08-05T10:00:00Z" },
+  { id: "demo-2", title: "Prepare campus ambassador campaign", description: "Create the launch copy and university outreach schedule.", assignee_name: "Social Media Team", priority: "medium", status: "todo", due_date: "2026-08-14", created_at: "2026-08-04T10:00:00Z" },
+  { id: "demo-3", title: "Review event visual assets", description: "Approve the final poster and story formats.", assignee_name: "Graphics Team", priority: "medium", status: "completed", due_date: "2026-08-07", created_at: "2026-08-03T10:00:00Z" },
+  { id: "demo-4", title: "Publish weekly community report", description: "Combine chapter updates and engagement numbers.", assignee_name: "Administrative Team", priority: "low", status: "todo", due_date: "2026-08-12", created_at: "2026-08-02T10:00:00Z" },
+];
+
+const demoAttendance: Attendance[] = [
+  { id: "attendance-1", attendance_date: localDate(), check_in: new Date().toISOString(), check_out: null, status: "present", notes: null },
+  { id: "attendance-2", attendance_date: "2026-08-05", check_in: "2026-08-05T04:05:00Z", check_out: "2026-08-05T11:10:00Z", status: "present", notes: null },
+  { id: "attendance-3", attendance_date: "2026-08-04", check_in: "2026-08-04T04:25:00Z", check_out: "2026-08-04T10:45:00Z", status: "late", notes: null },
+];
+
+const demoReports: Report[] = [
+  { id: "report-1", report_type: "weekly", summary: "Coordinated the campus outreach plan and confirmed two university contacts.", achievements: "Completed the ambassador launch checklist.", blockers: "Waiting for one chapter confirmation.", next_steps: "Schedule the chapter onboarding call.", submitted_at: "2026-08-05T12:00:00Z" },
+  { id: "report-2", report_type: "daily", summary: "Reviewed event registrations and shared the updated attendee count.", achievements: "Cleaned duplicate registrations.", blockers: null, next_steps: "Send reminder messages.", submitted_at: "2026-08-04T12:00:00Z" },
+];
+
 export function TeamPortal() {
   const [tab, setTab] = useState<Tab>("overview");
   const [user, setUser] = useState<User | null>(null);
@@ -83,12 +101,22 @@ export function TeamPortal() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [attendance, setAttendance] = useState<Attendance[]>([]);
   const [reports, setReports] = useState<Report[]>([]);
+  const [previewMode, setPreviewMode] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
 
   const configured = isSupabaseConfigured();
   const supabase = getSupabaseBrowserClient();
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("preview") !== "1") return;
+    setPreviewMode(true);
+    setTasks(demoTasks);
+    setAttendance(demoAttendance);
+    setReports(demoReports);
+    setLoading(false);
+  }, []);
 
   const refreshWorkspace = useCallback(async (activeUser: User) => {
     if (!supabase) return;
@@ -139,14 +167,29 @@ export function TeamPortal() {
   const attendanceRate = attendance.length
     ? Math.round((attendance.filter((entry) => entry.status === "present" || entry.status === "late").length / attendance.length) * 100)
     : 0;
-  const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Team member";
-  const isTeam = profile?.role === "team" || profile?.role === "admin";
+  const name = previewMode ? "Hamid Ali" : profile?.full_name || user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Team member";
+  const isTeam = previewMode || profile?.role === "team" || profile?.role === "admin";
 
   async function addTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!supabase || !user) return;
     const form = event.currentTarget;
     const values = new FormData(form);
+    if (previewMode) {
+      setTasks((current) => [{
+        id: crypto.randomUUID(),
+        title: String(values.get("title") || "").trim(),
+        description: String(values.get("description") || "").trim() || null,
+        assignee_name: String(values.get("assignee") || "").trim() || null,
+        priority: String(values.get("priority") || "medium") as Task["priority"],
+        status: "todo",
+        due_date: String(values.get("dueDate") || "") || null,
+        created_at: new Date().toISOString(),
+      }, ...current]);
+      form.reset();
+      setMessage({ type: "success", text: "Preview task added. It will reset when this page is refreshed." });
+      return;
+    }
+    if (!supabase || !user) return;
     setSaving(true);
     setMessage(null);
     const { error } = await supabase.from("team_tasks").insert({
@@ -167,6 +210,11 @@ export function TeamPortal() {
   }
 
   async function updateTask(id: string, status: Task["status"]) {
+    if (previewMode) {
+      setTasks((current) => current.map((task) => task.id === id ? { ...task, status } : task));
+      setMessage({ type: "success", text: "Task status updated in preview mode." });
+      return;
+    }
     if (!supabase || !user) return;
     setSaving(true);
     const { error } = await supabase.from("team_tasks").update({ status }).eq("id", id);
@@ -176,6 +224,17 @@ export function TeamPortal() {
   }
 
   async function recordAttendance(action: "check_in" | "check_out") {
+    if (previewMode) {
+      const now = new Date().toISOString();
+      const today = localDate();
+      setAttendance((current) => {
+        const existing = current.find((entry) => entry.attendance_date === today);
+        if (existing) return current.map((entry) => entry.id === existing.id ? { ...entry, [action]: now } : entry);
+        return [{ id: crypto.randomUUID(), attendance_date: today, check_in: now, check_out: null, status: "present", notes: null }, ...current];
+      });
+      setMessage({ type: "success", text: action === "check_in" ? "Preview check-in recorded." : "Preview check-out recorded." });
+      return;
+    }
     if (!supabase || !user) return;
     setSaving(true);
     setMessage(null);
@@ -194,9 +253,23 @@ export function TeamPortal() {
 
   async function submitReport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!supabase || !user) return;
     const form = event.currentTarget;
     const values = new FormData(form);
+    if (previewMode) {
+      setReports((current) => [{
+        id: crypto.randomUUID(),
+        report_type: String(values.get("reportType") || "weekly") as Report["report_type"],
+        summary: String(values.get("summary") || "").trim(),
+        achievements: String(values.get("achievements") || "").trim() || null,
+        blockers: String(values.get("blockers") || "").trim() || null,
+        next_steps: String(values.get("nextSteps") || "").trim() || null,
+        submitted_at: new Date().toISOString(),
+      }, ...current]);
+      form.reset();
+      setMessage({ type: "success", text: "Preview report submitted. It will reset when this page is refreshed." });
+      return;
+    }
+    if (!supabase || !user) return;
     setSaving(true);
     setMessage(null);
     const { error } = await supabase.from("team_reports").insert({
@@ -218,16 +291,16 @@ export function TeamPortal() {
 
   if (loading) return <PortalState icon={<LoaderCircle className="spin" />} title="Opening your workspace" copy="Checking your DevQuest team access…" />;
 
-  if (!configured) {
+  if (!previewMode && !configured) {
     return <PortalState icon={<ShieldCheck />} title="Team Portal is built and ready" copy="Connect the DevQuest Supabase project to activate secure team accounts, shared tasks, attendance, and reports." action={<Link href="/portal"><ArrowLeft /> Back to portals</Link>} badge="DATABASE CONNECTION REQUIRED" />;
   }
 
-  if (!user) {
+  if (!previewMode && !user) {
     return <PortalState icon={<UserRound />} title="Sign in to enter the Team Portal" copy="Use your DevQuest-managed account. Team access is approved by a DevQuest administrator." action={<a href="#member-signin"><LogIn /> Sign in with DevQuest</a>} badge="TEAM MEMBERS ONLY" />;
   }
 
   if (!isTeam) {
-    return <PortalState icon={<Clock3 />} title="Your team access is pending" copy={`You are signed in as ${user.email}. A DevQuest administrator must change your member role to Team or Admin.`} action={<Link href="/portal"><ArrowLeft /> Back to portals</Link>} badge="APPROVAL REQUIRED" />;
+    return <PortalState icon={<Clock3 />} title="Your team access is pending" copy={`You are signed in as ${user?.email || "a DevQuest member"}. A DevQuest administrator must change your member role to Team or Admin.`} action={<Link href="/portal"><ArrowLeft /> Back to portals</Link>} badge="APPROVAL REQUIRED" />;
   }
 
   return (
@@ -239,15 +312,16 @@ export function TeamPortal() {
             <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); setMessage(null); }}><Icon /> {label}</button>
           ))}
         </nav>
-        <div className="team-portal-user"><span>{name.slice(0, 2).toUpperCase()}</span><div><b>{name}</b><small>{profile?.role}</small></div></div>
+        <div className="team-portal-user"><span>{name.slice(0, 2).toUpperCase()}</span><div><b>{name}</b><small>{previewMode ? "preview admin" : profile?.role}</small></div></div>
       </aside>
 
       <section className="team-portal-main">
         <header className="team-portal-topbar">
           <div><p>{new Intl.DateTimeFormat("en-PK", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}</p><h1>{navItems.find((item) => item.id === tab)?.label}</h1></div>
-          <div className="team-portal-top-user"><span>{name.slice(0, 2).toUpperCase()}</span><div><b>{name}</b><small>{user.email}</small></div></div>
+          <div className="team-portal-top-user"><span>{name.slice(0, 2).toUpperCase()}</span><div><b>{name}</b><small>{previewMode ? "Preview workspace" : user?.email}</small></div></div>
         </header>
 
+        {previewMode && <div className="portal-preview-notice"><ShieldCheck /><span><b>Preview mode</b> — explore every section safely. Changes reset when you refresh.</span><Link href="/portal/team">Exit preview</Link></div>}
         {message && <div className={`portal-message ${message.type}`}>{message.type === "success" ? <CheckCircle2 /> : <AlertCircle />}{message.text}</div>}
 
         {tab === "overview" && (
