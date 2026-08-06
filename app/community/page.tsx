@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, ArrowUpRight, Building2, Code2, Compass, Crown, Github, Globe2, GraduationCap, Handshake, Linkedin, MessageCircle, Palette, Share2, Sparkles, Users } from "lucide-react";
+
+export const metadata: Metadata = { title: "Community", description: "Meet the DevQuest leadership, core team, and university community across Pakistan." };
+
+const team = [
+  { name: "Muhammad Zahid", role: "Visual Designing Mentor", group: "Design", icon: Palette },
+  { name: "Areesha", role: "Senior Graphics Designer", group: "Design", icon: Palette },
+  { name: "Faraiha Tariq", role: "Junior Graphics Designer", group: "Design", icon: Palette },
+  { name: "Ameema Waheed", role: "Graphics & Content", group: "Creative", icon: Sparkles },
+  { name: "Mohsin Nawaz", role: "Software Engineer", group: "Engineering", icon: Code2 },
+  { name: "Ammar Shafiq", role: "Operations Lead", group: "Operations", icon: Compass },
+  { name: "Madeeha Talib", role: "Operations Co-Lead", group: "Operations", icon: Compass },
+  { name: "Khadija F.", role: "Executive Team", group: "Leadership", icon: Crown },
+  { name: "Anza Tamveel", role: "Social Media Co-Manager", group: "Social", icon: Share2 },
+];
+
+export default function CommunityPage() {
+  const joinLink = "https://wa.me/923704489589?text=Hello%20DevQuest%2C%20I%20would%20like%20to%20join%20the%20community.";
+  return (
+    <>
+      <section className="page-hero community-hero"><div className="page-hero-shape" /><div className="shell page-hero-grid"><div><p className="eyebrow eyebrow-light"><Sparkles /> THE DEVQUEST COMMUNITY</p><h1>Find your people. Build your <span>future.</span></h1><p>A welcoming network for students, early-career developers, mentors, and technology enthusiasts who learn better together.</p><div className="hero-actions"><a className="button button-light" href={joinLink} target="_blank" rel="noreferrer">Join on WhatsApp <ArrowRight /></a><a className="button button-outline-light" href="#team">Meet the team</a></div></div><div className="community-cluster"><div className="cluster-core"><Users /><strong>4.3K+</strong><span>growing network</span></div><div className="cluster-node c-one">BZU</div><div className="cluster-node c-two">MNS-UET</div><div className="cluster-node c-three"><Code2 /></div><div className="cluster-node c-four"><Palette /></div><div className="cluster-line" /></div></div></section>
+
+      <section className="section section-light"><div className="shell values-grid"><div><p className="eyebrow">OUR COMMUNITY PROMISE</p><h2 className="display-heading">A platform for possibility.</h2><p>We create room for inclusive learning, boundless experimentation, and impactful solutions—so more people can discover what they are capable of.</p></div><div className="values-list"><article><span><GraduationCap /></span><div><h3>Learn openly</h3><p>Accessible sessions and peer support make the first step easier.</p></div></article><article><span><Handshake /></span><div><h3>Collaborate generously</h3><p>Projects and events turn individual curiosity into shared momentum.</p></div></article><article><span><Globe2 /></span><div><h3>Build for impact</h3><p>Skills become meaningful when they help people and communities progress.</p></div></article></div></div></section>
+
+      <section className="section chapters-section" id="chapters"><div className="shell"><div className="section-heading-row"><div><p className="eyebrow eyebrow-light">UNIVERSITY NETWORK</p><h2>Strong roots. Wider horizons.</h2></div><p className="heading-copy light-copy">Campus partnerships bring relevant learning and leadership closer to students.</p></div><div className="chapter-grid"><article><span className="chapter-icon"><Building2 /></span><div><small>ACTIVE PRESENCE</small><h3>Bahauddin Zakariya University</h3><p>Multan · BZU</p></div><ArrowUpRight /></article><article><span className="chapter-icon"><Building2 /></span><div><small>COLLABORATION</small><h3>MNS University of Engineering & Technology</h3><p>Multan · MNS-UET</p></div><ArrowUpRight /></article><article className="chapter-invite"><span className="chapter-icon"><Compass /></span><div><small>START SOMETHING</small><h3>Bring DevQuest to your campus</h3><p>Become a student ambassador.</p></div><Link href="#join"><ArrowRight /></Link></article></div></div></section>
+
+      <section className="section section-light" id="team"><div className="shell"><div className="center-heading dark-heading"><p className="eyebrow">LEADERSHIP & CORE TEAM</p><h2>The people moving the quest forward.</h2><p>Builders, organizers, designers, and mentors united by a belief in community-led progress.</p></div><div className="leadership-grid"><article className="leader-card"><div className="leader-avatar">HA</div><div><span>Founder & CEO</span><h3>Hamid Ali</h3><p>DevOps Engineer, former AWS SBG BZU Lead, and Stanford University Section Leader.</p><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="Find Hamid through DevQuest on LinkedIn"><Linkedin /></a></div></article><article className="leader-card"><div className="leader-avatar alt">RT</div><div><span>Co-Founder · Director of Operations</span><h3>Rao Taha Javed</h3><p>Operations leader and event host focused on turning community ideas into meaningful experiences.</p><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="Find Rao through DevQuest on LinkedIn"><Linkedin /></a></div></article></div><div className="team-grid">{team.map(({ name, role, group, icon: Icon }) => <article className="team-card" key={name}><div className="team-avatar">{name.split(" ").map(part => part[0]).slice(0, 2).join("")}</div><div><span>{group}</span><h3>{name}</h3><p>{role}</p></div><Icon /></article>)}</div></div></section>
+
+      <section className="section join-section" id="join"><div className="shell join-grid"><div><p className="eyebrow eyebrow-light">JOIN THE COMMUNITY</p><h2>Your next collaborator might already be here.</h2><p>Connect in real time, discover upcoming opportunities, and take part in a technology community built around shared growth.</p></div><div className="join-cards"><a href={joinLink} target="_blank" rel="noreferrer"><span><MessageCircle /></span><div><small>CORE CHANNEL</small><h3>WhatsApp Community</h3><p>Events, announcements, and opportunities.</p></div><ArrowUpRight /></a><a href="mailto:devquestpk@gmail.com?subject=DevQuest%20Discord%20Invitation" target="_blank" rel="noreferrer"><span><Github /></span><div><small>REAL-TIME COLLABORATION</small><h3>Discord Server</h3><p>Ask for an invitation to join the server.</p></div><ArrowUpRight /></a></div></div></section>
+    </>
+  );
+}
