@@ -1,9 +1,16 @@
 import Image from "next/image";
 
-const sponsors = Array.from({ length: 7 }, (_, index) => ({
-  src: `/figma/sponsor-${index + 1}.png`,
-  alt: `DevQuest partner ${index + 1}`,
-}));
+const sponsors = [
+  { src: "/partners/devsinc-multan.jpg", alt: "Devsinc Multan" },
+  { src: "/partners/devsinc.jpg", alt: "Devsinc" },
+  { src: "/partners/english-with-komal.jpg", alt: "English with Komal" },
+  { src: "/partners/gc-css-mnsuet.jpg", alt: "General Committee of Computer Science Students at MNS-UET Multan" },
+  { src: "/partners/google.jpeg", alt: "Google" },
+  { src: "/partners/kohaq-black.png", alt: "Kohaq" },
+  { src: "/partners/mlsa.jpeg", alt: "Microsoft Learn Student Ambassadors" },
+  { src: "/partners/mnsuet.jpg", alt: "Muhammad Nawaz Sharif University of Engineering and Technology Multan" },
+  { src: "/partners/project-soch.jpg", alt: "Project Soch" },
+];
 
 function SponsorSet({ duplicate = false }: { duplicate?: boolean }) {
   return (
