@@ -1,85 +1,72 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Blocks, BookOpen, CalendarDays, Code2, GraduationCap, Handshake, Lightbulb, MapPin, Palette, Rocket, Sparkles, Users } from "lucide-react";
-import { ContactForm } from "./components/client-widgets";
+import { ArrowUpRight } from "lucide-react";
+import { ThemeToggle } from "./components/client-widgets";
 
 export const metadata: Metadata = {
-  title: "Empowering a Global Community of Innovators",
-  description: "DevQuest connects students, developers, universities, and technology partners across Pakistan.",
+  title: "Your Modern Courses Hub",
+  description: "Learn practical technology skills with the DevQuest Pakistan community.",
 };
+
+const programs = [
+  { icon: "/figma/program-mentorship.svg", title: "Mentorship", copy: "Gain practical insight from experienced mentors and guest speakers who guide your learning path." },
+  { icon: "/figma/program-certified.svg", title: "Get Certified", copy: "Build verifiable skills through structured courses, guided projects, and completion milestones." },
+  { icon: "/figma/program-career.svg", title: "Career Preparation", copy: "Explore disciplines, strengthen your portfolio, and turn curiosity into confident career direction." },
+  { icon: "/figma/program-community.svg", title: "Community", copy: "Meet motivated learners, collaborators, and future teammates across Pakistan." },
+];
+
+const sponsors = Array.from({ length: 7 }, (_, index) => `/figma/sponsor-${index + 1}.png`);
 
 export default function Home() {
   return (
-    <>
-      <section className="hero">
-        <div className="hero-glow hero-glow-one" /><div className="hero-glow hero-glow-two" />
-        <div className="shell hero-grid">
-          <div className="hero-copy">
-            <p className="eyebrow eyebrow-light"><Sparkles /> COMMUNITY • TECHNOLOGY • INNOVATION</p>
-            <h1>Empowering a global community of <span>innovators.</span></h1>
-            <p className="hero-lead">DevQuest connects students, developers, and technology leaders through practical learning, collaborative events, and impactful solutions.</p>
-            <div className="hero-actions">
-              <Link className="button button-light" href="/events">Explore events <ArrowRight /></Link>
-              <Link className="button button-outline-light" href="/community#join">Join community <ArrowUpRight /></Link>
-            </div>
-            <div className="hero-stats" aria-label="Community statistics">
-              <div><strong>4.3K+</strong><span>community followers</span></div>
-              <div><strong>2+</strong><span>years of impact</span></div>
-              <div><strong>2</strong><span>university hubs</span></div>
-            </div>
+    <div className="dq-home">
+      <section className="dq-course-hero">
+        <div className="dq-orb dq-orb-a" /><div className="dq-orb dq-orb-b" />
+        <div className="dq-shell dq-course-grid">
+          <div className="dq-course-copy">
+            <h1>Your Modern<br />Courses Hub</h1>
+            <p>Want to learn premium technology skills online?<br />Join the DevQuest community now.</p>
+            <div className="dq-course-actions"><a className="dq-btn dq-btn-blue" href="#member-signup">Sign Up</a><a className="dq-btn dq-btn-slate" href="#member-signin">Register</a></div>
+            <strong>Choose Category:</strong>
+            <div className="dq-category-grid"><span>Web Development</span><span>Video Editing</span><span>Graphics Designing</span><span>AI / ML</span><span>Cyber Security</span><span>Freelancing</span></div>
           </div>
-          <div className="hero-panel-wrap">
-            <div className="hero-panel">
-              <span className="hero-panel-icon"><Rocket /></span>
-              <p className="eyebrow">NEXT EXPERIENCE</p>
-              <h2>Innovate Pakistan Tech Series</h2>
-              <p>A hybrid series of high-impact campus events and practical virtual webinars.</p>
-              <div className="event-mini-meta"><span><CalendarDays /> New sessions coming soon</span><span><MapPin /> Pakistan · Hybrid</span></div>
-              <Link className="button button-primary button-wide" href="/events">Discover the series <ArrowUpRight /></Link>
-              <div className="hero-panel-links"><Link href="/community">Meet the community</Link><a href="https://wa.me/923704489589?text=Hello%20DevQuest%2C%20please%20share%20upcoming%20event%20details." target="_blank" rel="noreferrer">Ask on WhatsApp</a></div>
-            </div>
+          <div className="dq-portrait-collage" aria-label="DevQuest learners">
+            <div className="dq-portrait p-one"><Image src="/figma/hero-3.png" alt="Technology learner" fill sizes="190px" /></div>
+            <div className="dq-portrait p-two"><Image src="/figma/hero-1.png" alt="Student holding books" fill sizes="190px" /></div>
+            <div className="dq-portrait p-three"><Image src="/figma/hero-2.png" alt="Student with notebooks" fill sizes="190px" /></div>
+            <div className="dq-portrait p-four"><Image src="/figma/hero-4.png" alt="Learner holding a tablet" fill sizes="190px" /></div>
+            <i className="dq-dot dot-gold" /><i className="dq-dot dot-blue" />
           </div>
         </div>
+        <ThemeToggle />
       </section>
 
-      <section className="logo-strip"><div className="shell logo-strip-inner"><span>Building learning ecosystems with</span><strong>BZU</strong><i /><strong>MNS-UET Multan</strong><i /><strong>TazQ Solutions</strong></div></section>
-
-      <section className="section section-light" id="about">
-        <div className="shell split-intro">
-          <div><p className="eyebrow">BUILT FOR MEANINGFUL PROGRESS</p><h2 className="display-heading">Where learning turns into real-world impact.</h2></div>
-          <div className="intro-copy"><p>We bring strategy, mentorship, engineering, and community together so emerging technologists can move from curiosity to confident contribution.</p><Link className="text-link" href="/community">Meet DevQuest <ArrowUpRight /></Link></div>
-        </div>
-        <div className="shell orbit-card">
-          <div className="orbit-lines" aria-hidden="true" /><div className="orbit-core"><Sparkles /><strong>Impact</strong></div>
-          <div className="orbit-node node-one"><Code2 /><span>Engineering</span></div><div className="orbit-node node-two"><Palette /><span>Design</span></div><div className="orbit-node node-three"><GraduationCap /><span>Learning</span></div><div className="orbit-node node-four"><Handshake /><span>Community</span></div>
-          <div className="outcome-card"><strong>Boundless</strong><span>experimentation</span></div>
-        </div>
-      </section>
-
-      <section className="section service-preview">
-        <div className="shell">
-          <div className="section-heading-row"><div><p className="eyebrow eyebrow-light">WHAT WE DO</p><h2>One community. Three paths to progress.</h2></div><Link className="button button-outline-light" href="/services">Explore all services <ArrowRight /></Link></div>
-          <div className="card-grid three-cols">
-            <article className="feature-card"><span><Blocks /></span><p>01</p><h3>Software development</h3><p>Reliable web products and scalable cloud solutions built around real goals.</p><Link href="/services#development">Explore development <ArrowUpRight /></Link></article>
-            <article className="feature-card"><span><Palette /></span><p>02</p><h3>UI/UX design</h3><p>Clear, accessible product experiences shaped through research and collaboration.</p><Link href="/services#design">Explore design <ArrowUpRight /></Link></article>
-            <article className="feature-card"><span><Users /></span><p>03</p><h3>Talent bridge</h3><p>Connect with emerging developers who have been mentored and evaluated by our network.</p><Link href="/services#talent">Explore talent <ArrowUpRight /></Link></article>
+      <section className="dq-program-section">
+        <div className="dq-shell">
+          <p className="dq-kicker">OUR PROGRAM</p>
+          <h2>Launch your experience enhancement<br />through our transformative<br />courses and sessions journey.</h2>
+          <div className="dq-program-grid">
+            {programs.map((program) => <article key={program.title}><Image src={program.icon} alt="" width={96} height={96} /><h3>{program.title}</h3><p>{program.copy}</p></article>)}
           </div>
         </div>
       </section>
 
-      <section className="section section-light events-preview">
-        <div className="shell">
-          <div className="section-heading-row dark-heading"><div><p className="eyebrow">EVENTS & ACADEMY</p><h2>Learn with people who are building, too.</h2></div><Link className="text-link" href="/events">View all programs <ArrowRight /></Link></div>
-          <div className="event-grid">
-            <article className="event-card event-card-featured"><div className="event-visual visual-innovate"><span>INNOVATE<br />PAKISTAN</span><Rocket /></div><div className="event-body"><div className="tags"><span>Flagship series</span><span>Hybrid</span></div><h3>Innovate Pakistan Tech Series</h3><p>High-impact physical events and focused virtual webinars for Pakistan&apos;s next generation of innovators.</p><Link className="text-link" href="/events">Explore the series <ArrowUpRight /></Link></div></article>
-            <div className="event-stack"><article className="event-card compact-event"><div className="event-icon"><Lightbulb /></div><div><span>Past highlight</span><h3>TechTrivium</h3><p>Ideas, technology, and community in one energetic experience.</p></div></article><article className="event-card compact-event"><div className="event-icon"><BookOpen /></div><div><span>Community learning</span><h3>Tech In Ramadan</h3><p>Accessible sessions designed to keep learning moving forward.</p></div></article></div>
-          </div>
-        </div>
+      <section className="dq-sponsors">
+        <div className="dq-shell"><p className="dq-kicker">PARTNERS &amp; SPONSORS</p><h2>Our program is<br />backed by the best.</h2><p>We have a dynamic network of companies and universities that support our mission.</p></div>
+        <div className="dq-sponsor-row">{sponsors.map((src) => <div key={src}><Image src={src} alt="DevQuest partner" width={248} height={120} /></div>)}</div>
       </section>
 
-      <section className="section cta-section">
-        <div className="shell cta-grid"><div><p className="eyebrow eyebrow-light">START YOUR QUEST</p><h2>Build skills. Find your people. Create what matters.</h2><p>Join students, developers, mentors, and partners shaping a more collaborative technology ecosystem.</p><div className="hero-actions"><Link className="button button-light" href="/community#join">Join DevQuest <ArrowRight /></Link><Link className="button button-outline-light" href="/contact">Partner with us</Link></div></div><ContactForm compact /></div>
+      <section className="dq-events-showcase">
+        <div className="dq-shell dq-events-head"><div><p className="dq-kicker">DEVELOP RELATIONSHIPS</p><h2>Checkout our<br />Events and Collabs</h2></div><p>Join our highly motivated community of students, developers, mentors, and partners. Meet future collaborators and build relationships that last.</p></div>
+        <div className="dq-event-gallery">
+          <div><Image src="/figma/event-1.png" alt="DevQuest community event" fill sizes="(max-width: 800px) 90vw, 40vw" /></div>
+          <div><Image src="/figma/event-2.png" alt="DevQuest technology gathering" fill sizes="(max-width: 800px) 90vw, 40vw" /></div>
+          <div><Image src="/figma/event-1.png" alt="DevQuest participants" fill sizes="(max-width: 800px) 90vw, 40vw" /></div>
+          <div><Image src="/figma/event-2.png" alt="DevQuest collaboration" fill sizes="(max-width: 800px) 90vw, 40vw" /></div>
+        </div>
+        <div className="dq-shell dq-event-cta"><Link href="/events">Explore the academy <ArrowUpRight /></Link><a href="https://wa.me/923704489589" target="_blank" rel="noreferrer">Join the community <ArrowUpRight /></a></div>
       </section>
-    </>
+    </div>
   );
 }

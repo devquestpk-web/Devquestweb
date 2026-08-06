@@ -1,34 +1,57 @@
 import Link from "next/link";
-import { ChevronDown, Facebook, Instagram, Linkedin, Mail, MapPin, Menu, Phone, Youtube } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Menu, Phone, Youtube } from "lucide-react";
 
-function Brand() {
+export function Brand({ compact = false }: { compact?: boolean }) {
   return (
-    <Link href="/" className="brand" aria-label="DevQuest home">
-      <span className="brand-mark" aria-hidden="true">
-        <i className="brand-bar brand-bar-one" /><i className="brand-bar brand-bar-two" /><i className="brand-bar brand-bar-three" />
-        <i className="brand-dot brand-dot-one" /><i className="brand-dot brand-dot-two" />
+    <Link href="/" className={`dq-brand${compact ? " is-compact" : ""}`} aria-label="DevQuest PK home">
+      <span className="dq-brand-mark" aria-hidden="true">
+        <i /><i /><i /><b /><b />
       </span>
-      <span className="brand-word">DevQuest</span>
+      <span>DevQuest <strong>PK</strong></span>
     </Link>
   );
 }
 
 const navigation = [
-  { href: "/", label: "Home" }, { href: "/services", label: "Services" }, { href: "/events", label: "Events" },
-  { href: "/community", label: "Community" }, { href: "/#about", label: "About" }, { href: "/contact", label: "Contact" },
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
+  { href: "/events", label: "Academy" },
+  { href: "/contact", label: "Contact Us" },
 ];
 
 export function SiteHeader() {
   return (
-    <header className="site-header">
-      <div className="topbar"><div className="shell topbar-inner"><div className="topbar-contact"><a href="tel:+923704489589"><Phone /> +92 370 4489589</a><a href="mailto:devquestpk@gmail.com"><Mail /> devquestpk@gmail.com</a></div><div className="topbar-social" aria-label="Social links"><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin /></a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram /></a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook /></a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer" aria-label="YouTube"><Youtube /></a></div></div></div>
-      <div className="nav-wrap"><div className="shell nav-inner"><Brand /><nav className="desktop-nav" aria-label="Main navigation">{navigation.map((item) => item.label === "Services" ? <div className="nav-dropdown" key={item.href}><Link href={item.href}>Services <ChevronDown /></Link><div className="dropdown-panel"><Link href="/services#development">Software development</Link><Link href="/services#design">UI/UX design</Link><Link href="/services#talent">Talent augmentation</Link></div></div> : <Link key={item.href} href={item.href}>{item.label}</Link>)}</nav><Link className="button button-primary nav-cta" href="/community#join">Join community <span>↗</span></Link><details className="mobile-menu"><summary aria-label="Open navigation"><Menu /></summary><nav aria-label="Mobile navigation">{navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}<Link className="button button-primary" href="/community#join">Join community</Link></nav></details></div></div>
+    <header className="dq-header">
+      <div className="dq-shell dq-nav">
+        <Brand compact />
+        <nav className="dq-desktop-nav" aria-label="Main navigation">
+          {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+        </nav>
+        <a className="dq-login" href="#member-signin">Log In</a>
+        <details className="dq-mobile-nav">
+          <summary aria-label="Open navigation"><Menu /></summary>
+          <nav>
+            {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+            <a href="#member-signin">Log In</a>
+          </nav>
+        </details>
+      </div>
     </header>
   );
 }
 
 export function SiteFooter() {
   return (
-    <footer className="site-footer"><div className="shell footer-grid"><div className="footer-brand"><Brand /><p>Empowering a global community of innovators through learning, collaboration, and technology.</p><div className="social-row"><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="LinkedIn"><Linkedin /></a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer" aria-label="Instagram"><Instagram /></a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer" aria-label="Facebook"><Facebook /></a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer" aria-label="YouTube"><Youtube /></a></div></div><div><h3>Explore</h3><Link href="/services">Services</Link><Link href="/events">Events & Academy</Link><Link href="/community">Community</Link><Link href="/#about">About DevQuest</Link></div><div><h3>Community</h3><Link href="/community#chapters">University chapters</Link><Link href="/community#team">Our team</Link><Link href="/community#join">Become an ambassador</Link><Link href="/events">Upcoming programs</Link></div><div className="footer-contact"><h3>Let&apos;s connect</h3><a href="mailto:devquestpk@gmail.com"><Mail /> devquestpk@gmail.com</a><a href="tel:+923704489589"><Phone /> +92 370 4489589</a><span><MapPin /> Pakistan</span></div></div><div className="shell footer-bottom"><span>© {new Date().getFullYear()} DevQuest PK. All rights reserved.</span><span>Learn. Build. Lead.</span></div></footer>
+    <footer className="dq-footer">
+      <div className="dq-shell dq-footer-title"><Brand /><p>Empowering a global community of innovators.</p></div>
+      <div className="dq-shell dq-footer-grid">
+        <div><h3>Reach us</h3><a href="tel:+923704489589"><Phone /> +92 370 4489589</a><a href="mailto:devquestpk@gmail.com"><Mail /> devquestpk@gmail.com</a><span><MapPin /> Islamabad, Pakistan</span></div>
+        <div><h3>Company</h3><Link href="/about">About</Link><Link href="/contact">Contact</Link><Link href="/events">Academy</Link></div>
+        <div><h3>Community</h3><Link href="/about#team">Our team</Link><Link href="/community#chapters">University chapters</Link><Link href="/community#join">Join DevQuest</Link></div>
+        <div><h3>Quick links</h3><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer"><Linkedin /> LinkedIn</a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer"><Instagram /> Instagram</a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer"><Facebook /> Facebook</a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer"><Youtube /> YouTube</a></div>
+        <div className="dq-newsletter"><h3>Join our newsletter</h3><p>Weekly updates on events, learning, and community opportunities.</p><a href="mailto:devquestpk@gmail.com?subject=Subscribe%20me%20to%20DevQuest">Subscribe by email</a></div>
+      </div>
+      <div className="dq-shell dq-footer-bottom"><span>&copy; {new Date().getFullYear()} DevQuest Pakistan</span><span>Learn. Build. Lead.</span></div>
+    </footer>
   );
 }
