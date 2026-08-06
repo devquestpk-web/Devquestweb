@@ -38,6 +38,13 @@ body:has(.dq-contact-page) .dq-header { background: #fbfbfb; color: #071c28; }bo
 @media (max-width: 520px) {.dq-course-actions { display: grid; }.dq-btn { width: 100%; }.dq-category-grid { gap: 11px; }.dq-portrait-collage { height: 390px; transform: scale(.55); }.dq-program-grid { grid-template-columns: 1fr; }.dq-program-grid article { min-height: 0; }.dq-footer-grid { grid-template-columns: 1fr; }.dq-footer-bottom { flex-direction: column; gap: 8px; }.dq-form-pair { grid-template-columns: 1fr; }.dq-contact-info { padding: 32px 25px; }.dq-contact-lines { margin-top: 70px; }.dq-contact-social { left: 25px; }.dq-contact-form fieldset { display: grid; }.dq-contact-form button { width: 100%; }.dq-about-grid h1 { font-size: 3.15rem; }.dq-course-copy h1 br { display: none; }.auth-popup-head h2 { font-size: 1.55rem; }}
 
 /* Expanded DevQuest content, composed in the supplied Figma visual language. */
+.dq-sponsor-marquee { width: 100%; overflow: hidden; margin-top: 55px; padding: 8px 0; -webkit-mask-image: linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); mask-image: linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent); }
+.dq-sponsor-track { width: max-content; display: flex; gap: 18px; animation: dq-sponsor-scroll 32s linear infinite; will-change: transform; }
+.dq-sponsor-marquee:hover .dq-sponsor-track,.dq-sponsor-marquee:focus-within .dq-sponsor-track { animation-play-state: paused; }
+.dq-sponsor-set { display: flex; flex: none; gap: 18px; }
+.dq-sponsor-card { width: 280px; height: 140px; display: grid; place-items: center; padding: 22px; overflow: hidden; background: linear-gradient(145deg,#071426,#102c49); border: 1px solid rgba(139,220,255,.24); border-radius: 10px; box-shadow: 0 16px 35px rgba(0,8,22,.18); }
+.dq-sponsor-card img { width: 100%; height: 100%; object-fit: contain; opacity: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.25)); }
+@keyframes dq-sponsor-scroll { to { transform: translateX(calc(-50% - 9px)); } }
 .dq-contact-form select { width: 100%; padding: 9px 0; color: #011c2a; background: transparent; border: 0; border-bottom: 1px solid #8d8d8d; outline: 0; }
 .dq-contact-form select:focus { border-color: #011c2a; }
 .dq-desktop-nav { flex: 1; gap: clamp(16px, 2vw, 32px); }
@@ -131,10 +138,16 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
 }
 
 @media (max-width: 520px) {
+  .dq-sponsor-card { width: 220px; height: 112px; padding: 18px; }.dq-sponsor-track,.dq-sponsor-set { gap: 12px; }@keyframes dq-sponsor-scroll { to { transform: translateX(calc(-50% - 6px)); } }
   .dq-course-copy h1 { font-size: clamp(2.8rem,14vw,4rem); }.dq-hero-stats { gap: 8px; }.dq-hero-stats strong { font-size: 1.05rem; }.dq-hero-stats span { font-size: .62rem; }
   .dq-next-event { width: 290px; bottom: 0; }
   .dq-impact-grid h2,.dq-section-heading h2,.dq-home-cta h2 { font-size: 2.65rem; }
   .dq-impact-orbit { min-height: 390px; }.dq-impact-orbit::before { width: 290px; height: 290px; }.dq-impact-orbit::after { width: 190px; height: 190px; }
   .impact-node { min-width: 118px; min-height: 48px; padding: 0 10px; font-size: .68rem; }.impact-a { left: 4%; }.impact-b { right: 3%; }.impact-c { left: 4%; }.impact-d { right: 3%; }.impact-outcome { display: none; }
   .dq-home-cta-grid > div > div { display: grid; }.dq-event-cta { display: grid; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dq-sponsor-marquee { overflow-x: auto; -webkit-mask-image: none; mask-image: none; }
+  .dq-sponsor-track { animation: none !important; transform: none; }
 }

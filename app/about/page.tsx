@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { SponsorMarquee } from "../components/sponsor-marquee";
 
 export const metadata: Metadata = { title: "About Us", description: "Meet the DevQuest Pakistan leadership and community core team." };
 
@@ -28,7 +29,7 @@ export default function AboutPage() {
 
       <section className="dq-team-section" id="team"><div className="dq-shell"><h2>Our Team</h2><div className="dq-figma-team-grid">{team.map(([name, role, group], index) => <article key={name}><small>{group}</small><h3>{role}</h3><div className={`dq-team-portrait portrait-${index % 3}`}><span>{name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span></div><strong>{name}</strong><Link href="/contact">Get in touch <ArrowUpRight /></Link></article>)}</div></div></section>
 
-      <section className="dq-about-partners"><div className="dq-shell"><p className="dq-kicker">PARTNERS &amp; SPONSORS</p><h2>Our program is<br />backed by the best.</h2><p>We collaborate with universities and technology partners to build learning experiences with real community value.</p></div><div className="dq-sponsor-row">{Array.from({length: 7},(_, index) => <div key={index}><Image src={`/figma/sponsor-${index + 1}.png`} alt="DevQuest partner" width={248} height={120} /></div>)}</div></section>
+      <section className="dq-about-partners"><div className="dq-shell"><p className="dq-kicker">PARTNERS &amp; SPONSORS</p><h2>Our program is<br />backed by the best.</h2><p>We collaborate with universities and technology partners to build learning experiences with real community value.</p></div><SponsorMarquee /></section>
     </div>
   );
 }

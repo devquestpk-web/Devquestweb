@@ -18,6 +18,7 @@ import {
   Users,
 } from "lucide-react";
 import { ContactForm, ThemeToggle } from "./components/client-widgets";
+import { SponsorMarquee } from "./components/sponsor-marquee";
 
 export const metadata: Metadata = {
   title: "Empowering a Global Community of Innovators",
@@ -37,8 +38,6 @@ const services = [
   { icon: Palette, number: "02", title: "UI/UX Design", copy: "Clear, accessible digital experiences shaped through research, prototyping, and collaboration.", href: "/services#design" },
   { icon: Users, number: "03", title: "Talent Bridge", copy: "Connect with emerging developers who have been mentored and evaluated by our network.", href: "/services#talent" },
 ];
-
-const sponsors = Array.from({ length: 7 }, (_, index) => `/figma/sponsor-${index + 1}.png`);
 
 export default function Home() {
   const joinLink = "https://wa.me/923704489589?text=Hello%20DevQuest%2C%20I%20would%20like%20to%20join%20the%20community.";
@@ -107,7 +106,7 @@ export default function Home() {
 
       <section className="dq-sponsors">
         <div className="dq-shell"><p className="dq-kicker">PARTNERS &amp; SPONSORS</p><h2>Our program is<br />backed by the best.</h2><p>We have a dynamic network of companies and universities that support our mission.</p></div>
-        <div className="dq-sponsor-row">{sponsors.map((src) => <div key={src}><Image src={src} alt="DevQuest partner" width={248} height={120} /></div>)}</div>
+        <SponsorMarquee />
       </section>
 
       <section className="dq-home-cta"><div className="dq-shell dq-home-cta-grid"><div><p className="dq-kicker">START YOUR QUEST</p><h2>Build skills. Find your people. Create what matters.</h2><p>Join students, developers, mentors, universities, and partners shaping a more collaborative technology ecosystem.</p><div><a className="dq-btn dq-btn-blue" href="#member-signup">Create an account</a><Link className="dq-btn dq-btn-slate" href="/contact">Partner with us</Link></div></div><ContactForm compact /></div></section>
