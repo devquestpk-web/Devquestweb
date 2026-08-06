@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { AlertCircle, CheckCircle2, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, ShieldCheck, UserPlus, UserRound, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, GraduationCap, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, ShieldCheck, UserPlus, UserRound, UsersRound, X } from "lucide-react";
 import { deliverWebsiteForm } from "../lib/form-delivery";
 
 const getSupabase = getSupabaseBrowserClient;
@@ -83,15 +83,107 @@ export function FigmaContactForm() {
 }
 
 type Mode = "signin" | "signup";
+type PortalRole = "student" | "team";
+
 export function AuthDock() {
-  const [open, setOpen] = useState(false); const [mode, setMode] = useState<Mode>("signin"); const [user, setUser] = useState<User | null>(null); const [loading, setLoading] = useState(true); const [working, setWorking] = useState(false); const [message, setMessage] = useState<{type: "error" | "success"; text: string} | null>(null);
-  useEffect(() => { const syncHash = () => { if (window.location.hash === "#member-signup") { setMode("signup"); setOpen(true); } if (window.location.hash === "#member-signin" || window.location.hash === "#member-access") { setMode("signin"); setOpen(true); } }; syncHash(); window.addEventListener("hashchange", syncHash); return () => window.removeEventListener("hashchange", syncHash); }, []);
+  const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>("signin");
+  const [portalRole, setPortalRole] = useState<PortalRole | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [working, setWorking] = useState(false);
+  const [message, setMessage] = useState<{type: "error" | "success"; text: string} | null>(null);
+
+  useEffect(() => {
+    const syncHash = () => {
+      if (["#member-signup", "#member-signin", "#member-access"].includes(window.location.hash)) {
+        setPortalRole(null);
+        setMode("signin");
+        setMessage(null);
+        setOpen(true);
+      }
+    };
+    syncHash();
+    window.addEventListener("hashchange", syncHash);
+    return () => window.removeEventListener("hashchange", syncHash);
+  }, []);
   useEffect(() => { const supabase = getSupabase(); if (!supabase) { queueMicrotask(() => setLoading(false)); return; } supabase.auth.getSession().then(({ data }) => { setUser(data.session?.user ?? null); setLoading(false); }); const { data } = supabase.auth.onAuthStateChange((_event, session) => { setUser(session?.user ?? null); setLoading(false); }); return () => data.subscription.unsubscribe(); }, []);
   function close() { setOpen(false); if (window.location.hash.startsWith("#member-")) history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
-  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setMessage(null); const supabase = getSupabase(); if (!supabase) { setMessage({ type: "error", text: "Add the DevQuest Supabase URL and public anon key to activate member access." }); return; } const data = new FormData(event.currentTarget); const email = String(data.get("email") || "").trim(); const password = String(data.get("password") || ""); const fullName = String(data.get("fullName") || "").trim(); setWorking(true); if (mode === "signin") { const { error } = await supabase.auth.signInWithPassword({ email, password }); setWorking(false); setMessage(error ? { type: "error", text: error.message } : { type: "success", text: "Welcome back to DevQuest." }); return; } const { data: created, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } }); setWorking(false); setMessage(error ? { type: "error", text: error.message } : { type: "success", text: created.session ? "Your DevQuest account is ready." : "Check your email to confirm your DevQuest account." }); }
+  function chooseRole(role: PortalRole) { setPortalRole(role); setMode("signin"); setMessage(null); }
+  function toggleAccess() { setOpen((value) => { if (!value) { setPortalRole(null); setMode("signin"); setMessage(null); } return !value; }); }
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    const supabase = getSupabase();
+    if (!supabase) { setMessage({ type: "error", text: "The DevQuest portal database connection still needs to be activated." }); return; }
+    if (!portalRole) { setMessage({ type: "error", text: "Select a portal before signing in." }); return; }
+
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") || "").trim();
+    const password = String(data.get("password") || "");
+    const fullName = String(data.get("fullName") || "").trim();
+    setWorking(true);
+
+    if (mode === "signin") {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      setWorking(false);
+      if (error) { setMessage({ type: "error", text: error.message }); return; }
+      window.location.assign(portalRole === "team" ? "/portal/team" : "/portal/student");
+      return;
+    }
+
+    if (portalRole === "team") {
+      setWorking(false);
+      setMessage({ type: "error", text: "Team accounts can only be created by a DevQuest administrator." });
+      return;
+    }
+
+    const { data: created, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, portal_role: "student" } } });
+    setWorking(false);
+    if (error) setMessage({ type: "error", text: error.message });
+    else if (created.session) window.location.assign("/portal/student");
+    else setMessage({ type: "success", text: "Check your email to confirm your DevQuest student account." });
+  }
   async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut(); setWorking(false); if (error) setMessage({ type: "error", text: error.message }); else { setUser(null); setMessage({ type: "success", text: "You are signed out." }); } }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
-  return <div className={`auth-dock ${open ? "is-open" : ""}`}>{open && <><button className="auth-backdrop" onClick={close} aria-label="Close account dialog" /><section className={`auth-popup auth-${mode}`} role="dialog" aria-modal="true" aria-label="DevQuest member access"><button className="auth-close" type="button" onClick={close} aria-label="Close member access"><X /></button><div className="auth-main"><div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div><div className="auth-popup-head"><div><small>DEVQUEST COMMUNITY</small><h2>{user ? `Welcome, ${name}` : mode === "signin" ? "Sign in to your account" : "Welcome to DevQuest Community"}</h2>{!user && <p>{mode === "signin" ? "New here? Create your DevQuest account." : "Already a member? Sign in to continue."}</p>}</div></div>{loading ? <div className="auth-loading"><LoaderCircle className="spin" /> Checking your session...</div> : user ? <div className="auth-account"><div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div><p>Your DevQuest session is active on this device.</p>{message && <Status {...message} />}<button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button></div> : <><div className="auth-tabs"><button type="button" className={mode === "signin" ? "active" : ""} onClick={() => { setMode("signin"); setMessage(null); }}><LogIn /> Sign in</button><button type="button" className={mode === "signup" ? "active" : ""} onClick={() => { setMode("signup"); setMessage(null); }}><UserPlus /> Create account</button></div><form className="auth-form" onSubmit={submit}>{mode === "signup" && <label><span>Full name</span><div><UserRound /><input name="fullName" required placeholder="Your name" autoComplete="name" /></div></label>}<label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder="you@example.com" autoComplete="email" /></div></label><label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete={mode === "signin" ? "current-password" : "new-password"} /></div></label>{mode === "signup" && <div className="auth-requirements"><span>8+ characters</span><span>Upper &amp; lowercase</span><span>One number</span></div>}{message && <Status {...message} />}<button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : mode === "signin" ? <>Sign In <LogIn /></> : <>Create an account <UserPlus /></>}</button></form></>}</div>{mode === "signup" && !user && <aside className="auth-art"><Image src="/figma/signup-art.png" alt="Abstract three-dimensional blocks" fill sizes="50vw" /></aside>}</section></>}<button className="auth-trigger" type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}>{user ? <span>{name.slice(0, 2).toUpperCase()}</span> : <UserRound />}<strong>{user ? "My account" : "Member access"}</strong></button></div>;
+
+  return <div className={`auth-dock ${open ? "is-open" : ""}`}>
+    {open && <>
+      <button className="auth-backdrop" onClick={close} aria-label="Close account dialog" />
+      <section className={`auth-popup auth-${portalRole ? mode : "role"}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
+        <button className="auth-close" type="button" onClick={close} aria-label="Close portal access"><X /></button>
+        <div className="auth-main">
+          <div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div>
+          {loading ? <div className="auth-loading"><LoaderCircle className="spin" /> Checking your session...</div> : user ? <>
+            <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Welcome, {name}</h2><p>Choose the portal you want to open.</p></div></div>
+            <div className="auth-account"><div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div><div className="auth-account-portals"><a href="/portal/student"><GraduationCap /> Student Portal <ChevronRight /></a><a href="/portal/team"><UsersRound /> Team Portal <ChevronRight /></a></div>{message && <Status {...message} />}<button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button></div>
+          </> : !portalRole ? <>
+            <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
+            <div className="auth-role-grid">
+              <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student Portal</b><small>Learning, events, certificates, and opportunities</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("team")}><span><UsersRound /></span><div><b>Team Portal</b><small>Tasks, attendance, and progress reports</small></div><ChevronRight /></button>
+            </div>
+          </> : <>
+            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setMode("signin"); setMessage(null); }}><ArrowLeft /> Change role</button>
+            <div className="auth-popup-head"><div><small>{portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{mode === "signup" ? "Create your student account" : `Sign in to the ${portalRole} portal`}</h2><p>{portalRole === "team" ? "Use your approved DevQuest team account." : mode === "signup" ? "Start your DevQuest learning journey." : "Welcome back to the DevQuest community."}</p></div></div>
+            {portalRole === "student" && <div className="auth-tabs"><button type="button" className={mode === "signin" ? "active" : ""} onClick={() => { setMode("signin"); setMessage(null); }}><LogIn /> Sign in</button><button type="button" className={mode === "signup" ? "active" : ""} onClick={() => { setMode("signup"); setMessage(null); }}><UserPlus /> Create account</button></div>}
+            <form className="auth-form" onSubmit={submit}>
+              {mode === "signup" && portalRole === "student" && <label><span>Full name</span><div><UserRound /><input name="fullName" required placeholder="Your name" autoComplete="name" /></div></label>}
+              <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "team" ? "team@devquest.pk" : "you@example.com"} autoComplete="email" /></div></label>
+              <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete={mode === "signin" ? "current-password" : "new-password"} /></div></label>
+              {mode === "signup" && <div className="auth-requirements"><span>8+ characters</span><span>Upper &amp; lowercase</span><span>One number</span></div>}
+              {message && <Status {...message} />}
+              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : mode === "signup" ? <>Create student account <UserPlus /></> : <>Open {portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
+            </form>
+            {portalRole === "team" && <p className="auth-team-note"><ShieldCheck /> Team accounts are issued and approved by DevQuest administrators.</p>}
+          </>}
+        </div>
+        {portalRole === "student" && mode === "signup" && !user && <aside className="auth-art"><Image src="/figma/signup-art.png" alt="Abstract three-dimensional blocks" fill sizes="50vw" /></aside>}
+      </section>
+    </>}
+    <button className="auth-trigger" type="button" onClick={toggleAccess} aria-expanded={open}>{user ? <span>{name.slice(0, 2).toUpperCase()}</span> : <UserRound />}<strong>{user ? "My account" : "Portal access"}</strong></button>
+  </div>;
 }
 
 function Status({ type, text }: {type: "error" | "success"; text: string}) { return <div className={`auth-status ${type}`}>{type === "success" ? <CheckCircle2 /> : <AlertCircle />}{text}</div>; }
