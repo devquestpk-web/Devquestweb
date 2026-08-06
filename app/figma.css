@@ -401,3 +401,27 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
     text-align: center;
   }
 }
+
+/* Keep the portrait cluster and next-experience card visually distinct. */
+.dq-portrait.p-three {
+  left: 335px;
+}
+
+.dq-next-event {
+  left: -35px;
+  bottom: -28px;
+}
+
+@media (max-width: 760px) {
+  .dq-next-event {
+    left: 0;
+    bottom: -180px;
+  }
+}
+
+@media (max-width: 520px) {
+  .dq-next-event {
+    left: 0;
+    bottom: -230px;
+  }
+}
