@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookOpen, CalendarDays, Clock3, Globe2, GraduationCap, Lightbulb, MapPin, Rocket, Sparkles, Trophy, Users } from "lucide-react";
 
@@ -10,13 +11,44 @@ const highlights = [
   { icon: BookOpen, type: "Accessible learning", title: "Tech In Ramadan", copy: "Focused virtual sessions keeping community learning active throughout Ramadan." },
 ];
 
+const featuredEvents = [
+  {
+    title: "TechTrivium",
+    eyebrow: "DEVQUEST SIGNATURE EVENT",
+    image: "/figma/event-1.png",
+    format: "Campus experience",
+    description: "A collaborative technology gathering built around ideas, challenges, experimentation, and meaningful connections between curious minds.",
+    className: "techtrivium",
+  },
+  {
+    title: "Innovate Pakistan",
+    eyebrow: "FLAGSHIP TECHNOLOGY SERIES",
+    image: "/figma/event-2.png",
+    format: "Hybrid series",
+    description: "High-impact physical events and virtual sessions that connect Pakistan's student community with practical knowledge and experienced voices.",
+    className: "innovate-pakistan",
+  },
+];
+
 export default function EventsPage() {
   const whatsapp = "https://wa.me/923704489589?text=Hello%20DevQuest%2C%20I%20want%20to%20register%20for%20an%20upcoming%20event.";
   return (
     <>
-      <section className="page-hero events-hero"><div className="page-hero-shape" /><div className="shell page-hero-grid"><div><p className="eyebrow eyebrow-light"><Sparkles /> EVENTS & ACADEMY</p><h1>Learn together. Build what comes <span>next.</span></h1><p>Practical sessions, campus experiences, and community-led programs for students and early-career developers across Pakistan.</p><div className="hero-actions"><a className="button button-light" href={whatsapp} target="_blank" rel="noreferrer">Get event updates <ArrowRight /></a><a className="button button-outline-light" href="#highlights">Explore highlights</a></div></div><div className="event-ticket"><div className="ticket-top"><span>FEATURED SERIES</span><Rocket /></div><h2>Innovate Pakistan</h2><p>Technology experiences made to spark useful ideas and real collaboration.</p><div className="ticket-meta"><span><Globe2 /> Hybrid format</span><span><Users /> Open community</span><span><CalendarDays /> New dates soon</span></div><div className="ticket-code">DEVQUEST / 2026</div></div></div></section>
+      <section className="page-hero events-hero"><div className="page-hero-shape" /><div className="shell page-hero-grid"><div><p className="eyebrow eyebrow-light"><Sparkles /> EVENTS & ACADEMY</p><h1>Learn together. Build what comes <span>next.</span></h1><p>Practical sessions, campus experiences, and community-led programs for students and early-career developers across Pakistan.</p><div className="hero-actions"><a className="button button-light" href={whatsapp} target="_blank" rel="noreferrer">Get event updates <ArrowRight /></a><a className="button button-outline-light" href="#featured-events">Explore events</a></div></div><div className="event-ticket"><div className="ticket-top"><span>FEATURED SERIES</span><Rocket /></div><h2>Innovate Pakistan</h2><p>Technology experiences made to spark useful ideas and real collaboration.</p><div className="ticket-meta"><span><Globe2 /> Hybrid format</span><span><Users /> Open community</span><span><CalendarDays /> New dates soon</span></div><div className="ticket-code">DEVQUEST / 2026</div></div></div></section>
 
       <section className="section section-light"><div className="shell featured-program"><div className="program-visual"><div className="program-ring ring-one" /><div className="program-ring ring-two" /><Rocket /><strong>INNOVATE<br />PAKISTAN</strong></div><div className="program-copy"><p className="eyebrow">FLAGSHIP HYBRID SERIES</p><h2>Big ideas belong in the room.</h2><p>Innovate Pakistan brings physical gatherings and virtual webinars into one accessible series—connecting students with practical topics, experienced voices, and new collaborators.</p><div className="program-meta"><span><MapPin /> Campus + online</span><span><Clock3 /> Focused sessions</span><span><Trophy /> Participation opportunities</span></div><a className="button button-primary" href={whatsapp} target="_blank" rel="noreferrer">Ask about the next session <ArrowUpRight /></a></div></div></section>
+
+      <section className="section dq-featured-events" id="featured-events">
+        <div className="shell">
+          <div className="section-heading-row"><div><p className="eyebrow eyebrow-light">DEVQUEST EXPERIENCES</p><h2>Two events. One mission to move technology forward.</h2></div><p className="heading-copy light-copy">Follow DevQuest official channels for upcoming dates, venue announcements, and registration details.</p></div>
+          <div className="dq-featured-event-grid">
+            {featuredEvents.map((event) => <article className={`dq-featured-event ${event.className}`} key={event.title}>
+              <div className="dq-featured-event-image"><Image src={event.image} alt={`${event.title} by DevQuest`} fill sizes="(max-width: 760px) 100vw, 50vw" /></div>
+              <div className="dq-featured-event-copy"><span>{event.eyebrow}</span><h3>{event.title}</h3><p>{event.description}</p><div><b><MapPin /> {event.format}</b><b><Users /> Open community</b></div><a href={whatsapp} target="_blank" rel="noreferrer">Get event updates <ArrowUpRight /></a></div>
+            </article>)}
+          </div>
+        </div>
+      </section>
 
       <section className="section events-dark" id="highlights"><div className="shell"><div className="section-heading-row"><div><p className="eyebrow eyebrow-light">PAST HIGHLIGHTS</p><h2>Moments that moved the community forward.</h2></div><p className="heading-copy light-copy">Foundational events are usually free, keeping practical learning open to more people.</p></div><div className="card-grid three-cols">{highlights.map(({ icon: Icon, type, title, copy }) => <article className="history-card" key={title}><div className="history-visual"><Icon /></div><span>{type}</span><h3>{title}</h3><p>{copy}</p></article>)}</div></div></section>
 
