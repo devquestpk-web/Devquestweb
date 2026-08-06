@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Blocks, BookOpen, CalendarDays, Code2, GraduationCap, Handshake, Lightbulb, MapPin, Palette, Rocket, Sparkles, Users } from "lucide-react";
-import { ContactForm } from "./components/contact-form";
+import { ContactForm } from "./components/client-widgets";
 
 export const metadata: Metadata = {
   title: "Empowering a Global Community of Innovators",

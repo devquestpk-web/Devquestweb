@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { MessageCircle } from "lucide-react";
 import "./globals.css";
-import { SiteHeader } from "./components/site-header";
-import { SiteFooter } from "./components/site-footer";
-import { AuthDock } from "./components/auth-dock";
+import { SiteHeader, SiteFooter } from "./components/site-shell";
+import { AuthDock } from "./components/client-widgets";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });

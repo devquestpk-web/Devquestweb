@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Clock3, Mail, MapPin, MessageCircle, Phone, Sparkles } from "lucide-react";
-import { ContactForm } from "../components/contact-form";
+import { ContactForm } from "../components/client-widgets";
 
 export const metadata: Metadata = { title: "Contact", description: "Contact DevQuest PK for projects, partnerships, events, and community opportunities." };
 
