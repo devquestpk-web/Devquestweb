@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { ContactForm, ThemeToggle } from "./components/client-widgets";
 import { SponsorMarquee } from "./components/sponsor-marquee";
+import { CareerCards } from "./components/career-cards";
 
 export const metadata: Metadata = {
   title: "Empowering a Global Community of Innovators",
@@ -138,6 +139,10 @@ export default function Home() {
       <section className="dq-sponsors">
         <div className="dq-shell"><p className="dq-kicker">PARTNERS &amp; SPONSORS</p><h2>Our program is<br />backed by the best.</h2><p>We have a dynamic network of companies and universities that support our mission.</p></div>
         <SponsorMarquee />
+      </section>
+
+      <section className="dq-careers-home">
+        <div className="dq-shell"><div className="dq-careers-heading"><div><p className="dq-kicker">CAREERS AT DEVQUEST</p><h2>Join our<br />Technical Team.</h2></div><p>Work with a growing technology community where engineering, design, cloud, AI, and partnerships come together.</p></div><CareerCards preview /></div>
       </section>
 
       <section className="dq-home-cta"><div className="dq-shell dq-home-cta-grid"><div><p className="dq-kicker">START YOUR QUEST</p><h2>Build skills. Find your people. Create what matters.</h2><p>Join students, developers, mentors, universities, and partners shaping a more collaborative technology ecosystem.</p><div><a className="dq-btn dq-btn-blue" href="#member-signup">Create an account</a><Link className="dq-btn dq-btn-slate" href="/contact">Partner with us</Link></div></div><ContactForm compact /></div></section>
