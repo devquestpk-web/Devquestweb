@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Menu, Phone, Youtube } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Menu, MessageCircle, Phone, Youtube } from "lucide-react";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -15,7 +15,9 @@ export function Brand({ compact = false }: { compact?: boolean }) {
 const navigation = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/events", label: "Academy" },
+  { href: "/services", label: "Services" },
+  { href: "/events", label: "Events & Academy" },
+  { href: "/community", label: "Community" },
   { href: "/contact", label: "Contact Us" },
 ];
 
@@ -42,16 +44,19 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   return (
-    <footer className="dq-footer">
-      <div className="dq-shell dq-footer-title"><Brand /><p>Empowering a global community of innovators.</p></div>
-      <div className="dq-shell dq-footer-grid">
-        <div><h3>Reach us</h3><a href="tel:+923704489589"><Phone /> +92 370 4489589</a><a href="mailto:devquestpk@gmail.com"><Mail /> devquestpk@gmail.com</a><span><MapPin /> Islamabad, Pakistan</span></div>
-        <div><h3>Company</h3><Link href="/about">About</Link><Link href="/contact">Contact</Link><Link href="/events">Academy</Link></div>
-        <div><h3>Community</h3><Link href="/about#team">Our team</Link><Link href="/community#chapters">University chapters</Link><Link href="/community#join">Join DevQuest</Link></div>
-        <div><h3>Quick links</h3><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer"><Linkedin /> LinkedIn</a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer"><Instagram /> Instagram</a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer"><Facebook /> Facebook</a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer"><Youtube /> YouTube</a></div>
-        <div className="dq-newsletter"><h3>Join our newsletter</h3><p>Weekly updates on events, learning, and community opportunities.</p><a href="mailto:devquestpk@gmail.com?subject=Subscribe%20me%20to%20DevQuest">Subscribe by email</a></div>
-      </div>
-      <div className="dq-shell dq-footer-bottom"><span>&copy; {new Date().getFullYear()} DevQuest Pakistan</span><span>Learn. Build. Lead.</span></div>
-    </footer>
+    <>
+      <footer className="dq-footer">
+        <div className="dq-shell dq-footer-title"><Brand /><p>Empowering a global community of innovators.</p></div>
+        <div className="dq-shell dq-footer-grid">
+          <div><h3>Reach us</h3><a href="tel:+923704489589"><Phone /> +92 370 4489589</a><a href="mailto:devquestpk@gmail.com"><Mail /> devquestpk@gmail.com</a><span><MapPin /> Islamabad, Pakistan</span></div>
+          <div><h3>Explore</h3><Link href="/about">About</Link><Link href="/services">Services</Link><Link href="/events">Events &amp; Academy</Link><Link href="/contact">Contact</Link></div>
+          <div><h3>Community</h3><Link href="/about#team">Our team</Link><Link href="/community#chapters">University chapters</Link><Link href="/community#join">Become an ambassador</Link></div>
+          <div><h3>Follow</h3><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer"><Linkedin /> LinkedIn</a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer"><Instagram /> Instagram</a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer"><Facebook /> Facebook</a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer"><Youtube /> YouTube</a></div>
+          <div className="dq-newsletter"><h3>Join our newsletter</h3><p>Updates on events, learning, and community opportunities.</p><a href="mailto:devquestpk@gmail.com?subject=Subscribe%20me%20to%20DevQuest">Subscribe by email</a></div>
+        </div>
+        <div className="dq-shell dq-footer-bottom"><span>&copy; {new Date().getFullYear()} DevQuest Pakistan</span><span>Learn. Build. Lead.</span></div>
+      </footer>
+      <a className="floating-contact" href="https://wa.me/923704489589?text=Hello%20DevQuest" target="_blank" rel="noreferrer" aria-label="Chat with DevQuest on WhatsApp"><span>We are here!</span><MessageCircle /></a>
+    </>
   );
 }

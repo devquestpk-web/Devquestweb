@@ -9,7 +9,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://devquest.pk"),
+  metadataBase: new URL("https://devquest-pk-official.vercel.app"),
   title: {
     default: "DevQuest PK - Empowering Innovators",
     template: "%s | DevQuest PK",

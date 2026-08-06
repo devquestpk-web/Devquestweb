@@ -6,8 +6,8 @@ import { ArrowUpRight } from "lucide-react";
 export const metadata: Metadata = { title: "About Us", description: "Meet the DevQuest Pakistan leadership and community core team." };
 
 const officials = [
-  { name: "Hamid Ali", role: "Founder & CEO", detail: "DevOps Engineer and community visionary", image: "/figma/official-2.png", accent: "cyan" },
-  { name: "Muhammad Ryan", role: "Co-Founder", detail: "Community leadership and growth", image: "/figma/official-3.png", accent: "purple" },
+  { name: "Hamid Ali", role: "Founder & CEO", detail: "DevOps Engineer, former AWS SBG BZU Lead, and Stanford University Section Leader", image: "/figma/official-2.png", accent: "cyan" },
+  { name: "Muhammad Ryan", role: "Co-Founder", detail: "Community leadership, partnerships, and growth", image: "/figma/official-3.png", accent: "purple" },
   { name: "Rao Taha Javed", role: "Co-Founder & Operations", detail: "Director of Operations and event host", image: "/figma/official-1.png", accent: "green" },
 ];
 
@@ -21,7 +21,7 @@ export default function AboutPage() {
   return (
     <div className="dq-about-page">
       <section className="dq-about-hero">
-        <div className="dq-shell dq-about-grid"><div><span>Welcome to</span><h1>Team DevQuest<br />About Us!</h1><p>Learn about our mission and the people building an open, practical technology community across Pakistan.</p><div><a className="dq-btn dq-btn-blue" href="#member-signup">Sign Up</a><a className="dq-btn dq-btn-slate" href="#member-signin">Register</a></div></div><div className="dq-about-logo"><Image src="/figma/about-logo.png" alt="DevQuest logo" fill sizes="420px" /></div></div>
+        <div className="dq-shell dq-about-grid"><div><span>Welcome to</span><h1>Team DevQuest<br />About Us!</h1><p>We are empowering a global community of innovators by bridging academia and the technology industry through inclusive learning, boundless experimentation, and impactful solutions across Pakistan.</p><div><a className="dq-btn dq-btn-blue" href="#member-signup">Create an account</a><Link className="dq-btn dq-btn-slate" href="/community#join">Join the community</Link></div></div><div className="dq-about-logo"><Image src="/figma/about-logo.png" alt="DevQuest logo" fill sizes="420px" /></div></div>
       </section>
 
       <section className="dq-officials dq-shell"><h2>Our Officials</h2><div className="dq-official-grid">{officials.map((person) => <article className={`dq-official-card ${person.accent}`} key={person.name}><div><small>DEVQUEST OFFICIAL</small><h3>{person.role}</h3><p>{person.name}</p><span>{person.detail}</span><Link href="/contact">See More <ArrowUpRight /></Link></div><Image src={person.image} alt={person.name} fill sizes="360px" /></article>)}</div></section>
