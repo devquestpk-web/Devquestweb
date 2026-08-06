@@ -2,18 +2,12 @@
 
 import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
+import { getSupabaseBrowserClient } from "../lib/supabase-browser";
 import { AlertCircle, CheckCircle2, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, ShieldCheck, UserPlus, UserRound, X } from "lucide-react";
 import { deliverWebsiteForm } from "../lib/form-delivery";
 
-let browserClient: SupabaseClient | null | undefined;
-function getSupabase() {
-  if (browserClient !== undefined) return browserClient;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  browserClient = url && key ? createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }) : null;
-  return browserClient;
-}
+const getSupabase = getSupabaseBrowserClient;
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");

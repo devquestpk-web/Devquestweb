@@ -37,3 +37,165 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
 for each row execute procedure public.create_member_profile();
+
+-- Shared authorization helpers. Database policies remain the source of truth,
+-- so portal access cannot be granted by changing browser code.
+create or replace function public.is_devquest_team()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role in ('team', 'admin')
+  );
+$$;
+
+create or replace function public.is_devquest_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'admin'
+  );
+$$;
+
+create or replace function public.protect_profile_role()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.role is distinct from old.role and not public.is_devquest_admin() then
+    raise exception 'Only a DevQuest administrator can change member roles';
+  end if;
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_profile_role_update on public.profiles;
+create trigger protect_profile_role_update
+before update on public.profiles
+for each row execute procedure public.protect_profile_role();
+
+drop policy if exists "Admins can view member profiles" on public.profiles;
+create policy "Admins can view member profiles"
+on public.profiles for select
+using (public.is_devquest_admin());
+
+drop policy if exists "Admins can update member profiles" on public.profiles;
+create policy "Admins can update member profiles"
+on public.profiles for update
+using (public.is_devquest_admin())
+with check (public.is_devquest_admin());
+
+create table if not exists public.team_tasks (
+  id uuid primary key default gen_random_uuid(),
+  title text not null check (char_length(title) between 2 and 180),
+  description text,
+  assignee_name text,
+  priority text not null default 'medium' check (priority in ('low', 'medium', 'high')),
+  status text not null default 'todo' check (status in ('todo', 'in_progress', 'completed')),
+  due_date date,
+  created_by uuid not null references auth.users(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists team_tasks_status_idx on public.team_tasks(status);
+create index if not exists team_tasks_due_date_idx on public.team_tasks(due_date);
+alter table public.team_tasks enable row level security;
+
+drop policy if exists "Team members can view tasks" on public.team_tasks;
+create policy "Team members can view tasks"
+on public.team_tasks for select
+using (public.is_devquest_team());
+
+drop policy if exists "Team members can create tasks" on public.team_tasks;
+create policy "Team members can create tasks"
+on public.team_tasks for insert
+with check (public.is_devquest_team() and created_by = auth.uid());
+
+drop policy if exists "Team members can update tasks" on public.team_tasks;
+create policy "Team members can update tasks"
+on public.team_tasks for update
+using (public.is_devquest_team())
+with check (public.is_devquest_team());
+
+drop policy if exists "Admins can delete tasks" on public.team_tasks;
+create policy "Admins can delete tasks"
+on public.team_tasks for delete
+using (public.is_devquest_admin());
+
+create table if not exists public.team_attendance (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  attendance_date date not null default current_date,
+  check_in timestamptz,
+  check_out timestamptz,
+  status text not null default 'present' check (status in ('present', 'late', 'absent', 'leave')),
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (user_id, attendance_date),
+  check (check_out is null or check_in is not null),
+  check (check_out is null or check_out >= check_in)
+);
+
+create index if not exists team_attendance_date_idx on public.team_attendance(attendance_date desc);
+alter table public.team_attendance enable row level security;
+
+drop policy if exists "Members can view own attendance" on public.team_attendance;
+create policy "Members can view own attendance"
+on public.team_attendance for select
+using (user_id = auth.uid() or public.is_devquest_admin());
+
+drop policy if exists "Team members can check in" on public.team_attendance;
+create policy "Team members can check in"
+on public.team_attendance for insert
+with check (user_id = auth.uid() and public.is_devquest_team());
+
+drop policy if exists "Members can update own attendance" on public.team_attendance;
+create policy "Members can update own attendance"
+on public.team_attendance for update
+using (user_id = auth.uid() or public.is_devquest_admin())
+with check (user_id = auth.uid() or public.is_devquest_admin());
+
+create table if not exists public.team_reports (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  report_type text not null default 'weekly' check (report_type in ('daily', 'weekly', 'monthly')),
+  summary text not null check (char_length(summary) between 2 and 5000),
+  achievements text,
+  blockers text,
+  next_steps text,
+  submitted_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists team_reports_user_date_idx on public.team_reports(user_id, submitted_at desc);
+alter table public.team_reports enable row level security;
+
+drop policy if exists "Members can view own reports" on public.team_reports;
+create policy "Members can view own reports"
+on public.team_reports for select
+using (user_id = auth.uid() or public.is_devquest_admin());
+
+drop policy if exists "Team members can submit reports" on public.team_reports;
+create policy "Team members can submit reports"
+on public.team_reports for insert
+with check (user_id = auth.uid() and public.is_devquest_team());
+
+drop policy if exists "Members can update own reports" on public.team_reports;
+create policy "Members can update own reports"
+on public.team_reports for update
+using (user_id = auth.uid() or public.is_devquest_admin())
+with check (user_id = auth.uid() or public.is_devquest_admin());
