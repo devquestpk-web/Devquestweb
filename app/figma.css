@@ -579,48 +579,50 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
   }
 
   .dq-portrait.p-one {
-    width: 145px;
-    height: 330px;
-    left: 30px;
-    top: 0;
+    width: 140px;
+    height: 305px;
+    left: 195px;
+    top: 265px;
   }
 
   .dq-portrait.p-two {
-    width: 165px;
-    height: 305px;
-    left: 210px;
-    top: 30px;
+    width: 160px;
+    height: 280px;
+    left: 0;
+    top: 0;
   }
 
   .dq-portrait.p-three {
-    width: 165px;
-    height: 300px;
-    left: 270px;
+    width: 160px;
+    height: 280px;
+    left: 0;
     top: 320px;
   }
 
   .dq-portrait.p-four {
     width: 150px;
-    height: 320px;
+    height: 300px;
     right: 0;
-    top: 150px;
+    top: 280px;
   }
 
   .dot-gold {
-    left: 210px;
-    top: 360px;
+    left: 172px;
+    top: 190px;
   }
 
   .dot-blue {
-    right: 8px;
-    top: 505px;
+    right: 175px;
+    top: 520px;
   }
 
   .dq-next-event {
-    width: 240px;
-    left: 0;
-    bottom: 0;
-    padding: 18px;
+    width: 230px;
+    left: auto;
+    right: 0;
+    top: 0;
+    bottom: auto;
+    padding: 17px;
     border-radius: 16px;
   }
 
