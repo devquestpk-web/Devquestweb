@@ -83,7 +83,7 @@ export default function Home() {
             <div className="dq-category-grid"><span>Web Development</span><span>Video Editing</span><span>Graphics Designing</span><span>AI / ML</span><span>Cyber Security</span><span>Freelancing</span></div>
           </div>
           <div className="dq-portrait-collage" aria-label="DevQuest learners">
-            <div className="dq-portrait p-one"><Image src="/figma/hero-1.png" alt="Student holding books" fill sizes="190px" /></div>
+            <div className="dq-portrait p-one"><Image src="/figma/hero-community-member.jpeg" alt="DevQuest community member" fill sizes="190px" /></div>
             <div className="dq-portrait p-two"><Image src="/figma/founder-hamid-v2.png" alt="Hamid Ali, Founder and CEO of DevQuest" fill sizes="190px" /></div>
             <div className="dq-portrait p-three"><Image src="/figma/hero-2.png" alt="Student with notebooks" fill sizes="190px" /></div>
             <div className="dq-portrait p-four"><Image src="/figma/hero-4.png" alt="Learner holding a tablet" fill sizes="190px" /></div>
