@@ -232,7 +232,8 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
 }
 
 .dq-official-card.purple img {
-  transform: translate(13%, 8%) scale(.9);
+  object-position: calc(100% - 22px) calc(100% - 16px);
+  transform: none;
 }
 
 @media (max-width: 760px) {
@@ -281,6 +282,10 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
   .dq-official-card.purple img {
     transform: translate(8%, 25%) scale(.78);
   }
+
+  .dq-official-card.purple img {
+    transform: translate(-2%, -2%) scale(.72);
+  }
 }
 
 @media (max-width: 420px) {
@@ -300,5 +305,9 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
   .dq-official-card.cyan img,
   .dq-official-card.purple img {
     transform: translate(10%, 28%) scale(.7);
+  }
+
+  .dq-official-card.purple img {
+    transform: translate(-2%, -2%) scale(.68);
   }
 }
