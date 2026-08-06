@@ -47,7 +47,7 @@ body:has(.dq-contact-page) .dq-header { background: #fbfbfb; color: #071c28; }bo
 @keyframes dq-sponsor-scroll { to { transform: translateX(calc(-50% - 9px)); } }
 .dq-contact-form select { width: 100%; padding: 9px 0; color: #011c2a; background: transparent; border: 0; border-bottom: 1px solid #8d8d8d; outline: 0; }
 .dq-contact-form select:focus { border-color: #011c2a; }
-.dq-official-grid { grid-template-columns: repeat(2,minmax(0,1fr)); max-width: 900px; margin-inline: auto; }
+.dq-official-grid { grid-template-columns: minmax(0,1fr); max-width: 650px; margin-inline: auto; }
 .dq-desktop-nav { flex: 1; gap: clamp(16px, 2vw, 32px); }
 .dq-hero-kicker { display: flex; align-items: center; gap: 9px; margin-bottom: 18px !important; color: #9bff67 !important; font-size: .7rem !important; font-weight: 800; letter-spacing: .14em; }
 .dq-hero-kicker svg { width: 16px; height: 16px; }
