@@ -546,3 +546,89 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
     display: none;
   }
 }
+
+/* Fit the complete hero story inside the desktop frame. */
+@media (min-width: 1121px) {
+  .dq-course-hero {
+    min-height: 790px;
+  }
+
+  .dq-course-grid {
+    padding: 45px 0 60px;
+  }
+
+  .dq-course-copy > p {
+    margin: 24px 0;
+  }
+
+  .dq-course-actions {
+    margin-bottom: 32px;
+  }
+
+  .dq-hero-stats {
+    margin: -8px 0 24px;
+    padding: 16px 0;
+  }
+
+  .dq-course-copy > strong {
+    margin-bottom: 18px;
+  }
+
+  .dq-portrait-collage {
+    height: 620px;
+  }
+
+  .dq-portrait.p-one {
+    width: 145px;
+    height: 330px;
+    left: 30px;
+    top: 0;
+  }
+
+  .dq-portrait.p-two {
+    width: 165px;
+    height: 305px;
+    left: 210px;
+    top: 30px;
+  }
+
+  .dq-portrait.p-three {
+    width: 165px;
+    height: 300px;
+    left: 270px;
+    top: 320px;
+  }
+
+  .dq-portrait.p-four {
+    width: 150px;
+    height: 320px;
+    right: 0;
+    top: 150px;
+  }
+
+  .dot-gold {
+    left: 210px;
+    top: 360px;
+  }
+
+  .dot-blue {
+    right: 8px;
+    top: 505px;
+  }
+
+  .dq-next-event {
+    width: 240px;
+    left: 0;
+    bottom: 0;
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .dq-next-event > span {
+    margin-bottom: 12px;
+  }
+
+  .dq-next-event strong {
+    margin: 6px 0 10px;
+  }
+}
