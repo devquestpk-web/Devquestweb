@@ -5,13 +5,11 @@ import {
   ArrowRight,
   ArrowUpRight,
   Blocks,
-  Building2,
   CalendarDays,
   Code2,
   GraduationCap,
   Handshake,
   MapPin,
-  MessageCircle,
   Palette,
   Rocket,
   Sparkles,
@@ -135,10 +133,6 @@ export default function Home() {
           </div>
         </div>
         <div className="dq-shell dq-event-cta"><Link href="/events">Explore the academy <ArrowUpRight /></Link><a href="https://wa.me/923704489589?text=Hello%20DevQuest%2C%20please%20share%20upcoming%20event%20details." target="_blank" rel="noreferrer">Register on WhatsApp <ArrowUpRight /></a></div>
-      </section>
-
-      <section className="dq-chapter-section">
-        <div className="dq-shell"><div className="dq-section-heading"><div><p className="dq-kicker">COMMUNITY &amp; CHAPTERS</p><h2>Strong roots.<br />Wider horizons.</h2></div><p>Our core channels and campus partnerships make learning, leadership, and collaboration easier to access across Pakistan.</p></div><div className="dq-chapter-grid"><article><Building2 /><small>ACTIVE PRESENCE</small><h3>Bahauddin Zakariya University</h3><p>Multan · BZU</p></article><article><Building2 /><small>COLLABORATION</small><h3>MNS University of Engineering &amp; Technology</h3><p>Multan · MNS-UET</p></article><a href={joinLink} target="_blank" rel="noreferrer"><MessageCircle /><small>CORE CHANNEL</small><h3>Join the WhatsApp Community</h3><p>Events, announcements, and opportunities.</p><ArrowUpRight /></a></div></div>
       </section>
 
       <section className="dq-sponsors">
