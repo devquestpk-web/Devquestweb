@@ -27,7 +27,7 @@ export default function CareersPage() {
       </section>
 
       <section className="dq-careers-list" id="open-roles">
-        <div className="dq-shell"><div className="dq-careers-heading"><div><p className="dq-kicker">OPEN OPPORTUNITIES</p><h2>Technical Team</h2></div><p>Select a role to review its focus areas, then send your CV and a short introduction to the DevQuest official email.</p></div><CareerCards /></div>
+        <div className="dq-shell"><div className="dq-careers-heading"><div><p className="dq-kicker">OPEN OPPORTUNITIES</p><h2>Technical Team</h2></div><p>Select a role to review its focus areas, then complete the application form for that specific vacancy and attach your CV.</p></div><CareerCards /></div>
       </section>
 
       <section className="dq-careers-ambassador" id="campus-ambassador">

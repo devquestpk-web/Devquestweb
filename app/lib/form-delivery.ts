@@ -1,5 +1,5 @@
 export async function deliverWebsiteForm(
-  formType: "contact" | "ambassador",
+  formType: "contact" | "ambassador" | "career",
   fields: Record<string, string>,
   website = "",
   attachment?: File,

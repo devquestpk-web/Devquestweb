@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { jobs } from "../../careers/jobs";
 
 export const runtime = "nodejs";
 
 const recipient = process.env.FORM_RECIPIENT_EMAIL || "devquestpk@gmail.com";
 const sender = process.env.FORM_FROM_EMAIL || "DevQuest Website <onboarding@resend.dev>";
-const allowedForms = new Set(["contact", "ambassador"]);
+const allowedForms = new Set(["contact", "ambassador", "career"]);
+const allowedCareerPositions = new Set(jobs.map((job) => job.title));
 const maxJsonBytes = 40_000;
 const maxCvBytes = 5 * 1024 * 1024;
 const maxMultipartBytes = maxCvBytes + 250_000;
@@ -36,7 +38,7 @@ function label(key: string) {
 
 function safeFilename(filename: string) {
   const cleaned = filename.replace(/[^a-zA-Z0-9._() -]/g, "_").slice(0, 120);
-  return cleaned || "ambassador-cv.pdf";
+  return cleaned || "application-cv.pdf";
 }
 
 export async function POST(request: Request) {
@@ -88,8 +90,13 @@ export async function POST(request: Request) {
     if (honeypot) return NextResponse.json({ ok: true });
     if (!allowedForms.has(formType)) return NextResponse.json({ error: "Unknown form." }, { status: 400 });
 
-    if (formType === "ambassador" && !cv) {
+    if ((formType === "ambassador" || formType === "career") && !cv) {
       return NextResponse.json({ error: "Please attach your CV." }, { status: 400 });
+    }
+
+    const position = clean(fields.position, 160);
+    if (formType === "career" && !allowedCareerPositions.has(position)) {
+      return NextResponse.json({ error: "Please select a valid open position." }, { status: 400 });
     }
 
     if (cv) {
@@ -124,7 +131,11 @@ export async function POST(request: Request) {
         <th style="padding:10px 12px;text-align:left;vertical-align:top;color:#40506b;border-bottom:1px solid #e6ebf2;">${escapeHtml(label(key))}</th>
         <td style="padding:10px 12px;white-space:pre-wrap;color:#0b193a;border-bottom:1px solid #e6ebf2;">${escapeHtml(value)}</td>
       </tr>`).join("");
-    const formTitle = formType === "ambassador" ? "Campus Ambassador Application" : "Website Enquiry";
+    const formTitle = formType === "ambassador"
+      ? "Campus Ambassador Application"
+      : formType === "career"
+        ? `Career Application — ${position}`
+        : "Website Enquiry";
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
       from: sender,

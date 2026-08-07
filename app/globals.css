@@ -443,11 +443,31 @@ svg { width: 1.15em; height: 1.15em; stroke-width: 1.8; }
 .dq-careers-cta { padding: 110px 0; text-align: center; background: linear-gradient(125deg, #25165e, #153f98); }
 .dq-careers-cta h2 { max-width: 820px; margin: 0 auto; font-size: clamp(3rem, 5vw, 5rem); line-height: .98; letter-spacing: -.055em; }
 .dq-careers-cta > div > p:not(.dq-kicker) { max-width: 620px; margin: 24px auto 30px; color: #ccdaee; line-height: 1.7; }
+.dq-job-apply-page { color: white; background: #071426; }
+.dq-job-apply-hero { background: radial-gradient(circle at 84% 12%, rgba(50, 127, 255, .28), transparent 32%), linear-gradient(132deg, #071426, #0c2446); }
+.dq-job-apply-hero-grid { min-height: 500px; padding-block: 82px; display: grid; grid-template-columns: 1.1fr .72fr; gap: 90px; align-items: center; }
+.dq-job-back { width: fit-content; margin-bottom: 58px; display: inline-flex; align-items: center; gap: 8px; color: #a9bdd5; font-size: .8rem; font-weight: 700; }
+.dq-job-back:hover { color: #80e4ff; }
+.dq-job-back svg { width: 17px; height: 17px; }
+.dq-job-apply-hero .dq-kicker { display: flex; align-items: center; gap: 8px; }
+.dq-job-apply-hero h1 { max-width: 950px; margin: 0; font-size: clamp(3.2rem, 6vw, 6.2rem); line-height: .94; letter-spacing: -.065em; font-weight: 480; }
+.dq-job-apply-summary { padding: 30px; background: rgba(14, 39, 73, .78); border: 1px solid #2b496c; border-radius: 16px; }
+.dq-job-apply-summary > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.dq-job-apply-summary > div span { padding: 7px 10px; color: #c6d8eb; background: rgba(255,255,255,.07); border-radius: 7px; font-size: .68rem; }
+.dq-job-apply-summary > p { margin: 24px 0; color: #c6d5e6; line-height: 1.7; }
+.dq-job-apply-summary ul { margin: 0; padding: 0; display: grid; gap: 10px; list-style: none; color: #e6f1fb; font-size: .82rem; }
+.dq-job-apply-summary li { display: flex; align-items: center; gap: 9px; }
+.dq-job-apply-summary li svg { width: 17px; height: 17px; color: #73ddff; }
+.job-application-role { margin-top: 22px; padding: 15px 17px; display: grid; gap: 5px; background: #edf4ff; border: 1px solid #d3e1f5; border-radius: 10px; }
+.job-application-role small { color: #5c7cae; font-size: .58rem; font-weight: 800; letter-spacing: .12em; }
+.job-application-role strong { color: #13234a; font-size: .88rem; line-height: 1.4; }
 
 @media (max-width: 900px) {
-  .dq-careers-heading, .dq-careers-hero-grid, .dq-careers-ambassador-grid { grid-template-columns: 1fr; gap: 42px; }
+  .dq-careers-heading, .dq-careers-hero-grid, .dq-careers-ambassador-grid, .dq-job-apply-hero-grid { grid-template-columns: 1fr; gap: 42px; }
   .dq-careers-hero-grid { min-height: auto; padding-block: 80px; }
   .dq-careers-hero-grid > div:last-child { max-width: 650px; }
+  .dq-job-apply-hero-grid { min-height: auto; padding-block: 70px; }
+  .dq-job-apply-summary { max-width: 650px; }
 }
 
 @media (max-width: 760px) {
@@ -464,6 +484,9 @@ svg { width: 1.15em; height: 1.15em; stroke-width: 1.8; }
   .dq-careers-hero h1 { font-size: clamp(3.3rem, 15vw, 4.5rem); }
   .dq-careers-ambassador h2 { font-size: clamp(3rem, 14vw, 4.4rem); }
   .dq-careers-hero-actions { display: grid; }
+  .dq-job-back { margin-bottom: 42px; }
+  .dq-job-apply-hero h1 { font-size: clamp(2.8rem, 13vw, 4rem); }
+  .dq-job-apply-summary { padding: 22px; }
 }
 
 @media (max-width: 900px) {
