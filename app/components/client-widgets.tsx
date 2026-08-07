@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { AlertCircle, ArrowLeft, CheckCircle2, ChevronRight, GraduationCap, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, ShieldCheck, UserPlus, UserRound, UsersRound, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, BriefcaseBusiness, CheckCircle2, ChevronRight, GraduationCap, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, ShieldCheck, UserRound, UsersRound, X } from "lucide-react";
 import { deliverWebsiteForm } from "../lib/form-delivery";
 
 const getSupabase = getSupabaseBrowserClient;
@@ -82,12 +82,10 @@ export function FigmaContactForm() {
   return <form className="dq-contact-form" onSubmit={submit}><div className="dq-form-pair"><label>First Name<input name="firstName" required autoComplete="given-name" /></label><label>Last Name<input name="lastName" required autoComplete="family-name" /></label></div><div className="dq-form-pair"><label>Business Email<input name="email" type="email" required autoComplete="email" /></label><label>Phone Number<input name="phone" type="tel" placeholder="+92" autoComplete="tel" /></label></div><div className="dq-form-pair"><label>Company or University<input name="company" autoComplete="organization" /></label><label>Estimated Budget<select name="budget" defaultValue=""><option value="" disabled>Select a range</option><option>Community / free event</option><option>Under PKR 100,000</option><option>PKR 100,000–500,000</option><option>PKR 500,000+</option><option>Let&apos;s discuss</option></select></label></div><fieldset><legend>How can we help?</legend><label><input type="radio" name="subject" value="General Inquiry" defaultChecked /> General</label><label><input type="radio" name="subject" value="Software Development" /> Development</label><label><input type="radio" name="subject" value="UI/UX Design" /> UI/UX</label><label><input type="radio" name="subject" value="Talent Augmentation" /> Talent</label><label><input type="radio" name="subject" value="Academy or Event" /> Academy</label><label><input type="radio" name="subject" value="Partnership" /> Partnership</label></fieldset><label>Project or Enquiry Details<textarea name="message" required rows={4} placeholder="Tell us about your project, event, partnership, or community idea..." /></label><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><DeliveryMessage state={state} error={error} /><button type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending..." : state === "sent" ? "Message sent" : "Send Message"}</button></form>;
 }
 
-type Mode = "signin" | "signup";
-type PortalRole = "student" | "team";
+type PortalRole = "team" | "admin";
 
 export function AuthDock() {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>("signin");
   const [portalRole, setPortalRole] = useState<PortalRole | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -98,7 +96,6 @@ export function AuthDock() {
     const syncHash = () => {
       if (["#member-signup", "#member-signin", "#member-access"].includes(window.location.hash)) {
         setPortalRole(null);
-        setMode("signin");
         setMessage(null);
         setOpen(true);
       }
@@ -109,8 +106,11 @@ export function AuthDock() {
   }, []);
   useEffect(() => { const supabase = getSupabase(); if (!supabase) { queueMicrotask(() => setLoading(false)); return; } supabase.auth.getSession().then(({ data }) => { setUser(data.session?.user ?? null); setLoading(false); }); const { data } = supabase.auth.onAuthStateChange((_event, session) => { setUser(session?.user ?? null); setLoading(false); }); return () => data.subscription.unsubscribe(); }, []);
   function close() { setOpen(false); if (window.location.hash.startsWith("#member-")) history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
-  function chooseRole(role: PortalRole) { setPortalRole(role); setMode("signin"); setMessage(null); }
-  function toggleAccess() { setOpen((value) => { if (!value) { setPortalRole(null); setMode("signin"); setMessage(null); } return !value; }); }
+  function chooseRole(role: "student" | "services" | PortalRole) {
+    if (role === "student" || role === "services") { window.location.assign(`/portal/${role}`); return; }
+    setPortalRole(role); setMessage(null);
+  }
+  function toggleAccess() { setOpen((value) => { if (!value) { setPortalRole(null); setMessage(null); } return !value; }); }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -122,28 +122,11 @@ export function AuthDock() {
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") || "").trim();
     const password = String(data.get("password") || "");
-    const fullName = String(data.get("fullName") || "").trim();
     setWorking(true);
-
-    if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      setWorking(false);
-      if (error) { setMessage({ type: "error", text: error.message }); return; }
-      window.location.assign(portalRole === "team" ? "/portal/team" : "/portal/student");
-      return;
-    }
-
-    if (portalRole === "team") {
-      setWorking(false);
-      setMessage({ type: "error", text: "Team accounts can only be created by a DevQuest administrator." });
-      return;
-    }
-
-    const { data: created, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, portal_role: "student" } } });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     setWorking(false);
-    if (error) setMessage({ type: "error", text: error.message });
-    else if (created.session) window.location.assign("/portal/student");
-    else setMessage({ type: "success", text: "Check your email to confirm your DevQuest student account." });
+    if (error) { setMessage({ type: "error", text: error.message }); return; }
+    window.location.assign(portalRole === "admin" ? "/portal/admin" : "/portal/team");
   }
   async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut(); setWorking(false); if (error) setMessage({ type: "error", text: error.message }); else { setUser(null); setMessage({ type: "success", text: "You are signed out." }); } }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
@@ -151,35 +134,33 @@ export function AuthDock() {
   return <div className={`auth-dock ${open ? "is-open" : ""}`}>
     {open && <>
       <button className="auth-backdrop" onClick={close} aria-label="Close account dialog" />
-      <section className={`auth-popup auth-${portalRole ? mode : "role"}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
+      <section className={`auth-popup auth-${portalRole ? "signin" : "role"}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
         <button className="auth-close" type="button" onClick={close} aria-label="Close portal access"><X /></button>
         <div className="auth-main">
           <div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div>
           {loading ? <div className="auth-loading"><LoaderCircle className="spin" /> Checking your session...</div> : user ? <>
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Welcome, {name}</h2><p>Choose the portal you want to open.</p></div></div>
-            <div className="auth-account"><div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div><div className="auth-account-portals"><a href="/portal/student"><GraduationCap /> Student Portal <ChevronRight /></a><a href="/portal/team"><UsersRound /> Team Portal <ChevronRight /></a></div>{message && <Status {...message} />}<button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button></div>
+            <div className="auth-account"><div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div><div className="auth-account-portals"><a href="/portal/team"><UsersRound /> Team Portal <ChevronRight /></a><a href="/portal/admin"><ShieldCheck /> Admin Portal <ChevronRight /></a><a href="/portal/services"><BriefcaseBusiness /> Services Portal <ChevronRight /></a><a href="/portal/student"><GraduationCap /> Student Portal <ChevronRight /></a></div>{message && <Status {...message} />}<button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button></div>
           </> : !portalRole ? <>
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
             <div className="auth-role-grid">
               <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student Portal</b><small>Learning, events, certificates, and opportunities</small></div><ChevronRight /></button>
               <button type="button" onClick={() => chooseRole("team")}><span><UsersRound /></span><div><b>Team Portal</b><small>Tasks, attendance, and progress reports</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services Portal</b><small>Client projects and delivery — coming soon</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("admin")}><span><ShieldCheck /></span><div><b>Admin Portal</b><small>Accounts, assignments, attendance, and reports</small></div><ChevronRight /></button>
             </div>
           </> : <>
-            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setMode("signin"); setMessage(null); }}><ArrowLeft /> Change role</button>
-            <div className="auth-popup-head"><div><small>{portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{mode === "signup" ? "Create your student account" : `Sign in to the ${portalRole} portal`}</h2><p>{portalRole === "team" ? "Use your approved DevQuest team account." : mode === "signup" ? "Start your DevQuest learning journey." : "Welcome back to the DevQuest community."}</p></div></div>
-            {portalRole === "student" && <div className="auth-tabs"><button type="button" className={mode === "signin" ? "active" : ""} onClick={() => { setMode("signin"); setMessage(null); }}><LogIn /> Sign in</button><button type="button" className={mode === "signup" ? "active" : ""} onClick={() => { setMode("signup"); setMessage(null); }}><UserPlus /> Create account</button></div>}
+            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setMessage(null); }}><ArrowLeft /> Change role</button>
+            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : "TEAM PORTAL"}</small><h2>Sign in to the {portalRole} portal</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : "Use your approved DevQuest team account."}</p></div></div>
             <form className="auth-form" onSubmit={submit}>
-              {mode === "signup" && portalRole === "student" && <label><span>Full name</span><div><UserRound /><input name="fullName" required placeholder="Your name" autoComplete="name" /></div></label>}
-              <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "team" ? "team@devquest.pk" : "you@example.com"} autoComplete="email" /></div></label>
-              <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete={mode === "signin" ? "current-password" : "new-password"} /></div></label>
-              {mode === "signup" && <div className="auth-requirements"><span>8+ characters</span><span>Upper &amp; lowercase</span><span>One number</span></div>}
+              <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "admin" ? "admin@devquest.pk" : "team@devquest.pk"} autoComplete="email" /></div></label>
+              <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete="current-password" /></div></label>
               {message && <Status {...message} />}
-              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : mode === "signup" ? <>Create student account <UserPlus /></> : <>Open {portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
+              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : <>Open {portalRole === "admin" ? "Admin" : "Team"} Portal <LogIn /></>}</button>
             </form>
-            {portalRole === "team" && <><p className="auth-team-note"><ShieldCheck /> Team accounts are issued and approved by DevQuest administrators.</p><a className="auth-preview-link" href="/portal/team?preview=1">Preview the Team Portal <ChevronRight /></a></>}
+            <p className="auth-team-note"><ShieldCheck /> Portal accounts are issued and controlled by DevQuest administrators.</p>
           </>}
         </div>
-        {portalRole === "student" && mode === "signup" && !user && <aside className="auth-art"><Image src="/figma/signup-art.png" alt="Abstract three-dimensional blocks" fill sizes="50vw" /></aside>}
       </section>
     </>}
     <button className="auth-trigger" type="button" onClick={toggleAccess} aria-expanded={open}>{user ? <span>{name.slice(0, 2).toUpperCase()}</span> : <UserRound />}<strong>{user ? "My account" : "Portal access"}</strong></button>

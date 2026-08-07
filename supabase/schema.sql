@@ -11,10 +11,18 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+alter table public.profiles add column if not exists department text;
+alter table public.profiles add column if not exists job_title text;
+alter table public.profiles add column if not exists phone text;
+alter table public.profiles add column if not exists bio text;
+alter table public.profiles add column if not exists is_active boolean not null default true;
+
+drop policy if exists "Members can view their own profile" on public.profiles;
 create policy "Members can view their own profile"
 on public.profiles for select
 using (auth.uid() = id);
 
+drop policy if exists "Members can update their own profile" on public.profiles;
 create policy "Members can update their own profile"
 on public.profiles for update
 using (auth.uid() = id)
@@ -73,8 +81,10 @@ security definer
 set search_path = public
 as $$
 begin
-  if new.role is distinct from old.role and not public.is_devquest_admin() then
-    raise exception 'Only a DevQuest administrator can change member roles';
+  if (new.role is distinct from old.role or new.is_active is distinct from old.is_active)
+    and not public.is_devquest_admin()
+    and current_user not in ('postgres', 'service_role') then
+    raise exception 'Only a DevQuest administrator can change member access';
   end if;
   new.updated_at = now();
   return new;
@@ -110,30 +120,61 @@ create table if not exists public.team_tasks (
   updated_at timestamptz not null default now()
 );
 
+alter table public.team_tasks add column if not exists assignee_id uuid references auth.users(id) on delete set null;
+
 create index if not exists team_tasks_status_idx on public.team_tasks(status);
 create index if not exists team_tasks_due_date_idx on public.team_tasks(due_date);
 alter table public.team_tasks enable row level security;
 
 drop policy if exists "Team members can view tasks" on public.team_tasks;
-create policy "Team members can view tasks"
-on public.team_tasks for select
-using (public.is_devquest_team());
-
 drop policy if exists "Team members can create tasks" on public.team_tasks;
-create policy "Team members can create tasks"
-on public.team_tasks for insert
-with check (public.is_devquest_team() and created_by = auth.uid());
-
 drop policy if exists "Team members can update tasks" on public.team_tasks;
-create policy "Team members can update tasks"
+drop policy if exists "Team members can view assigned tasks" on public.team_tasks;
+drop policy if exists "Admins can view all tasks" on public.team_tasks;
+drop policy if exists "Admins can create tasks" on public.team_tasks;
+drop policy if exists "Members can update assigned task status" on public.team_tasks;
+
+create policy "Team members can view assigned tasks"
+on public.team_tasks for select
+using (assignee_id = auth.uid() or public.is_devquest_admin());
+
+create policy "Admins can create tasks"
+on public.team_tasks for insert
+with check (public.is_devquest_admin() and created_by = auth.uid());
+
+create policy "Members can update assigned task status"
 on public.team_tasks for update
-using (public.is_devquest_team())
-with check (public.is_devquest_team());
+using (assignee_id = auth.uid() or public.is_devquest_admin())
+with check (assignee_id = auth.uid() or public.is_devquest_admin());
 
 drop policy if exists "Admins can delete tasks" on public.team_tasks;
 create policy "Admins can delete tasks"
 on public.team_tasks for delete
 using (public.is_devquest_admin());
+
+create or replace function public.protect_team_task_assignment()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if not public.is_devquest_admin()
+    and current_user not in ('postgres', 'service_role')
+    and (new.title, new.description, new.assignee_id, new.assignee_name, new.priority, new.due_date, new.created_by)
+      is distinct from
+      (old.title, old.description, old.assignee_id, old.assignee_name, old.priority, old.due_date, old.created_by) then
+    raise exception 'Team members can only update task status';
+  end if;
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_team_task_assignment_update on public.team_tasks;
+create trigger protect_team_task_assignment_update
+before update on public.team_tasks
+for each row execute procedure public.protect_team_task_assignment();
 
 create table if not exists public.team_attendance (
   id uuid primary key default gen_random_uuid(),
