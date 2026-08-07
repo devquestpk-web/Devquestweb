@@ -39,10 +39,16 @@ const services = [
 ];
 
 const eventImages = [
-  { src: "/figma/event-1.png", alt: "DevQuest community event" },
-  { src: "/figma/event-2.png", alt: "DevQuest technology gathering" },
-  { src: "/figma/event-1.png", alt: "DevQuest participants at a community session" },
-  { src: "/figma/event-2.png", alt: "DevQuest learners collaborating" },
+  { src: "/events/mlsa-presentation.jpg", alt: "DevQuest presentation about empowering a global community", position: "center 58%" },
+  { src: "/events/mlsa-devquest-award.jpg", alt: "DevQuest appreciation award displayed beside the DevQuest logo", position: "center" },
+  { src: "/events/mlsa-award-ceremony-1.jpg", alt: "DevQuest team members receiving an award at the MLSA counselling event", position: "center 38%" },
+  { src: "/events/mlsa-award-ceremony-2.jpg", alt: "DevQuest representatives at the MLSA award ceremony", position: "center 38%" },
+  { src: "/events/mlsa-community-group-1.jpg", alt: "DevQuest and MLSA community members at Garrison Library", position: "center 56%" },
+  { src: "/events/mlsa-community-group-2.jpg", alt: "DevQuest and MLSA participants gathered after the community event", position: "center 54%" },
+  { src: "/events/mlsa-organizing-team.jpg", alt: "DevQuest and MLSA organizing team group photo", position: "center 56%" },
+  { src: "/events/mlsa-devquest-team.jpg", alt: "DevQuest team members standing behind a laptop displaying the DevQuest logo", position: "center 42%" },
+  { src: "/figma/event-1.png", alt: "DevQuest community event", position: "center" },
+  { src: "/figma/event-2.png", alt: "DevQuest technology gathering", position: "center" },
 ];
 
 const universities = [
@@ -129,8 +135,8 @@ export default function Home() {
         <div className="dq-shell dq-events-head"><div><p className="dq-kicker">DEVELOP RELATIONSHIPS</p><h2>Events that move<br />the community forward.</h2></div><p>Innovate Pakistan combines high-impact physical events and virtual webinars. Past experiences include TechTrivium, E-Course Farewell, and Tech In Ramadan—most foundational community events are free.</p></div>
         <div className="dq-event-gallery" aria-label="Highlights from DevQuest events">
           <div className="dq-event-track">
-            <div className="dq-event-set">{eventImages.map((event, index) => <div key={`event-${index}`}><Image src={event.src} alt={event.alt} fill sizes="(max-width: 800px) 82vw, 32vw" /></div>)}</div>
-            <div className="dq-event-set" aria-hidden="true">{eventImages.map((event, index) => <div key={`event-copy-${index}`}><Image src={event.src} alt="" fill sizes="(max-width: 800px) 82vw, 32vw" /></div>)}</div>
+            <div className="dq-event-set">{eventImages.map((event, index) => <div key={`event-${index}`}><Image src={event.src} alt={event.alt} fill sizes="(max-width: 800px) 82vw, 32vw" style={{ objectPosition: event.position }} /></div>)}</div>
+            <div className="dq-event-set" aria-hidden="true">{eventImages.map((event, index) => <div key={`event-copy-${index}`}><Image src={event.src} alt="" fill sizes="(max-width: 800px) 82vw, 32vw" style={{ objectPosition: event.position }} /></div>)}</div>
           </div>
         </div>
         <div className="dq-shell dq-event-cta"><Link href="/events">Explore the academy <ArrowUpRight /></Link><a href="https://wa.me/923704489589?text=Hello%20DevQuest%2C%20please%20share%20upcoming%20event%20details." target="_blank" rel="noreferrer">Register on WhatsApp <ArrowUpRight /></a></div>
