@@ -83,7 +83,8 @@ body:has(.dq-contact-page) .dq-header { background: #fbfbfb; color: #071c28; }bo
 .dq-hero-stats div { display: grid; gap: 4px; }
 .dq-hero-stats strong { margin: 0; color: white; font-size: 1.3rem; }
 .dq-hero-stats span { color: #aebad0; font-size: .72rem; line-height: 1.35; }
-.dq-next-event { width: 265px; position: absolute; left: 5px; bottom: 16px; z-index: 5; padding: 22px; color: #071c28; background: rgba(255,255,255,.96); border: 1px solid rgba(255,255,255,.8); border-radius: 18px; box-shadow: 0 24px 65px rgba(0,0,0,.3); backdrop-filter: blur(12px); }
+.dq-next-event { width: 265px; position: absolute; left: 5px; bottom: 16px; z-index: 5; padding: 22px; color: #071c28; background: rgba(255,255,255,.96); border: 1px solid rgba(255,255,255,.8); border-radius: 18px; box-shadow: 0 24px 65px rgba(0,0,0,.3); backdrop-filter: blur(12px); will-change: translate; animation: dq-next-event-float 5.6s ease-in-out infinite; }
+@keyframes dq-next-event-float { 0%,100% { translate: 0 0; } 38% { translate: 0 -12px; } 70% { translate: 0 5px; } }
 .dq-next-event > span { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 15px; color: white; background: #2688fc; border-radius: 12px; }
 .dq-next-event small { display: block; color: #2869db; font-size: .63rem; font-weight: 850; letter-spacing: .12em; }
 .dq-next-event strong { display: block; margin: 7px 0 13px; font-size: 1.05rem; line-height: 1.25; }
