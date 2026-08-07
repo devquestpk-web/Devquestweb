@@ -88,6 +88,7 @@ export function AuthDock() {
   const [open, setOpen] = useState(false);
   const [portalRole, setPortalRole] = useState<PortalRole | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [accountRole, setAccountRole] = useState<"team" | "admin" | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState<{type: "error" | "success"; text: string} | null>(null);
@@ -104,7 +105,20 @@ export function AuthDock() {
     window.addEventListener("hashchange", syncHash);
     return () => window.removeEventListener("hashchange", syncHash);
   }, []);
-  useEffect(() => { const supabase = getSupabase(); if (!supabase) { queueMicrotask(() => setLoading(false)); return; } supabase.auth.getSession().then(({ data }) => { setUser(data.session?.user ?? null); setLoading(false); }); const { data } = supabase.auth.onAuthStateChange((_event, session) => { setUser(session?.user ?? null); setLoading(false); }); return () => data.subscription.unsubscribe(); }, []);
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase) { queueMicrotask(() => setLoading(false)); return; }
+    const syncAccount = async (activeUser: User | null) => {
+      setUser(activeUser);
+      if (!activeUser) { setAccountRole(null); setLoading(false); return; }
+      const { data } = await supabase.from("profiles").select("role, is_active").eq("id", activeUser.id).single();
+      setAccountRole(data?.is_active !== false && (data?.role === "team" || data?.role === "admin") ? data.role : null);
+      setLoading(false);
+    };
+    supabase.auth.getSession().then(({ data }) => void syncAccount(data.session?.user ?? null));
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => { void syncAccount(session?.user ?? null); });
+    return () => data.subscription.unsubscribe();
+  }, []);
   function close() { setOpen(false); if (window.location.hash.startsWith("#member-")) history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
   function chooseRole(role: "student" | "services" | PortalRole) {
     if (role === "student" || role === "services") { window.location.assign(`/portal/${role}`); return; }
@@ -123,12 +137,19 @@ export function AuthDock() {
     const email = String(data.get("email") || "").trim();
     const password = String(data.get("password") || "");
     setWorking(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: login, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; }
+    const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", login.user.id).single();
+    if (profile?.is_active === false || profile?.role !== portalRole) {
+      await supabase.auth.signOut();
+      setWorking(false);
+      setMessage({ type: "error", text: profile?.is_active === false ? "This portal account has been disabled." : `This account does not have ${portalRole} portal access.` });
+      return;
+    }
     setWorking(false);
-    if (error) { setMessage({ type: "error", text: error.message }); return; }
     window.location.assign(portalRole === "admin" ? "/portal/admin" : "/portal/team");
   }
-  async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut(); setWorking(false); if (error) setMessage({ type: "error", text: error.message }); else { setUser(null); setMessage({ type: "success", text: "You are signed out." }); } }
+  async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut(); setWorking(false); if (error) setMessage({ type: "error", text: error.message }); else { setUser(null); setAccountRole(null); setMessage({ type: "success", text: "You are signed out." }); } }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
 
   return <div className={`auth-dock ${open ? "is-open" : ""}`}>
@@ -139,8 +160,8 @@ export function AuthDock() {
         <div className="auth-main">
           <div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div>
           {loading ? <div className="auth-loading"><LoaderCircle className="spin" /> Checking your session...</div> : user ? <>
-            <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Welcome, {name}</h2><p>Choose the portal you want to open.</p></div></div>
-            <div className="auth-account"><div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div><div className="auth-account-portals"><a href="/portal/team"><UsersRound /> Team Portal <ChevronRight /></a><a href="/portal/admin"><ShieldCheck /> Admin Portal <ChevronRight /></a><a href="/portal/services"><BriefcaseBusiness /> Services Portal <ChevronRight /></a><a href="/portal/student"><GraduationCap /> Student Portal <ChevronRight /></a></div>{message && <Status {...message} />}<button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button></div>
+            <div className="auth-popup-head"><div><small>{accountRole === "admin" ? "ADMIN ACCOUNT" : "TEAM ACCOUNT"}</small><h2>Welcome, {name}</h2><p>Your account opens only its assigned DevQuest portal.</p></div></div>
+            <div className="auth-account"><div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div><div className="auth-account-portals auth-account-portals-single">{accountRole === "admin" && <a href="/portal/admin"><ShieldCheck /> Admin Portal <ChevronRight /></a>}{accountRole === "team" && <a href="/portal/team"><UsersRound /> My Team Portal <ChevronRight /></a>}{!accountRole && <p className="auth-account-warning">This account has no active portal role. Contact the DevQuest administrator.</p>}</div>{message && <Status {...message} />}<button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button></div>
           </> : !portalRole ? <>
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
             <div className="auth-role-grid">

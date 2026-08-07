@@ -96,7 +96,7 @@ export function TeamPortal() {
   if (loading) return <PortalState title="Opening your workspace" copy="Checking your DevQuest team access…" />;
   if (!isSupabaseConfigured()) return <PortalState title="Portal configuration required" copy="The Supabase connection is not available in this deployment." />;
   if (!user) return <PortalState title="Sign in to the Team Portal" copy="Use the approved account issued by a DevQuest administrator." action={<a href="#member-signin"><KeyRound /> Open portal login</a>} />;
-  if (profile?.role !== "team" && profile?.role !== "admin") return <PortalState title="Team access is pending" copy="Your account exists, but a DevQuest administrator has not approved team access." />;
+  if (profile?.role !== "team") return <PortalState title="Team member access required" copy={profile?.role === "admin" ? "Administrator accounts can only use the Admin Portal." : "Your account exists, but the DevQuest administrator has not approved team access."} action={profile?.role === "admin" ? <Link href="/portal/admin"><ShieldCheck /> Open Admin Portal</Link> : undefined} />;
 
   const name = profile.full_name || user.email?.split("@")[0] || "Team member";
   const currentAttendance = attendance.find((entry) => entry.attendance_date === today());

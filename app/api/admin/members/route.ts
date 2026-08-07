@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     if (!email || !fullName || password.length < 8) return NextResponse.json({ error: "Name, email, and a password of at least 8 characters are required." }, { status: 400 });
     const { data, error } = await auth.supabase.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: fullName } });
     if (error || !data.user) throw error || new Error("Account could not be created");
-    const { error: profileError } = await auth.supabase.from("profiles").update({ full_name: fullName, role: body.role === "admin" ? "admin" : "team", department: String(body.department || "").trim() || null, job_title: String(body.jobTitle || "").trim() || null, is_active: true }).eq("id", data.user.id);
+    const { error: profileError } = await auth.supabase.from("profiles").update({ full_name: fullName, role: "team", department: String(body.department || "").trim() || null, job_title: String(body.jobTitle || "").trim() || null, is_active: true }).eq("id", data.user.id);
     if (profileError) throw profileError;
     return NextResponse.json({ member: { id: data.user.id, email }, message: "Account created. Share the temporary password securely and ask the member to change it after signing in." }, { status: 201 });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Could not create account" }, { status: 500 }); }
@@ -42,7 +42,7 @@ export async function PATCH(request: Request) {
     if (!id) return NextResponse.json({ error: "Member id is required." }, { status: 400 });
     const profileChanges: Record<string, unknown> = {};
     for (const [source, target] of [["fullName", "full_name"], ["department", "department"], ["jobTitle", "job_title"], ["phone", "phone"], ["bio", "bio"], ["isActive", "is_active"]] as const) if (source in body) profileChanges[target] = body[source];
-    if (body.role === "team" || body.role === "admin") profileChanges.role = body.role;
+    if (body.role === "team") profileChanges.role = "team";
     if (Object.keys(profileChanges).length) { const { error } = await auth.supabase.from("profiles").update(profileChanges).eq("id", id); if (error) throw error; }
     const authChanges: { password?: string; ban_duration?: string } = {};
     if (body.password) { if (String(body.password).length < 8) return NextResponse.json({ error: "Password must be at least 8 characters." }, { status: 400 }); authChanges.password = String(body.password); }

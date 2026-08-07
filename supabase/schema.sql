@@ -17,6 +17,12 @@ alter table public.profiles add column if not exists phone text;
 alter table public.profiles add column if not exists bio text;
 alter table public.profiles add column if not exists is_active boolean not null default true;
 
+-- DevQuest has one administrator account. Every other internal account is a
+-- team member with its own isolated Team Portal.
+create unique index if not exists profiles_single_admin_idx
+on public.profiles ((role))
+where role = 'admin';
+
 drop policy if exists "Members can view their own profile" on public.profiles;
 create policy "Members can view their own profile"
 on public.profiles for select
