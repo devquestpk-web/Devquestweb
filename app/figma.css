@@ -1,6 +1,6 @@
 :root { --dq-bg: #060e1f; --dq-panel: #1d201d; --dq-blue: #469bff; --dq-gold: #d5a901; --dq-slate: #192a44; --dq-paper: #f7f7f5; --dq-muted: #a7aaa7; }
 .dq-shell { width: min(1230px, calc(100% - 64px)); margin-inline: auto; }
-.dq-header { position: relative; z-index: 80; height: 112px; display: flex; align-items: center; background: var(--dq-bg); color: white; }
+.dq-header { position: relative; z-index: 80; height: 94px; display: flex; align-items: center; background: var(--dq-bg); color: white; }
 .dq-nav { display: flex; align-items: center; gap: 48px; }
 .dq-brand { display: inline-flex; align-items: center; gap: 13px; color: white; font-size: 1.6rem; font-weight: 760; letter-spacing: -.05em; }
 .dq-brand strong { color: var(--dq-blue); }.dq-brand.is-compact { font-size: 1.25rem; margin-right: auto; }
@@ -9,7 +9,7 @@
 .dq-brand-mark i:nth-child(1) { left: 4px; top: 8px; }.dq-brand-mark i:nth-child(2) { left: 9px; top: 21px; background: #0a1f69; transform: rotate(38deg); }.dq-brand-mark i:nth-child(3) { right: 0; bottom: 7px; }
 .dq-brand-mark b { width: 9px; height: 9px; position: absolute; border-radius: 50%; background: #159ee0; left: 1px; bottom: 1px; }.dq-brand-mark b:last-child { left: auto; right: 0; top: 0; bottom: auto; background: #0a1f69; }
 .dq-desktop-nav { display: flex; align-items: center; justify-content: center; gap: 48px; }.dq-desktop-nav a { color: #f5f7fb; font-size: .82rem; font-weight: 600; transition: color .2s; }.dq-desktop-nav a:hover { color: var(--dq-blue); }
-.dq-login { min-width: 110px; margin-left: auto; padding: 13px 24px; color: #07101f; background: var(--dq-gold); border-radius: 24px 24px 4px 24px; text-align: center; font-weight: 750; }
+.dq-login { min-width: 106px; margin-left: auto; padding: 11px 22px; color: #07101f; background: var(--dq-gold); border-radius: 22px 22px 4px 22px; text-align: center; font-weight: 750; }
 .dq-mobile-nav { display: none; margin-left: auto; position: relative; }.dq-mobile-nav summary { width: 46px; height: 46px; display: grid; place-items: center; list-style: none; border: 1px solid rgba(255,255,255,.25); border-radius: 10px; }.dq-mobile-nav summary::-webkit-details-marker { display: none; }.dq-mobile-nav nav { width: 260px; position: absolute; top: 56px; right: 0; display: grid; padding: 14px; background: #101a2d; border: 1px solid #324158; border-radius: 12px; box-shadow: 0 24px 55px rgba(0,0,0,.35); }.dq-mobile-nav nav a { padding: 12px; }
 .dq-home { color: white; background: var(--dq-bg); transition: background .25s, color .25s; }.dq-course-hero { min-height: 850px; position: relative; overflow: hidden; display: flex; align-items: center; }
 .dq-course-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 60px; align-items: center; position: relative; z-index: 2; padding: 80px 0 100px; }.dq-course-copy h1 { margin: 0; font-size: clamp(3.45rem, 3.8vw, 4.35rem); line-height: .98; letter-spacing: -.055em; font-weight: 650; }.dq-course-copy > p { margin: 30px 0; color: #edf1f9; font-size: 1.15rem; line-height: 1.55; }.dq-course-actions { display: flex; gap: 15px; margin-bottom: 44px; }
