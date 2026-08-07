@@ -1,12 +1,16 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { AlertCircle, CheckCircle2, Send, ShieldCheck } from "lucide-react";
+import { AlertCircle, CheckCircle2, FileText, Send, ShieldCheck, UploadCloud } from "lucide-react";
 import { deliverWebsiteForm } from "../lib/form-delivery";
+
+const maxCvBytes = 5 * 1024 * 1024;
+const allowedCvExtensions = ["pdf", "doc", "docx"];
 
 export function AmbassadorForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
+  const [cvName, setCvName] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -15,6 +19,12 @@ export function AmbassadorForm() {
     setStatus("sending");
     setError("");
     try {
+      const cv = data.get("cv");
+      const extension = cv instanceof File ? cv.name.split(".").pop()?.toLowerCase() || "" : "";
+      if (!(cv instanceof File) || cv.size === 0) throw new Error("Please attach your CV.");
+      if (!allowedCvExtensions.includes(extension)) throw new Error("Please attach a PDF, DOC, or DOCX file.");
+      if (cv.size > maxCvBytes) throw new Error("The CV must be 5 MB or smaller.");
+
       await deliverWebsiteForm("ambassador", {
         fullName: String(data.get("fullName") || ""),
         email: String(data.get("email") || ""),
@@ -28,8 +38,9 @@ export function AmbassadorForm() {
         relevantExperience: String(data.get("experience") || "Not provided"),
         motivation: String(data.get("motivation") || ""),
         campusInitiative: String(data.get("initiative") || ""),
-      }, String(data.get("website") || ""));
+      }, String(data.get("website") || ""), cv);
       form.reset();
+      setCvName("");
       setStatus("sent");
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "We could not send your application. Please try again.");
@@ -73,6 +84,29 @@ export function AmbassadorForm() {
           <label>Why do you want to become a DevQuest Campus Ambassador?<textarea name="motivation" required minLength={60} rows={5} placeholder="Share your motivation and what you hope to achieve." /></label>
           <label>What initiative would you bring to your campus?<textarea name="initiative" required minLength={40} rows={4} placeholder="Describe one event, workshop, campaign, or community idea." /></label>
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend><span>04</span> CV / resume</legend>
+        <label className={`ambassador-upload${cvName ? " has-file" : ""}`}>
+          <input
+            name="cv"
+            type="file"
+            required
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            aria-describedby="ambassador-cv-help"
+            onChange={(event) => {
+              setCvName(event.currentTarget.files?.[0]?.name || "");
+              setStatus("idle");
+              setError("");
+            }}
+          />
+          <span className="ambassador-upload-icon">{cvName ? <FileText /> : <UploadCloud />}</span>
+          <span className="ambassador-upload-copy">
+            <strong>{cvName || "Choose your CV or drop it here"}</strong>
+            <small id="ambassador-cv-help">PDF, DOC, or DOCX · Maximum 5 MB</small>
+          </span>
+        </label>
       </fieldset>
 
       <input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />

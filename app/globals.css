@@ -381,6 +381,16 @@ svg { width: 1.15em; height: 1.15em; stroke-width: 1.8; }
 .ambassador-form input:focus, .ambassador-form select:focus, .ambassador-form textarea:focus { border-color: #2862df; box-shadow: 0 0 0 3px rgba(40, 98, 223, .11); }
 .ambassador-form input::placeholder, .ambassador-form textarea::placeholder { color: #98a4b9; }
 .ambassador-form textarea { resize: vertical; line-height: 1.55; }
+.ambassador-upload { position: relative; padding: 20px; display: grid !important; grid-template-columns: auto 1fr; gap: 15px !important; align-items: center; color: #314464 !important; background: #f7faff; border: 1px dashed #9eb4d4; border-radius: 12px; cursor: pointer; transition: border-color .18s ease, background .18s ease, box-shadow .18s ease; }
+.ambassador-upload:hover, .ambassador-upload:focus-within { background: #f0f6ff; border-color: #2862df; box-shadow: 0 0 0 3px rgba(40, 98, 223, .09); }
+.ambassador-upload.has-file { background: #eef8f4; border-color: #62ad8d; }
+.ambassador-upload input[type="file"] { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; opacity: 0; cursor: pointer; }
+.ambassador-upload-icon { width: 48px; height: 48px; display: grid; place-items: center; color: #1f5cda; background: #e4efff; border-radius: 11px; }
+.ambassador-upload.has-file .ambassador-upload-icon { color: #126245; background: #d9f1e7; }
+.ambassador-upload-icon svg { width: 22px; height: 22px; }
+.ambassador-upload-copy { min-width: 0; display: grid; gap: 5px; }
+.ambassador-upload-copy strong { overflow: hidden; color: #13234a; font-size: .85rem; text-overflow: ellipsis; white-space: nowrap; }
+.ambassador-upload-copy small { color: #7d8aa3; font-size: .7rem; font-weight: 520; }
 .ambassador-consent { margin: 28px 0 20px; display: grid !important; grid-template-columns: auto 1fr; gap: 11px !important; align-items: start; line-height: 1.55; }
 .ambassador-consent input { width: 17px; height: 17px; margin-top: 2px; padding: 0; accent-color: #2259d4; }
 .ambassador-submit { width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 11px; color: white; background: linear-gradient(135deg, #2466e6, #12349f); border: 0; border-radius: 10px; box-shadow: 0 14px 30px rgba(27, 73, 181, .23); font-weight: 760; cursor: pointer; }
