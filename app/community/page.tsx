@@ -16,7 +16,7 @@ const team: TeamMember[] = [
   { name: "Ammar Shafiq", role: "Operations Lead", group: "Operations", icon: Compass },
   { name: "Madeeha Talib", role: "Operations Lead", group: "Operations", icon: Compass, image: "/team/madeeha-talib.jpeg", currentRole: "Operations Lead at DevQuest.", institution: "DevQuest", city: "Karachi", github: "https://github.com/Madeeha-Talib", portfolio: "https://madeeha-talib.github.io/Portfolio/", photoFit: "contain", photoPosition: "center" },
   { name: "Khadija Faheem", role: "Social Media Manager", group: "Social", icon: Crown },
-  { name: "Anza Tamveel", role: "Social Media Co-Manager", group: "Social", icon: Share2 },
+  { name: "Anza Tamveel", role: "Social Media Co-Lead / Co-Manager", group: "Social", icon: Share2, image: "/team/anza-tamveel.jpeg", currentRole: "Social Media Co-Lead and Co-Manager at DevQuest PK.", institution: "UET Lahore", city: "Lahore", photoPosition: "center 30%" },
 ];
 
 export default function CommunityPage() {
