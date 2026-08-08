@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Community", description: "Meet the D
 type TeamMember = { name: string; role: string; group: string; icon: typeof Code2; image?: string; currentRole?: string; institution?: string; city?: string; linkedin?: string; github?: string; portfolio?: string; photoFit?: "cover" | "contain"; photoPosition?: string };
 
 const team: TeamMember[] = [
-  { name: "Muhammad Zahid", role: "Visual Designing Mentor", group: "Design", icon: Palette },
+  { name: "Muhammad Zahid", role: "Graphics Lead / Trainer", group: "Design", icon: Palette, image: "/team/muhammad-zahid.jpeg", currentRole: "Graphics Lead and Trainer at DevQuest PK.", linkedin: "https://www.linkedin.com/in/zahid102/", photoPosition: "center 36%" },
   { name: "Areesha", role: "Senior Graphics Designer", group: "Design", icon: Palette },
   { name: "Faraiha Tariq", role: "Junior Graphics Designer", group: "Design", icon: Palette },
   { name: "Mohsin Nawaz", role: "Administrative Lead", group: "Administration", icon: Code2, image: "/team/mohsin-nawaz.jpeg", currentRole: "Software Engineer at Virtual University and Administration Lead at DevQuest PK.", institution: "Virtual University Head Office, Islamabad G-5", city: "Islamabad", linkedin: "https://www.linkedin.com/in/mohsin-nawaz-a10a57284/", photoPosition: "center 30%" },
