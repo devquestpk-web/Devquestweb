@@ -1,13 +1,13 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { AlertCircle, ArrowLeft, BarChart3, CalendarCheck2, CheckCircle2, Circle, ClipboardList, Clock3, FileText, KeyRound, LoaderCircle, LockKeyhole, Send, ShieldCheck, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, BarChart3, CalendarCheck2, Camera, CheckCircle2, Circle, ClipboardList, Clock3, FileText, KeyRound, LoaderCircle, LockKeyhole, Send, ShieldCheck, UserRound } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
 
 type Tab = "tasks" | "about" | "credentials" | "attendance" | "reports";
-type Profile = { full_name: string | null; role: "member" | "ambassador" | "team" | "admin"; department: string | null; job_title: string | null; phone: string | null; bio: string | null };
+type Profile = { full_name: string | null; role: "member" | "ambassador" | "team" | "admin"; department: string | null; job_title: string | null; phone: string | null; bio: string | null; avatar_url: string | null };
 type Task = { id: string; title: string; description: string | null; assignee_name: string | null; priority: "low" | "medium" | "high"; status: "todo" | "in_progress" | "completed"; due_date: string | null; created_at: string };
 type Attendance = { id: string; attendance_date: string; check_in: string | null; check_out: string | null; status: "present" | "late" | "absent" | "leave"; notes: string | null };
 type Report = { id: string; report_type: "daily" | "weekly" | "monthly"; summary: string; achievements: string | null; blockers: string | null; next_steps: string | null; submitted_at: string };
@@ -24,6 +24,11 @@ const today = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60_00
 const formatDate = (value: string | null) => value ? new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric" }).format(new Date(`${value.slice(0, 10)}T00:00:00`)) : "No due date";
 const formatTime = (value: string | null) => value ? new Intl.DateTimeFormat("en-PK", { hour: "numeric", minute: "2-digit" }).format(new Date(value)) : "—";
 
+function ProfileAvatar({ name, url, className = "" }: { name: string; url?: string | null; className?: string }) {
+  const initials = name.split(" ").map((part) => part[0]).slice(0, 2).join("").toUpperCase();
+  return <span className={`portal-profile-avatar ${url ? "has-image" : ""} ${className}`.trim()} style={url ? { backgroundImage: `url(${JSON.stringify(url)})` } : undefined} role="img" aria-label={`${name} profile photo`}>{url ? null : initials}</span>;
+}
+
 export function TeamPortal() {
   const [tab, setTab] = useState<Tab>("tasks");
   const [user, setUser] = useState<User | null>(null);
@@ -33,13 +38,14 @@ export function TeamPortal() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const supabase = getSupabaseBrowserClient();
 
   const refresh = useCallback(async (activeUser: User) => {
     if (!supabase) return;
     const [profileResult, taskResult, attendanceResult, reportResult] = await Promise.all([
-      supabase.from("profiles").select("full_name, role, department, job_title, phone, bio").eq("id", activeUser.id).single(),
+      supabase.from("profiles").select("full_name, role, department, job_title, phone, bio, avatar_url").eq("id", activeUser.id).single(),
       supabase.from("team_tasks").select("*").order("created_at", { ascending: false }),
       supabase.from("team_attendance").select("*").eq("user_id", activeUser.id).order("attendance_date", { ascending: false }).limit(60),
       supabase.from("team_reports").select("*").eq("user_id", activeUser.id).order("submitted_at", { ascending: false }).limit(30),
@@ -74,6 +80,27 @@ export function TeamPortal() {
     if (error) setMessage({ type: "error", text: error.message }); else { setMessage({ type: "success", text: "Your profile has been updated." }); await refresh(user); }
   }
 
+  async function uploadProfileImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !supabase || !user) return;
+    const allowedTypes: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+    const extension = allowedTypes[file.type];
+    if (!extension) { setMessage({ type: "error", text: "Choose a JPG, PNG, or WebP image." }); return; }
+    if (file.size > 5 * 1024 * 1024) { setMessage({ type: "error", text: "Profile images must be 5 MB or smaller." }); return; }
+
+    setAvatarSaving(true); setMessage(null);
+    const path = `${user.id}/profile.${extension}`;
+    const { error: uploadError } = await supabase.storage.from("team-profile-images").upload(path, file, { upsert: true, contentType: file.type, cacheControl: "3600" });
+    if (uploadError) { setAvatarSaving(false); setMessage({ type: "error", text: uploadError.message }); return; }
+    const { data } = supabase.storage.from("team-profile-images").getPublicUrl(path);
+    const avatarUrl = `${data.publicUrl}?v=${Date.now()}`;
+    const { error: profileError } = await supabase.from("profiles").update({ avatar_url: avatarUrl }).eq("id", user.id);
+    setAvatarSaving(false);
+    if (profileError) setMessage({ type: "error", text: profileError.message });
+    else { setMessage({ type: "success", text: "Your profile image has been updated." }); await refresh(user); }
+  }
+
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!supabase) return;
     const form = event.currentTarget; const password = String(new FormData(form).get("password") || ""); setSaving(true); setMessage(null);
@@ -104,13 +131,13 @@ export function TeamPortal() {
     <aside className="team-portal-sidebar">
       <Link className="team-portal-wordmark" href="/portal"><span>DQ</span><b>Team<br />Portal</b></Link>
       <nav aria-label="Team portal navigation">{navItems.map(({ id, label, icon: Icon }) => <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); setMessage(null); }} title={label}><Icon /> {label}</button>)}</nav>
-      <div className="team-portal-user"><span>{name.slice(0, 2).toUpperCase()}</span><div><b>{name}</b><small>{profile.role}</small></div></div>
+      <div className="team-portal-user"><ProfileAvatar name={name} url={profile.avatar_url} /><div><b>{name}</b><small>{profile.role}</small></div></div>
     </aside>
     <main className="team-portal-main">
-      <header className="team-portal-topbar"><div><p>{new Intl.DateTimeFormat("en-PK", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}</p><h1>{navItems.find((item) => item.id === tab)?.label}</h1></div><div className="team-portal-top-user"><span>{name.slice(0, 2).toUpperCase()}</span><div><b>{name}</b><small>{user.email}</small></div></div></header>
+      <header className="team-portal-topbar"><div><p>{new Intl.DateTimeFormat("en-PK", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}</p><h1>{navItems.find((item) => item.id === tab)?.label}</h1></div><div className="team-portal-top-user"><ProfileAvatar name={name} url={profile.avatar_url} /><div><b>{name}</b><small>{user.email}</small></div></div></header>
       {message && <div className={`portal-message ${message.type}`}>{message.type === "success" ? <CheckCircle2 /> : <AlertCircle />}{message.text}</div>}
       {tab === "tasks" && <Tasks tasks={tasks} saving={saving} onUpdate={updateTask} />}
-      {tab === "about" && <About profile={profile} saving={saving} onSubmit={saveAbout} />}
+      {tab === "about" && <About profile={profile} name={name} saving={saving} avatarSaving={avatarSaving} onSubmit={saveAbout} onAvatarChange={uploadProfileImage} />}
       {tab === "credentials" && <Credentials email={user.email || ""} role={profile.role} saving={saving} onSubmit={changePassword} />}
       {tab === "attendance" && <AttendancePanel entries={attendance} current={currentAttendance} saving={saving} onRecord={recordAttendance} />}
       {tab === "reports" && <Reports reports={reports} saving={saving} onSubmit={submitReport} />}
@@ -122,7 +149,7 @@ function PortalState({ title, copy, action }: { title: string; copy: string; act
 
 function PanelHead({ kicker, title }: { kicker: string; title: string }) { return <div className="portal-panel-head"><div><p>{kicker}</p><h2>{title}</h2></div></div>; }
 function Tasks({ tasks, saving, onUpdate }: { tasks: Task[]; saving: boolean; onUpdate: (id: string, status: Task["status"]) => void }) { return <div className="portal-work-grid"><section className="portal-panel"><PanelHead kicker="MY ASSIGNMENTS" title="Tasks assigned by administration" /><div className="portal-task-cards">{tasks.map((task) => <article key={task.id}><div className="portal-task-title"><span className={`task-dot ${task.status}`} /><div><h3>{task.title}</h3><p>{task.description || "No additional details."}</p></div><em className={`priority-${task.priority}`}>{task.priority}</em></div><div className="portal-task-meta"><span>{task.assignee_name || "Assigned to you"}</span><span>{formatDate(task.due_date)}</span><select value={task.status} onChange={(e) => onUpdate(task.id, e.target.value as Task["status"])} disabled={saving}><option value="todo">To do</option><option value="in_progress">In progress</option><option value="completed">Completed</option></select></div></article>)}{!tasks.length && <Empty text="No tasks have been assigned to you." />}</div></section></div>; }
-function About({ profile, saving, onSubmit }: { profile: Profile; saving: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) { return <div className="portal-work-grid"><section className="portal-panel portal-form-panel"><PanelHead kicker="MY PROFILE" title="About me" /><form className="portal-inline-form" onSubmit={onSubmit}><div className="portal-form-row"><label>Full name<input name="fullName" defaultValue={profile.full_name || ""} required /></label><label>Department<input name="department" defaultValue={profile.department || ""} /></label><label>Job title<input name="jobTitle" defaultValue={profile.job_title || ""} /></label></div><label>Phone<input name="phone" defaultValue={profile.phone || ""} autoComplete="tel" /></label><label>Short bio<textarea name="bio" rows={5} defaultValue={profile.bio || ""} /></label><button className="portal-primary" disabled={saving}>{saving ? <LoaderCircle className="spin" /> : <UserRound />} Save profile</button></form></section></div>; }
+function About({ profile, name, saving, avatarSaving, onSubmit, onAvatarChange }: { profile: Profile; name: string; saving: boolean; avatarSaving: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void; onAvatarChange: (event: ChangeEvent<HTMLInputElement>) => void }) { return <div className="portal-work-grid"><section className="portal-panel portal-form-panel"><PanelHead kicker="MY PROFILE" title="About me" /><div className="portal-avatar-editor"><ProfileAvatar name={name} url={profile.avatar_url} className="portal-profile-avatar-large" /><div><h3>Profile image</h3><p>This image appears throughout your personal Team Portal.</p><label className="portal-avatar-upload">{avatarSaving ? <LoaderCircle className="spin" /> : <Camera />}{avatarSaving ? "Uploading…" : profile.avatar_url ? "Change image" : "Upload image"}<input type="file" accept="image/jpeg,image/png,image/webp" onChange={onAvatarChange} disabled={avatarSaving} /></label><small>JPG, PNG, or WebP · Maximum 5 MB</small></div></div><form className="portal-inline-form" onSubmit={onSubmit}><div className="portal-form-row"><label>Full name<input name="fullName" defaultValue={profile.full_name || ""} required /></label><label>Department<input name="department" defaultValue={profile.department || ""} /></label><label>Job title<input name="jobTitle" defaultValue={profile.job_title || ""} /></label></div><label>Phone<input name="phone" defaultValue={profile.phone || ""} autoComplete="tel" /></label><label>Short bio<textarea name="bio" rows={5} defaultValue={profile.bio || ""} /></label><button className="portal-primary" disabled={saving}>{saving ? <LoaderCircle className="spin" /> : <UserRound />} Save profile</button></form></section></div>; }
 function Credentials({ email, role, saving, onSubmit }: { email: string; role: string; saving: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) { return <div className="portal-work-grid credentials-layout"><section className="portal-panel"><PanelHead kicker="ACCOUNT DETAILS" title="Portal login" /><dl className="portal-credentials"><div><dt>Email</dt><dd>{email}</dd></div><div><dt>Access role</dt><dd>{role}</dd></div><div><dt>Password</dt><dd>Hidden for your security</dd></div></dl></section><section className="portal-panel"><PanelHead kicker="SECURITY" title="Change password" /><form className="portal-inline-form" onSubmit={onSubmit}><label>New password<input name="password" type="password" minLength={8} required autoComplete="new-password" placeholder="At least 8 characters" /></label><button className="portal-primary" disabled={saving}>{saving ? <LoaderCircle className="spin" /> : <LockKeyhole />} Update password</button></form></section></div>; }
 function AttendancePanel({ entries, current, saving, onRecord }: { entries: Attendance[]; current?: Attendance; saving: boolean; onRecord: (action: "check_in" | "check_out") => void }) { return <div className="portal-work-grid attendance-layout"><section className="attendance-clock-card"><p>TODAY · {today()}</p><Clock3 /><h2>{formatTime(new Date().toISOString())}</h2><span>{current?.check_in ? `Checked in ${formatTime(current.check_in)}` : "Ready when you are"}</span><button className="portal-primary" disabled={saving || Boolean(current?.check_out)} onClick={() => onRecord(current?.check_in ? "check_out" : "check_in")}>{saving ? <LoaderCircle className="spin" /> : <CalendarCheck2 />}{current?.check_out ? "Day completed" : current?.check_in ? "Check out" : "Check in"}</button></section><section className="portal-panel"><PanelHead kicker="PERSONAL RECORD" title="Attendance history" /><div className="attendance-table"><div className="attendance-row attendance-header"><span>Date</span><span>In</span><span>Out</span><span>Status</span></div>{entries.map((entry) => <div className="attendance-row" key={entry.id}><span>{formatDate(entry.attendance_date)}</span><span>{formatTime(entry.check_in)}</span><span>{formatTime(entry.check_out)}</span><span className={`attendance-${entry.status}`}>{entry.status}</span></div>)}{!entries.length && <Empty text="No attendance records yet." />}</div></section></div>; }
 function Reports({ reports, saving, onSubmit }: { reports: Report[]; saving: boolean; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) { return <div className="portal-work-grid reports-layout"><section className="portal-panel"><PanelHead kicker="PROGRESS UPDATE" title="Submit report" /><form className="portal-report-form" onSubmit={onSubmit}><label>Period<select name="reportType" defaultValue="weekly"><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select></label><label>Summary<textarea name="summary" required rows={3} /></label><label>Achievements<textarea name="achievements" rows={2} /></label><label>Blockers<textarea name="blockers" rows={2} /></label><label>Next steps<textarea name="nextSteps" rows={2} /></label><button className="portal-primary" disabled={saving}>{saving ? <LoaderCircle className="spin" /> : <Send />} Submit report</button></form></section><section className="portal-panel"><PanelHead kicker="SUBMISSION HISTORY" title="My reports" /><div className="portal-report-list">{reports.map((report) => <article key={report.id}><span><FileText /></span><div><div><b>{report.report_type} report</b><small>{formatDate(report.submitted_at)}</small></div><p>{report.summary}</p>{report.blockers && <em>Blocker: {report.blockers}</em>}</div></article>)}{!reports.length && <Empty text="No reports submitted yet." />}</div></section></div>; }

@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
     const [{ data: users, error: usersError }, { data: profiles, error: profileError }] = await Promise.all([
       auth.supabase.auth.admin.listUsers({ page: 1, perPage: 500 }),
-      auth.supabase.from("profiles").select("id, full_name, role, department, job_title, phone, bio, is_active, created_at").order("created_at"),
+      auth.supabase.from("profiles").select("id, full_name, role, department, job_title, phone, bio, avatar_url, is_active, created_at").order("created_at"),
     ]);
     if (usersError || profileError) throw usersError || profileError;
     const profileMap = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
