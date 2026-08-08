@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Github, Globe2 } from "lucide-react";
 import { SponsorMarquee } from "../components/sponsor-marquee";
 
 export const metadata: Metadata = { title: "About Us", description: "Meet the DevQuest Pakistan leadership and community core team." };
@@ -14,7 +14,7 @@ const officials = [
 const team = [
   { name: "Muhammad Zahid", role: "Visual Designing Mentor", group: "Design" }, { name: "Areesha", role: "Senior Graphics Designer", group: "Design" }, { name: "Faraiha Tariq", role: "Junior Graphics Designer", group: "Design" },
   { name: "Mohsin Nawaz", role: "Administrative Lead", group: "Administration", image: "/team/mohsin-nawaz.jpeg", detail: "Software Engineer at Virtual University and Administration Lead at DevQuest PK.", institution: "Virtual University Head Office, Islamabad G-5 · Islamabad", linkedin: "https://www.linkedin.com/in/mohsin-nawaz-a10a57284/" }, { name: "Ameema Waheed", role: "Administrative Co-Lead · Karachi Events Regional Lead", group: "Administration", image: "/team/ameema-waheed.jpeg", detail: "Administration Lead at DevQuest PK.", institution: "Jinnah University for Women · Karachi", linkedin: "https://www.linkedin.com/in/ameema-waheed-566220282/" }, { name: "Ammar Shafiq", role: "Operations Lead", group: "Operations" },
-  { name: "Madeeha Talib", role: "Operations Co-Lead", group: "Operations" }, { name: "Khadija Faheem", role: "Social Media Manager", group: "Social" }, { name: "Anza Tamveel", role: "Social Media Co-Manager", group: "Social" },
+  { name: "Madeeha Talib", role: "Operations Lead", group: "Operations", image: "/team/madeeha-talib.jpeg", detail: "Operations Lead at DevQuest.", institution: "DevQuest · Karachi", github: "https://github.com/Madeeha-Talib", portfolio: "https://madeeha-talib.github.io/Portfolio/" }, { name: "Khadija Faheem", role: "Social Media Manager", group: "Social" }, { name: "Anza Tamveel", role: "Social Media Co-Manager", group: "Social" },
 ];
 
 export default function AboutPage() {
@@ -26,7 +26,7 @@ export default function AboutPage() {
 
       <section className="dq-officials dq-shell"><h2>Our Officials</h2><div className="dq-official-grid">{officials.map((person) => <article className={`dq-official-card ${person.accent}`} key={person.name}><div><small>DEVQUEST OFFICIAL</small><h3>{person.role}</h3><p>{person.name}</p><span>{person.detail}</span><Link href="/contact">See More <ArrowUpRight /></Link></div><Image src={person.image} alt={person.name} fill sizes="360px" /></article>)}</div></section>
 
-      <section className="dq-team-section" id="team"><div className="dq-shell"><h2>Our Team</h2><div className="dq-figma-team-grid">{team.map(({ name, role, group, image, detail, institution, linkedin }, index) => <article className={image ? "dq-team-profile-card" : ""} key={name}><small>{group}</small><h3>{role}</h3><div className={`dq-team-portrait portrait-${index % 3}`}>{image ? <Image src={image} alt={name} fill sizes="360px" /> : <span>{name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span>}</div><strong>{name}</strong>{detail && <p className="dq-team-detail">{detail}</p>}{institution && <p className="dq-team-institution">{institution}</p>}<Link href={linkedin || "/contact"} target={linkedin ? "_blank" : undefined} rel={linkedin ? "noreferrer" : undefined}>{linkedin ? "View LinkedIn" : "Get in touch"} <ArrowUpRight /></Link></article>)}</div></div></section>
+      <section className="dq-team-section" id="team"><div className="dq-shell"><h2>Our Team</h2><div className="dq-figma-team-grid">{team.map(({ name, role, group, image, detail, institution, linkedin, github, portfolio }, index) => <article className={image ? "dq-team-profile-card" : ""} key={name}><small>{group}</small><h3>{role}</h3><div className={`dq-team-portrait portrait-${index % 3}`}>{image ? <Image src={image} alt={name} fill sizes="360px" /> : <span>{name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span>}</div><strong>{name}</strong>{detail && <p className="dq-team-detail">{detail}</p>}{institution && <p className="dq-team-institution">{institution}</p>}<div className="dq-team-links">{linkedin && <Link href={linkedin} target="_blank" rel="noreferrer">View LinkedIn <ArrowUpRight /></Link>}{github && <Link href={github} target="_blank" rel="noreferrer">View GitHub <Github /></Link>}{portfolio && <Link href={portfolio} target="_blank" rel="noreferrer">View portfolio <Globe2 /></Link>}{!linkedin && !github && !portfolio && <Link href="/contact">Get in touch <ArrowUpRight /></Link>}</div></article>)}</div></div></section>
 
       <section className="dq-about-partners"><div className="dq-shell"><p className="dq-kicker">PARTNERS &amp; SPONSORS</p><h2>Our program is<br />backed by the best.</h2><p>We collaborate with universities and technology partners to build learning experiences with real community value.</p></div><SponsorMarquee /></section>
     </div>
