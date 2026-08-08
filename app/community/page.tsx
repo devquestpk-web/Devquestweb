@@ -12,7 +12,7 @@ const team: TeamMember[] = [
   { name: "Areesha", role: "Senior Graphics Designer", group: "Design", icon: Palette },
   { name: "Faraiha Tariq", role: "Junior Graphics Designer", group: "Design", icon: Palette },
   { name: "Mohsin Nawaz", role: "Administrative Lead", group: "Administration", icon: Code2, image: "/team/mohsin-nawaz.jpeg", currentRole: "Software Engineer at Virtual University and Administration Lead at DevQuest PK.", institution: "Virtual University Head Office, Islamabad G-5", city: "Islamabad", linkedin: "https://www.linkedin.com/in/mohsin-nawaz-a10a57284/" },
-  { name: "Ameema Waheed", role: "Co-Administrative Lead", group: "Administration", icon: Sparkles },
+  { name: "Ameema Waheed", role: "Administrative Co-Lead · Karachi Events Regional Lead", group: "Administration", icon: Sparkles, image: "/team/ameema-waheed.jpeg", currentRole: "Administration Lead at DevQuest PK.", institution: "Jinnah University for Women", city: "Karachi", linkedin: "https://www.linkedin.com/in/ameema-waheed-566220282/" },
   { name: "Ammar Shafiq", role: "Operations Lead", group: "Operations", icon: Compass },
   { name: "Madeeha Talib", role: "Operations Co-Lead", group: "Operations", icon: Compass },
   { name: "Khadija Faheem", role: "Social Media Manager", group: "Social", icon: Crown },

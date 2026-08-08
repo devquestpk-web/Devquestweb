@@ -13,7 +13,7 @@ const officials = [
 
 const team = [
   { name: "Muhammad Zahid", role: "Visual Designing Mentor", group: "Design" }, { name: "Areesha", role: "Senior Graphics Designer", group: "Design" }, { name: "Faraiha Tariq", role: "Junior Graphics Designer", group: "Design" },
-  { name: "Mohsin Nawaz", role: "Administrative Lead", group: "Administration", image: "/team/mohsin-nawaz.jpeg", detail: "Software Engineer at Virtual University and Administration Lead at DevQuest PK.", institution: "Virtual University Head Office, Islamabad G-5 · Islamabad", linkedin: "https://www.linkedin.com/in/mohsin-nawaz-a10a57284/" }, { name: "Ameema Waheed", role: "Co-Administrative Lead", group: "Administration" }, { name: "Ammar Shafiq", role: "Operations Lead", group: "Operations" },
+  { name: "Mohsin Nawaz", role: "Administrative Lead", group: "Administration", image: "/team/mohsin-nawaz.jpeg", detail: "Software Engineer at Virtual University and Administration Lead at DevQuest PK.", institution: "Virtual University Head Office, Islamabad G-5 · Islamabad", linkedin: "https://www.linkedin.com/in/mohsin-nawaz-a10a57284/" }, { name: "Ameema Waheed", role: "Administrative Co-Lead · Karachi Events Regional Lead", group: "Administration", image: "/team/ameema-waheed.jpeg", detail: "Administration Lead at DevQuest PK.", institution: "Jinnah University for Women · Karachi", linkedin: "https://www.linkedin.com/in/ameema-waheed-566220282/" }, { name: "Ammar Shafiq", role: "Operations Lead", group: "Operations" },
   { name: "Madeeha Talib", role: "Operations Co-Lead", group: "Operations" }, { name: "Khadija Faheem", role: "Social Media Manager", group: "Social" }, { name: "Anza Tamveel", role: "Social Media Co-Manager", group: "Social" },
 ];
 
