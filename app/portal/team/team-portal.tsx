@@ -3,7 +3,7 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { AlertCircle, ArrowLeft, BarChart3, CalendarCheck2, Camera, CheckCircle2, Circle, ClipboardList, Clock3, FileText, KeyRound, LoaderCircle, LockKeyhole, Send, ShieldCheck, UserRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, BarChart3, CalendarCheck2, Camera, CheckCircle2, Circle, ClipboardList, Clock3, FileText, KeyRound, LoaderCircle, LockKeyhole, LogOut, Send, ShieldCheck, UserRound } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
 
 type Tab = "tasks" | "about" | "credentials" | "attendance" | "reports";
@@ -108,6 +108,14 @@ export function TeamPortal() {
     if (error) setMessage({ type: "error", text: error.message }); else { form.reset(); setMessage({ type: "success", text: "Your password has been changed." }); }
   }
 
+  async function signOut() {
+    if (!supabase) return;
+    setSaving(true); setMessage(null);
+    const { error } = await supabase.auth.signOut({ scope: "global" });
+    if (error) { setSaving(false); setMessage({ type: "error", text: error.message }); return; }
+    window.location.replace("/portal#member-signin");
+  }
+
   async function recordAttendance(action: "check_in" | "check_out") {
     if (!supabase || !user) return; setSaving(true); setMessage(null); const now = new Date().toISOString();
     const result = action === "check_in" ? await supabase.from("team_attendance").upsert({ user_id: user.id, attendance_date: today(), check_in: now, status: "present" }, { onConflict: "user_id,attendance_date" }) : await supabase.from("team_attendance").update({ check_out: now }).eq("user_id", user.id).eq("attendance_date", today());
@@ -134,7 +142,7 @@ export function TeamPortal() {
       <div className="team-portal-user"><ProfileAvatar name={name} url={profile.avatar_url} /><div><b>{name}</b><small>{profile.role}</small></div></div>
     </aside>
     <main className="team-portal-main">
-      <header className="team-portal-topbar"><div><p>{new Intl.DateTimeFormat("en-PK", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}</p><h1>{navItems.find((item) => item.id === tab)?.label}</h1></div><div className="team-portal-top-user"><ProfileAvatar name={name} url={profile.avatar_url} /><div><b>{name}</b><small>{user.email}</small></div></div></header>
+      <header className="team-portal-topbar"><div><p>{new Intl.DateTimeFormat("en-PK", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}</p><h1>{navItems.find((item) => item.id === tab)?.label}</h1></div><div className="team-portal-account-actions"><div className="team-portal-top-user"><ProfileAvatar name={name} url={profile.avatar_url} /><div><b>{name}</b><small>{user.email}</small></div></div><button className="portal-signout" type="button" onClick={signOut} disabled={saving} aria-label="Sign out of Team Portal">{saving ? <LoaderCircle className="spin" /> : <LogOut />}<span>Sign out</span></button></div></header>
       {message && <div className={`portal-message ${message.type}`}>{message.type === "success" ? <CheckCircle2 /> : <AlertCircle />}{message.text}</div>}
       {tab === "tasks" && <Tasks tasks={tasks} saving={saving} onUpdate={updateTask} />}
       {tab === "about" && <About profile={profile} name={name} saving={saving} avatarSaving={avatarSaving} onSubmit={saveAbout} onAvatarChange={uploadProfileImage} />}

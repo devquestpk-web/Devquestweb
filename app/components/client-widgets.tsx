@@ -149,7 +149,7 @@ export function AuthDock() {
     setWorking(false);
     window.location.assign(portalRole === "admin" ? "/portal/admin" : "/portal/team");
   }
-  async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut(); setWorking(false); if (error) setMessage({ type: "error", text: error.message }); else { setUser(null); setAccountRole(null); setMessage({ type: "success", text: "You are signed out." }); } }
+  async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut({ scope: "global" }); if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; } window.location.replace("/portal#member-signin"); }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
 
   return <div className={`auth-dock ${open ? "is-open" : ""}`}>
