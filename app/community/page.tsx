@@ -9,7 +9,7 @@ type TeamMember = { name: string; role: string; group: string; icon: typeof Code
 
 const team: TeamMember[] = [
   { name: "Muhammad Zahid", role: "Graphics Lead / Trainer", group: "Design", icon: Palette, image: "/team/muhammad-zahid.jpeg", currentRole: "Graphics Lead and Trainer at DevQuest PK.", linkedin: "https://www.linkedin.com/in/zahid102/", photoPosition: "center 36%" },
-  { name: "Areesha", role: "Senior Graphics Designer", group: "Design", icon: Palette },
+  { name: "Areesha Khan", role: "Senior Graphics Designer", group: "Technical Team", icon: Palette, image: "/team/areesha-khan.jpeg", currentRole: "Senior Graphics Designer on the DevQuest PK Technical Team.", institution: "Sir Syed University of Engineering and Technology", city: "Karachi", linkedin: "https://www.linkedin.com/in/areesha-khan-4124ba282/", photoPosition: "center 28%" },
   { name: "Faraiha Tariq", role: "Junior Graphics Designer", group: "Design", icon: Palette },
   { name: "Mohsin Nawaz", role: "Administrative Lead", group: "Administration", icon: Code2, image: "/team/mohsin-nawaz.jpeg", currentRole: "Software Engineer at Virtual University and Administration Lead at DevQuest PK.", institution: "Virtual University Head Office, Islamabad G-5", city: "Islamabad", linkedin: "https://www.linkedin.com/in/mohsin-nawaz-a10a57284/", photoPosition: "center 30%" },
   { name: "Ameema Waheed", role: "Administrative Co-Lead · Karachi Events Regional Lead", group: "Administration", icon: Sparkles, image: "/team/ameema-waheed.jpeg", currentRole: "Administration Lead at DevQuest PK.", institution: "Jinnah University for Women", city: "Karachi", linkedin: "https://www.linkedin.com/in/ameema-waheed-566220282/", photoPosition: "center 22%" },
