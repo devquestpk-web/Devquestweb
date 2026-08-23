@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./figma.css";
@@ -9,7 +9,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://devquest-pk-official.vercel.app"),
+  metadataBase: new URL("https://www.devquestpk.com"),
   title: {
     default: "DevQuest PK - Empowering Innovators",
     template: "%s | DevQuest PK",
@@ -30,6 +30,11 @@ export const metadata: Metadata = {
     description: "Learn, build, and shape the future of technology with DevQuest PK.",
     images: ["/og.png"],
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
