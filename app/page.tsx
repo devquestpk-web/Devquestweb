@@ -91,10 +91,30 @@ export default function Home() {
             <div className="dq-portrait p-three"><Image src="/figma/hero-2.png" alt="Student with notebooks" fill sizes="190px" /></div>
             <div className="dq-portrait p-four"><Image src="/figma/hero-4.png" alt="Learner holding a tablet" fill sizes="190px" /></div>
             <i className="dq-dot dot-gold" /><i className="dq-dot dot-blue" />
-            <article className="dq-next-event"><span><Rocket /></span><small>NEXT EXPERIENCE</small><strong>Innovate Pakistan Tech Series</strong><p><CalendarDays /> New sessions coming soon</p><p><MapPin /> Pakistan · Hybrid</p><Link href="/events">View the series <ArrowUpRight /></Link></article>
+            <article className="dq-next-event"><span><Rocket /></span><small>COMING SOON</small><strong>Innovate Pakistan 2.0</strong><p><CalendarDays /> Details coming soon</p><p><MapPin /> Pakistan · Hybrid</p><Link href="/events">Learn more <ArrowUpRight /></Link></article>
           </div>
         </div>
         <ThemeToggle />
+      </section>
+
+      <section className="dq-home-video" aria-labelledby="devquest-video-title">
+        <div className="dq-shell dq-home-video-grid">
+          <div className="dq-home-video-copy">
+            <p className="dq-kicker">DEVQUEST IN MOTION</p>
+            <h2 id="devquest-video-title">See the community behind the work.</h2>
+            <p>Get a closer look at the people, energy, and ideas shaping DevQuest across learning, technology, and community.</p>
+            <Link className="dq-btn dq-btn-blue" href="/about">Meet the team <ArrowUpRight /></Link>
+          </div>
+          <div className="dq-home-video-frame">
+            <iframe
+              src="https://www.youtube-nocookie.com/embed/HM6uhaXPwqs?rel=0&modestbranding=1&playsinline=1"
+              title="DevQuest PK official video"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </div>
       </section>
 
       <section className="dq-network-strip" aria-label="DevQuest university network">
