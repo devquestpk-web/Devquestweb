@@ -377,6 +377,62 @@ html[data-theme="light"] .dq-services-preview,html[data-theme="light"] .dq-chapt
   }
 }
 
+/* Keep later desktop positioning rules from reintroducing overlap at this width. */
+@media (min-width: 761px) and (max-width: 1050px) {
+  .dq-portrait.p-three { left: auto; }
+
+  .dq-next-event {
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+  }
+}
+
+/* Some mobile browsers use a desktop-sized CSS viewport. Keep the hero collage
+   readable at that intermediate width instead of preserving the overlapping
+   desktop art direction. */
+@media (min-width: 761px) and (max-width: 1050px) {
+  .dq-portrait-collage {
+    width: 100%;
+    height: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    transform: none;
+  }
+
+  .dq-portrait,
+  .dq-portrait.p-one,
+  .dq-portrait.p-two,
+  .dq-portrait.p-three,
+  .dq-portrait.p-four {
+    width: 100%;
+    height: 220px;
+    position: relative;
+    inset: auto;
+    border-radius: 999px;
+  }
+
+  .dq-portrait.p-one { grid-column: 1; grid-row: 1; }
+  .dq-portrait.p-two { grid-column: 1; grid-row: 2; }
+  .dq-portrait.p-three { grid-column: 2; grid-row: 2; }
+  .dq-portrait.p-four { width: calc(50% - 8px); grid-column: 1 / -1; grid-row: 3; justify-self: center; }
+
+  .dq-next-event {
+    width: 100%;
+    min-width: 0;
+    position: relative;
+    inset: auto;
+    grid-column: 2;
+    grid-row: 1;
+    padding: 18px;
+    transform: none;
+  }
+
+  .dq-dot { display: none; }
+}
+
 /* Mobile event marquee refinement */
 .dq-event-track {
   --dq-event-gap: 28px;
