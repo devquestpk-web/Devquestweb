@@ -143,7 +143,7 @@ export default function Home() {
       <section className="dq-program-section">
         <div className="dq-shell">
           <p className="dq-kicker">OUR ACADEMY</p>
-          <h2>Launch your experience through<br />transformative courses,<br />sessions, and mentorship.</h2>
+          <h2>Launch your experience through<br />{" "}transformative courses,<br />{" "}sessions, and mentorship.</h2>
           <div className="dq-program-grid">{programs.map((program) => <article key={program.title}><Image src={program.icon} alt="" width={96} height={96} /><h3>{program.title}</h3><p>{program.copy}</p></article>)}</div>
           <div className="dq-inline-cta"><Link href="/events">Explore Events &amp; Academy <ArrowRight /></Link></div>
         </div>

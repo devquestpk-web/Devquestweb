@@ -1,0 +1,10 @@
+.next
+.vinext
+dist
+build
+work
+.wrangler
+docs
+static-deploy
+*.mp4
+.dev-server.*.log

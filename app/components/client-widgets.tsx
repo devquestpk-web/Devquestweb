@@ -23,7 +23,7 @@ export function ThemeToggle() {
 type DeliveryState = "idle" | "sending" | "sent" | "error";
 
 function DeliveryMessage({ state, error }: { state: DeliveryState; error: string }) {
-  if (state === "sent") return <div className="form-delivery-status success" role="status"><CheckCircle2 /> Thank you. Your message has been emailed to DevQuest.</div>;
+  if (state === "sent") return <div className="form-delivery-status success" role="status"><CheckCircle2 /> Thank you. Your message has been received by DevQuest.</div>;
   if (state === "error") return <div className="form-delivery-status error" role="alert"><AlertCircle /> {error}</div>;
   return null;
 }
@@ -50,7 +50,7 @@ export function ContactForm({ compact = false }: { compact?: boolean }) {
       setState("error");
     }
   }
-  return <form className={`contact-form ${compact ? "contact-form-compact" : ""}`} onSubmit={submit}><p className="eyebrow">START A CONVERSATION</p><h2>{compact ? "Tell us what you are building." : "Let's build something meaningful."}</h2><label><span>Your name</span><input name="name" required placeholder="Full name" autoComplete="name" /></label><label><span>Work email</span><input name="email" type="email" required placeholder="you@company.com" autoComplete="email" /></label><label><span>What can we help with?</span><textarea name="scope" required placeholder="Tell us about your project, partnership, event, or idea." rows={compact ? 3 : 4} /></label><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><div className="privacy-note"><ShieldCheck /> Your details go directly to devquestpk@gmail.com.</div><DeliveryMessage state={state} error={error} /><button className="button button-primary button-wide" type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending..." : state === "sent" ? "Message sent" : "Send enquiry"}</button></form>;
+  return <form className={`contact-form ${compact ? "contact-form-compact" : ""}`} onSubmit={submit}><p className="eyebrow">START A CONVERSATION</p><h2>{compact ? "Tell us what you are building." : "Let's build something meaningful."}</h2><label><span>Your name</span><input name="name" required placeholder="Full name" autoComplete="name" /></label><label><span>Work email</span><input name="email" type="email" required placeholder="you@company.com" autoComplete="email" /></label><label><span>What can we help with?</span><textarea name="scope" required placeholder="Tell us about your project, partnership, event, or idea." rows={compact ? 3 : 4} /></label><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><div className="privacy-note"><ShieldCheck /> Your details go directly to hello@devquestpk.com.</div><DeliveryMessage state={state} error={error} /><button className="button button-primary button-wide" type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending..." : state === "sent" ? "Message sent" : "Send enquiry"}</button></form>;
 }
 
 export function FigmaContactForm() {
@@ -165,10 +165,10 @@ export function AuthDock() {
           </> : !portalRole ? <>
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
             <div className="auth-role-grid">
-              <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student Portal</b><small>Learning, events, certificates, and opportunities</small></div><ChevronRight /></button>
-              <button type="button" onClick={() => chooseRole("team")}><span><UsersRound /></span><div><b>Team Portal</b><small>Tasks, attendance, and progress reports</small></div><ChevronRight /></button>
-              <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services Portal</b><small>Client projects and delivery — coming soon</small></div><ChevronRight /></button>
-              <button type="button" onClick={() => chooseRole("admin")}><span><ShieldCheck /></span><div><b>Admin Portal</b><small>Accounts, assignments, attendance, and reports</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student</b><small>Learning, events, certificates, and opportunities</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("team")}><span><UsersRound /></span><div><b>Team</b><small>Tasks, attendance, and progress reports</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services</b><small>Client projects and delivery — coming soon</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("admin")}><span><ShieldCheck /></span><div><b>Admin</b><small>Accounts, assignments, attendance, and reports</small></div><ChevronRight /></button>
             </div>
           </> : <>
             <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setMessage(null); }}><ArrowLeft /> Change role</button>

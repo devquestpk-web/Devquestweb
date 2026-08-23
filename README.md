@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://devquest-pk-official.vercel.app">Live website</a> |
+  <a href="https://www.devquestpk.com">Live website</a> |
   <a href="https://pk.linkedin.com/company/devquest-pk">LinkedIn</a> |
   <a href="https://www.instagram.com/devquestpk/">Instagram</a> |
   <a href="https://www.youtube.com/@DevQuestPK">YouTube</a>
@@ -265,8 +265,11 @@ NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 RESEND_API_KEY=
-FORM_RECIPIENT_EMAIL=devquestpk@gmail.com
-FORM_FROM_EMAIL=DevQuest Website <onboarding@resend.dev>
+FORM_RECIPIENT_EMAIL=hello@devquestpk.com
+FORM_APPLICATION_RECIPIENT_EMAIL=careers@devquestpk.com
+FORM_FROM_EMAIL=DevQuest PK <no-reply@devquestpk.com>
+GOOGLE_SHEETS_WEBHOOK_URL=
+GOOGLE_SHEETS_WEBHOOK_SECRET=
 ```
 
 | Variable | Purpose |
@@ -277,16 +280,34 @@ FORM_FROM_EMAIL=DevQuest Website <onboarding@resend.dev>
 | `RESEND_API_KEY` | Sends contact, ambassador, and career submissions. |
 | `FORM_RECIPIENT_EMAIL` | Inbox that receives website submissions. |
 | `FORM_FROM_EMAIL` | Verified sender identity used by Resend. |
+| `GOOGLE_SHEETS_WEBHOOK_URL` | Deployed Google Apps Script `/exec` URL that records website form submissions. |
+| `GOOGLE_SHEETS_WEBHOOK_SECRET` | Server-only shared secret used to authenticate Sheet writes. |
 
 Never expose `SUPABASE_SERVICE_ROLE_KEY` or `RESEND_API_KEY` in client-side code or commit `.env.local`.
+
+## Google Sheets Query Automation
+
+Website forms can also be recorded in the `DevQuest Website Queries` spreadsheet owned by the DevQuest Google account. Contact enquiries, campus ambassador applications, and job applications are routed to separate tabs with form-specific columns. Uploaded CVs are saved in the private `DevQuest Website Uploads` Drive folder and linked from the matching application row.
+
+1. Open the spreadsheet, then choose **Extensions > Apps Script**.
+2. Replace `Code.gs` with the contents of `docs/google-apps-script.gs` and save it.
+3. In **Project Settings > Script Properties**, add `WEBHOOK_SECRET` with a new long random value.
+4. Choose **Deploy > New deployment > Web app**. Set **Execute as** to **Me** and **Who has access** to **Anyone**, then deploy and authorize its Google Sheets and Drive access.
+5. Copy the deployed URL ending in `/exec` into `GOOGLE_SHEETS_WEBHOOK_URL` and put the same random value in `GOOGLE_SHEETS_WEBHOOK_SECRET` in the website's server environment.
+6. Redeploy the website and submit one test entry from each form. New rows should appear in `Website Queries`, `Campus Ambassadors`, and `Job Applications` respectively. Application rows should include a clickable CV document link.
+
+The webhook accepts only requests containing the shared secret, de-duplicates retries by submission ID, and escapes formula-like input before writing it to the Sheet.
 
 ## Supabase Setup
 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the Supabase SQL editor.
 3. Run `supabase/profile-avatar-migration.sql` for team profile image storage.
-4. Add the Supabase URL, anon key, and service-role key to `.env.local`.
-5. Create the first administrator profile with the `admin` role.
+4. Run `supabase/application-tracking.sql` to enable private Career and Campus Ambassador application tracking.
+
+Tracked applicants receive a private link and tracking ID after submitting. They can return to **Application Status** later and look up the application with that ID. Administrators manage the pipeline from **Admin Portal → Applications**, and status changes appear on the applicant page automatically. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only; never expose it through a `NEXT_PUBLIC_` variable.
+5. Add the Supabase URL, anon key, and service-role key to `.env.local`.
+6. Create the first administrator profile with the `admin` role.
 
 The schema defines profiles, team tasks, attendance, reports, role checks, and Row Level Security policies. Team members can access their own operational records, while administrators receive organization-wide management access.
 
@@ -323,7 +344,7 @@ docs/images/           README feature screenshots
 
 ## Contact
 
-- **Email:** [devquestpk@gmail.com](mailto:devquestpk@gmail.com)
+- **Email:** [hello@devquestpk.com](mailto:hello@devquestpk.com)
 - **Phone / WhatsApp:** [+92 370 4489589](https://wa.me/923704489589)
 - **Location:** Multan, Pakistan
 - **LinkedIn:** [DevQuest PK](https://pk.linkedin.com/company/devquest-pk)

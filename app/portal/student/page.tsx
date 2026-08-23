@@ -23,7 +23,7 @@ export default function StudentPortalPage() {
           <span><CalendarDays /> Events</span>
           <span><Trophy /> Certificates</span>
         </div>
-        <a className="dq-btn dq-btn-blue" href="mailto:devquestpk@gmail.com?subject=Student%20Portal%20Early%20Access"><BellRing /> Notify me at launch</a>
+        <a className="dq-btn dq-btn-blue" href="mailto:hello@devquestpk.com?subject=Student%20Portal%20Early%20Access"><BellRing /> Notify me at launch</a>
       </section>
     </div>
   );
