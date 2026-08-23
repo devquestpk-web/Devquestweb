@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { AlertCircle, CheckCircle2, FileText, Send, ShieldCheck, UploadCloud } from "lucide-react";
+import { AlertCircle, FileText, Send, ShieldCheck, UploadCloud } from "lucide-react";
+import { ApplicationSubmissionSuccess } from "../../../components/application-submission-success";
 import { deliverWebsiteForm } from "../../../lib/form-delivery";
 
 const maxCvBytes = 5 * 1024 * 1024;
@@ -11,6 +12,8 @@ export function JobApplicationForm({ position }: { position: string }) {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
   const [cvName, setCvName] = useState("");
+  const [tracking, setTracking] = useState<{ code: string; url: string } | null>(null);
+  const [emailWarning, setEmailWarning] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -18,6 +21,8 @@ export function JobApplicationForm({ position }: { position: string }) {
     const data = new FormData(form);
     setStatus("sending");
     setError("");
+    setTracking(null);
+    setEmailWarning("");
 
     try {
       const cv = data.get("cv");
@@ -26,7 +31,7 @@ export function JobApplicationForm({ position }: { position: string }) {
       if (!allowedCvExtensions.includes(extension)) throw new Error("Please attach a PDF, DOC, or DOCX file.");
       if (cv.size > maxCvBytes) throw new Error("The CV must be 5 MB or smaller.");
 
-      await deliverWebsiteForm("career", {
+      const result = await deliverWebsiteForm("career", {
         position,
         fullName: String(data.get("fullName") || ""),
         email: String(data.get("email") || ""),
@@ -45,6 +50,8 @@ export function JobApplicationForm({ position }: { position: string }) {
 
       form.reset();
       setCvName("");
+      setTracking(result.tracking || null);
+      setEmailWarning(result.emailWarning || "");
       setStatus("sent");
     } catch (submissionError) {
       setError(submissionError instanceof Error ? submissionError.message : "We could not send your application. Please try again.");
@@ -116,10 +123,10 @@ export function JobApplicationForm({ position }: { position: string }) {
 
       <input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
       <label className="ambassador-consent"><input type="checkbox" required /> <span>I confirm that this information is accurate and I agree that DevQuest may contact me about this vacancy.</span></label>
-      {status === "sent" ? <div className="ambassador-success" role="status"><CheckCircle2 /> Application received. Your CV and details were sent to the DevQuest team.</div> : null}
+      {status === "sent" ? <ApplicationSubmissionSuccess tracking={tracking} emailWarning={emailWarning} /> : null}
       {status === "error" ? <div className="ambassador-success ambassador-error" role="alert"><AlertCircle /> {error}</div> : null}
       <button className="ambassador-submit" type="submit" disabled={status === "sending"}>{status === "sending" ? "Sending application..." : status === "sent" ? "Application sent" : <>Submit application <Send /></>}</button>
-      <p className="ambassador-privacy"><ShieldCheck /> Your application goes directly to the official DevQuest inbox.</p>
+      <p className="ambassador-privacy"><ShieldCheck /> Your application and CV go directly to the official DevQuest workspace.</p>
     </form>
   );
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDown, ArrowUpRight, BadgeCheck, CalendarCheck2, GraduationCap, MessageCircle, Sparkles, Users } from "lucide-react";
+import { ArrowDown, ArrowUpRight, BadgeCheck, CalendarCheck2, GraduationCap, MessageCircle, Search, Sparkles, Users } from "lucide-react";
 import { CareerCards } from "../components/career-cards";
 import { AmbassadorForm } from "./ambassador-form";
 
@@ -22,7 +22,7 @@ export default function CareersPage() {
       <section className="dq-careers-hero">
         <div className="dq-shell dq-careers-hero-grid">
           <div><p className="dq-kicker"><Sparkles /> JOIN THE QUEST</p><h1>Build technology.<br />Grow with <span>purpose.</span></h1></div>
-          <div><p>Join a collaborative team creating practical technology, community programs, and opportunities for learners across Pakistan.</p><div className="dq-careers-hero-actions"><Link className="dq-btn dq-btn-blue" href="#open-roles">Explore open roles <ArrowDown /></Link><Link className="dq-btn dq-btn-slate" href="#campus-ambassador">Campus Ambassador <GraduationCap /></Link></div></div>
+          <div><p>Join a collaborative team creating practical technology, community programs, and opportunities for learners across Pakistan.</p><div className="dq-careers-hero-actions"><Link className="dq-btn dq-btn-blue" href="#open-roles">Explore open roles <ArrowDown /></Link><Link className="dq-btn dq-btn-slate" href="#campus-ambassador">Campus Ambassador <GraduationCap /></Link><Link className="dq-careers-status-link" href="/application-status"><Search /> Check application status</Link></div></div>
         </div>
       </section>
 
@@ -59,7 +59,7 @@ export default function CareersPage() {
         </div>
       </section>
 
-      <section className="dq-careers-cta"><div className="dq-shell"><p className="dq-kicker">DON&apos;T SEE YOUR ROLE?</p><h2>Show us what you can bring.</h2><p>We welcome thoughtful applications from people who care about technology, learning, and community impact.</p><a className="dq-btn dq-btn-blue" href="mailto:devquestpk@gmail.com?subject=General%20Career%20Application%20-%20DevQuest">Send an open application <ArrowUpRight /></a></div></section>
+      <section className="dq-careers-cta"><div className="dq-shell"><p className="dq-kicker">DON&apos;T SEE YOUR ROLE?</p><h2>Show us what you can bring.</h2><p>We welcome thoughtful applications from people who care about technology, learning, and community impact.</p><a className="dq-btn dq-btn-blue" href="mailto:careers@devquestpk.com?subject=General%20Career%20Application%20-%20DevQuest">Send an open application <ArrowUpRight /></a></div></section>
     </main>
   );
 }

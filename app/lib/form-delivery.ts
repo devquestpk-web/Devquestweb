@@ -1,9 +1,18 @@
+export type FormDeliveryResult = {
+  ok: boolean;
+  sheetSynced?: boolean;
+  emailSent?: boolean;
+  applicantEmailSent?: boolean;
+  emailWarning?: string;
+  tracking?: { code: string; url: string } | null;
+};
+
 export async function deliverWebsiteForm(
   formType: "contact" | "ambassador" | "career",
   fields: Record<string, string>,
   website = "",
   attachment?: File,
-) {
+): Promise<FormDeliveryResult> {
   const requestBody = attachment
     ? (() => {
         const formData = new FormData();
@@ -22,4 +31,5 @@ export async function deliverWebsiteForm(
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(result.error || "We could not send your form. Please try again.");
+  return result as FormDeliveryResult;
 }

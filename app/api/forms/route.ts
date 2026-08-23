@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { jobs } from "../../careers/jobs";
+import { createTrackedApplication, createTrackingCredentials, trackingUrlForRequest } from "../../lib/application-tracking";
+import { appendWebsiteFormSubmission, type WebsiteFormType } from "../../lib/google-sheets";
 
 export const runtime = "nodejs";
 
-const recipient = process.env.FORM_RECIPIENT_EMAIL || "devquestpk@gmail.com";
-const sender = process.env.FORM_FROM_EMAIL || "DevQuest Website <onboarding@resend.dev>";
-const allowedForms = new Set(["contact", "ambassador", "career"]);
+const generalRecipient = process.env.FORM_RECIPIENT_EMAIL || "hello@devquestpk.com";
+const applicationRecipient = process.env.FORM_APPLICATION_RECIPIENT_EMAIL || "careers@devquestpk.com";
+const sender = process.env.FORM_FROM_EMAIL || "DevQuest PK <no-reply@devquestpk.com>";
+const allowedForms = new Set<WebsiteFormType>(["contact", "ambassador", "career"]);
 const allowedCareerPositions = new Set(jobs.map((job) => job.title));
 const maxJsonBytes = 40_000;
 const maxCvBytes = 5 * 1024 * 1024;
@@ -88,14 +91,16 @@ export async function POST(request: Request) {
     }
 
     if (honeypot) return NextResponse.json({ ok: true });
-    if (!allowedForms.has(formType)) return NextResponse.json({ error: "Unknown form." }, { status: 400 });
+    if (!allowedForms.has(formType as WebsiteFormType)) return NextResponse.json({ error: "Unknown form." }, { status: 400 });
+    const validFormType = formType as WebsiteFormType;
+    const recipient = validFormType === "contact" ? generalRecipient : applicationRecipient;
 
-    if ((formType === "ambassador" || formType === "career") && !cv) {
+    if ((validFormType === "ambassador" || validFormType === "career") && !cv) {
       return NextResponse.json({ error: "Please attach your CV." }, { status: 400 });
     }
 
     const position = clean(fields.position, 160);
-    if (formType === "career" && !allowedCareerPositions.has(position)) {
+    if (validFormType === "career" && !allowedCareerPositions.has(position)) {
       return NextResponse.json({ error: "Please select a valid open position." }, { status: 400 });
     }
 
@@ -116,46 +121,118 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please provide a valid name and email." }, { status: 400 });
     }
 
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "Email delivery is not configured yet.", code: "MAIL_NOT_CONFIGURED" }, { status: 503 });
-    }
-
     const safeFields: Array<readonly [string, string]> = Object.entries(fields)
       .map(([key, value]) => [clean(key, 60), clean(value)] as const)
       .filter(([, value]) => Boolean(value));
-    if (cv) safeFields.push(["cvAttachment", safeFilename(cv.name)]);
+    const cvFilename = cv ? safeFilename(cv.name) : "";
+    const cvContentType = cv?.type || "application/octet-stream";
+    const cvContent = cv ? Buffer.from(await cv.arrayBuffer()) : null;
+    if (cvFilename) safeFields.push(["cvAttachment", cvFilename]);
 
-    const rows = safeFields.map(([key, value]) => `
-      <tr>
-        <th style="padding:10px 12px;text-align:left;vertical-align:top;color:#40506b;border-bottom:1px solid #e6ebf2;">${escapeHtml(label(key))}</th>
-        <td style="padding:10px 12px;white-space:pre-wrap;color:#0b193a;border-bottom:1px solid #e6ebf2;">${escapeHtml(value)}</td>
-      </tr>`).join("");
-    const formTitle = formType === "ambassador"
-      ? "Campus Ambassador Application"
-      : formType === "career"
-        ? `Career Application — ${position}`
-        : "Website Enquiry";
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
-      from: sender,
-      to: recipient,
-      replyTo: email,
-      subject: `[DevQuest] ${formTitle} — ${name}`,
-      html: `<div style="font-family:Arial,sans-serif;background:#f4f7fb;padding:30px;color:#0b193a;"><div style="max-width:720px;margin:auto;background:#fff;border:1px solid #dce5f0;border-radius:14px;overflow:hidden;"><div style="padding:24px 26px;background:#071426;color:#fff;"><small style="color:#7fe6ff;letter-spacing:.12em;font-weight:700;">DEVQUEST WEBSITE</small><h1 style="margin:8px 0 0;font-size:24px;">${formTitle}</h1></div><table style="width:100%;border-collapse:collapse;font-size:14px;">${rows}</table><p style="margin:0;padding:20px 26px;color:#67748c;font-size:12px;">Reply to this email to contact ${escapeHtml(name)} at ${escapeHtml(email)}.</p></div></div>`,
-      attachments: cv ? [{
-        filename: safeFilename(cv.name),
-        content: Buffer.from(await cv.arrayBuffer()),
-        contentType: cv.type || undefined,
-      }] : undefined,
-    });
-
-    if (error) {
-      console.error("Resend form delivery error", error);
-      return NextResponse.json({ error: "We could not send your form. Please try again." }, { status: 502 });
+    const submissionId = crypto.randomUUID();
+    let tracking: { code: string; url: string } | null = null;
+    if (validFormType === "ambassador" || validFormType === "career") {
+      const credentials = createTrackingCredentials(validFormType, submissionId);
+      try {
+        await createTrackedApplication({
+          submissionId,
+          type: validFormType,
+          trackingCode: credentials.code,
+          tokenHash: credentials.tokenHash,
+          fullName: name,
+          email,
+          phone: clean(fields.whatsapp || fields.phone, 80),
+          city: clean(fields.city, 100),
+          position: validFormType === "career" ? position : "Campus Ambassador",
+          fields: Object.fromEntries(safeFields),
+          cvFilename,
+        });
+        tracking = { code: credentials.code, url: trackingUrlForRequest(request, credentials.token) };
+      } catch (trackingError) {
+        console.error("Application tracking creation error", trackingError);
+        return NextResponse.json({ error: "We could not create your secure application tracker. Please try again.", code: "TRACKING_UNAVAILABLE" }, { status: 503 });
+      }
     }
 
-    return NextResponse.json({ ok: true });
+    const formTitle = validFormType === "ambassador"
+      ? "Campus Ambassador Application"
+      : validFormType === "career"
+        ? `Career Application — ${position}`
+        : "Website Enquiry";
+    let sheetSynced = false;
+    let sheetConfigured = false;
+    try {
+      const sheetResult = await appendWebsiteFormSubmission({
+        formType: validFormType,
+        submittedAt: new Date().toISOString(),
+        submissionId,
+        fields: Object.fromEntries(safeFields),
+        sourcePage: clean(request.headers.get("referer"), 500),
+        attachment: cvContent ? {
+          filename: cvFilename,
+          contentType: cvContentType,
+          base64: cvContent.toString("base64"),
+        } : undefined,
+      });
+      sheetConfigured = sheetResult.configured;
+      sheetSynced = sheetResult.synced;
+    } catch (sheetError) {
+      console.error("Google Sheets form sync error", sheetError);
+    }
+
+    let emailSent = false;
+    let applicantEmailSent = false;
+    let emailWarning = "";
+    const apiKey = process.env.RESEND_API_KEY;
+    if (apiKey) {
+      const rows = safeFields.map(([key, value]) => `
+        <tr>
+          <th style="padding:10px 12px;text-align:left;vertical-align:top;color:#40506b;border-bottom:1px solid #e6ebf2;">${escapeHtml(label(key))}</th>
+          <td style="padding:10px 12px;white-space:pre-wrap;color:#0b193a;border-bottom:1px solid #e6ebf2;">${escapeHtml(value)}</td>
+        </tr>`).join("");
+      const resend = new Resend(apiKey);
+      const { error } = await resend.emails.send({
+        from: sender,
+        to: recipient,
+        replyTo: email,
+        subject: `[DevQuest] ${formTitle} — ${name}`,
+        html: `<div style="font-family:Arial,sans-serif;background:#f4f7fb;padding:30px;color:#0b193a;"><div style="max-width:720px;margin:auto;background:#fff;border:1px solid #dce5f0;border-radius:14px;overflow:hidden;"><div style="padding:24px 26px;background:#071426;color:#fff;"><small style="color:#7fe6ff;letter-spacing:.12em;font-weight:700;">DEVQUEST WEBSITE</small><h1 style="margin:8px 0 0;font-size:24px;">${formTitle}</h1></div><table style="width:100%;border-collapse:collapse;font-size:14px;">${rows}</table><p style="margin:0;padding:20px 26px;color:#67748c;font-size:12px;">Reply to this email to contact ${escapeHtml(name)} at ${escapeHtml(email)}.</p></div></div>`,
+        attachments: cvContent ? [{
+          filename: cvFilename,
+          content: cvContent,
+          contentType: cvContentType,
+        }] : undefined,
+      });
+      if (error) {
+        console.error("Resend form delivery error", error);
+        emailWarning = validFormType === "contact"
+          ? "Your enquiry was saved, but the DevQuest team email could not be delivered."
+          : "Your application was saved, but the DevQuest team email could not be delivered.";
+      } else emailSent = true;
+
+      if (tracking) {
+        const applicationLabel = validFormType === "career" ? position : "Campus Ambassador programme";
+        const { error: applicantEmailError } = await resend.emails.send({
+          from: sender,
+          to: email,
+          subject: `[DevQuest] Application received — ${tracking.code}`,
+          html: `<div style="font-family:Arial,sans-serif;background:#f4f7fb;padding:30px;color:#0b193a"><div style="max-width:680px;margin:auto;background:#fff;border:1px solid #dce5f0;border-radius:14px;overflow:hidden"><div style="padding:24px 26px;background:#071426;color:#fff"><small style="color:#7fe6ff;letter-spacing:.12em;font-weight:700">DEVQUEST APPLICATION TRACKER</small><h1 style="margin:8px 0 0;font-size:24px">Application received</h1></div><div style="padding:26px"><p>Hello ${escapeHtml(name)},</p><p>We received your application for <strong>${escapeHtml(applicationLabel)}</strong>.</p><p style="padding:14px 16px;background:#edf5ff;border-radius:10px">Tracking ID: <strong>${escapeHtml(tracking.code)}</strong></p><p><a href="${escapeHtml(tracking.url)}" style="display:inline-block;padding:12px 18px;color:#fff;background:#175fe2;border-radius:8px;text-decoration:none;font-weight:700">View live application status</a></p><p style="color:#67748c;font-size:13px">Keep this private link safe. Anyone with the link can view your application status.</p></div></div></div>`,
+        });
+        if (applicantEmailError) {
+          console.error("Applicant confirmation email error", applicantEmailError);
+          emailWarning = "Your application was saved, but the confirmation email could not be delivered. Save your tracking ID to check the status later.";
+        } else applicantEmailSent = true;
+      }
+    } else if (tracking) {
+      emailWarning = "Your application was saved, but confirmation email is not configured. Save your tracking ID to check the status later.";
+    }
+
+    if (!tracking && !sheetSynced && !emailSent) {
+      const code = sheetConfigured ? "DELIVERY_FAILED" : "DELIVERY_NOT_CONFIGURED";
+      return NextResponse.json({ error: "We could not save your form. Please try again.", code }, { status: 503 });
+    }
+
+    return NextResponse.json({ ok: true, sheetSynced, emailSent, applicantEmailSent, emailWarning: emailWarning || undefined, tracking });
   } catch (error) {
     console.error("Form delivery error", error);
     return NextResponse.json({ error: "We could not send your form. Please try again." }, { status: 500 });
