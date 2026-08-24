@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     description: "Learn, build, and shape the future of technology with DevQuest PK.",
     images: ["/og.png"],
   },
+  other: {
+    "google-adsense-account": "ca-pub-9741649840136010",
+  },
 };
 
 export const viewport: Viewport = {
