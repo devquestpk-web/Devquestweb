@@ -30,31 +30,6 @@ export default function AboutPage() {
 
       <section className="dq-team-section" id="team"><div className="dq-shell"><h2>Our Team</h2><div className="dq-figma-team-grid">{team.map(({ name, role, group, image, detail, institution, linkedin, github, portfolio, photoFit, photoPosition }, index) => <article className={image ? "dq-team-profile-card" : ""} key={name}><small>{group}</small><h3>{role}</h3><div className={`dq-team-portrait portrait-${index % 3}`}>{image ? <Image src={image} alt={name} fill sizes="360px" style={{ objectFit: photoFit || "cover", objectPosition: photoPosition || "center 24%" }} /> : <span>{name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span>}</div><strong>{name}</strong>{detail && <p className="dq-team-detail">{detail}</p>}{institution && <p className="dq-team-institution">{institution}</p>}<div className="dq-team-links">{linkedin && <Link href={linkedin} target="_blank" rel="noreferrer">View LinkedIn <ArrowUpRight /></Link>}{github && <Link href={github} target="_blank" rel="noreferrer">View GitHub <Github /></Link>}{portfolio && <Link href={portfolio} target="_blank" rel="noreferrer">View portfolio <Globe2 /></Link>}{!linkedin && !github && !portfolio && <Link href="/contact">Get in touch <ArrowUpRight /></Link>}</div></article>)}</div></div></section>
 
-      <section className="dq-home-cta">
-        <div className="dq-shell dq-home-cta-grid">
-          <div>
-            <p className="dq-kicker">TEAMS &amp; PARTNERS</p>
-            <h2>Teams in collaboration across campuses</h2>
-            <p>We work with student teams, university hubs, and industry partners to build sustained campus programs and MoU-backed collaborations.</p>
-            <div style={{ marginTop: 28 }}>
-              <Link className="dq-btn dq-btn-blue" href="/teams-in-collaboration">Explore Teams in Collaboration</Link>
-              <Link className="dq-btn dq-btn-slate" href="/contact">Partner with us</Link>
-            </div>
-          </div>
-          <div>
-            <div className="hero-panel">
-              <div className="eyebrow">HIGHLIGHT</div>
-              <h2>Featured: AWS SBG BZU MoU Spotlight</h2>
-              <p>Our strategic partnership with AWS SBG at BZU supports campus skill-building and real project mentorship.</p>
-              <div className="hero-panel-links"><a href="/partnerships/aws">Read more</a></div>
-              <div style={{ marginTop: 18 }} className="dq-sponsor-logo" >
-                <Image src="/partners/bzu-mou.jpg" alt="BZU MoU" fill sizes="220px" style={{ objectFit: "cover" }} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="dq-about-partners"><div className="dq-shell"><p className="dq-kicker">PARTNERS &amp; SPONSORS</p><h2>Our program is<br />backed by the best.</h2><p>We collaborate with universities and technology partners to build learning experiences with real community value.</p></div><SponsorMarquee /></section>
     </div>
   );
