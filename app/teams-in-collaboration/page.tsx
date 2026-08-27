@@ -36,23 +36,18 @@ export default function TeamsInCollaborationPage() {
         </div>
       </section>
 
-      <section className="dq-shell" style={{ marginTop: 28 }}>
+      <section className="dq-shell">
         <h2>Featured MoU Spotlight</h2>
         <div style={{ marginTop: 18 }}>
-          <article className="dq-mou-spotlight">
-            <div className="mou-grid">
-              <div className="mou-image" aria-hidden="false">
-                <span className="mou-badge">MoU Partnership</span>
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                  <Image src="/partners/bzu-mou.jpg" alt="AWS SBG BZU partnership MoU signing" fill sizes="(max-width: 760px) 420px, 720px" style={{ objectFit: 'cover', objectPosition: 'center' }} />
-                </div>
-              </div>
-              <div className="mou-content">
-                <div className="eyebrow">SPOTLIGHT</div>
-                <h3>AWS SBG BZU Partnership</h3>
-                <p>Working with AWS SBG at BZU to deliver campus-focused cloud skill-building, project mentorship, and joint events.</p>
-                <Link href="/partnerships/aws" className="mou-cta">Learn more <span aria-hidden="true">→</span></Link>
-              </div>
+          <article className="dq-official-card">
+            <div>
+              <small>SPOTLIGHT</small>
+              <h3>AWS SBG BZU Partnership</h3>
+              <p>Working with AWS SBG at BZU to deliver campus-focused cloud skill-building, project mentorship, and joint events.</p>
+              <Link href="/partnerships/aws" className="dq-btn dq-btn-blue">Learn more</Link>
+            </div>
+            <div className="dq-sponsor-logo" style={{ position: "relative", width: 420, height: 260 }}>
+              <Image src="/partners/bzu-mou.jpg" alt="BZU MoU signing" fill sizes="420px" style={{ objectFit: "cover" }} />
             </div>
           </article>
         </div>

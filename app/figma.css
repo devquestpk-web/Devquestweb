@@ -77,37 +77,6 @@ body:has(.dq-contact-page) .dq-header { background: #fbfbfb; color: #071c28; }bo
 .dq-sponsor-card { width: 280px; height: 140px; display: grid; place-items: center; padding: 18px; overflow: hidden; background: linear-gradient(145deg,#071426,#102c49); border: 1px solid rgba(139,220,255,.24); border-radius: 10px; box-shadow: 0 16px 35px rgba(0,8,22,.2); }
 .dq-sponsor-logo { width: 100%; height: 100%; position: relative; overflow: hidden; }
 .dq-sponsor-logo img { object-fit: contain !important; object-position: center !important; opacity: 1; filter: contrast(1.8) grayscale(1) invert(1); mix-blend-mode: screen; transform: scale(1.05); transform-origin: center; }
-
-/* MoU Spotlight overrides: show natural photo colors and editorial layout */
-.dq-mou-spotlight { display: block; background: var(--dq-bg); border: 1px solid rgba(255,255,255,0.04); border-radius: 24px; padding: 56px; position: relative; overflow: hidden; }
-.dq-mou-spotlight::before { content: ""; position: absolute; inset: 0; background: radial-gradient(600px 300px at 10% 20%, rgba(38,95,215,0.06), transparent 18%); pointer-events: none; }
-.dq-mou-spotlight .mou-grid { display: grid; grid-template-columns: 45% 55%; gap: 64px; align-items: center; }
-.dq-mou-spotlight .mou-image { position: relative; border-radius: 18px; overflow: hidden; min-height: 420px; box-shadow: 0 24px 60px rgba(2,8,32,0.5); border: 1px solid rgba(255,255,255,0.04); }
-.dq-mou-spotlight .mou-image .dq-sponsor-logo img { filter: none !important; mix-blend-mode: normal !important; opacity: 1 !important; transform: none !important; object-fit: cover !important; object-position: center !important; }
-.dq-mou-spotlight .mou-badge { position: absolute; left: 18px; top: 18px; background: rgba(255,255,255,0.04); color: #9fe1ff; padding: 8px 12px; border-radius: 12px; font-weight: 800; letter-spacing: .12em; font-size: .72rem; }
-.dq-mou-spotlight .mou-content .eyebrow { color: #9fe1ff; font-weight: 800; letter-spacing: .12em; margin-bottom: 12px; }
-.dq-mou-spotlight .mou-content h3 { margin: 0 0 18px; font-size: clamp(42px, 4vw, 68px); line-height: 1.02; font-weight: 720; color: white; }
-.dq-mou-spotlight .mou-content p { margin: 0 0 22px; max-width: 600px; color: #c5d0ea; line-height: 1.6; }
-.dq-mou-spotlight .mou-cta { display: inline-flex; align-items: center; gap: 10px; padding: 14px 20px; background: linear-gradient(135deg, var(--dq-blue), var(--blue-strong)); color: white; border-radius: 12px; font-weight: 720; transition: transform .22s ease, box-shadow .22s ease; }
-.dq-mou-spotlight .mou-cta:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(36,85,230,.18); }
-.dq-mou-spotlight .mou-cta svg { transition: transform .18s ease; }
-.dq-mou-spotlight .mou-cta:hover svg { transform: translateX(6px); }
-
-@media (max-width: 1024px) {
-  .dq-mou-spotlight { padding: 40px; }
-  .dq-mou-spotlight .mou-grid { grid-template-columns: 45% 55%; gap: 48px; }
-  .dq-mou-spotlight .mou-image { min-height: 360px; }
-}
-@media (max-width: 760px) {
-  .dq-mou-spotlight { padding: 24px; }
-  .dq-mou-spotlight .mou-grid { grid-template-columns: 1fr; gap: 20px; }
-  .dq-mou-spotlight .mou-image { min-height: 240px; }
-  .dq-mou-spotlight .mou-content h3 { font-size: clamp(28px, 7vw, 40px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .dq-mou-spotlight .mou-image, .dq-mou-spotlight .mou-content { transition: none !important; animation: none !important; }
-}
 .dq-sponsor-logo-wide img { transform: scale(1.5); }
 .dq-sponsor-logo-extra-wide img { transform: scale(1.75); }
 @keyframes dq-sponsor-scroll { to { transform: translateX(calc(-50% - 9px)); } }
