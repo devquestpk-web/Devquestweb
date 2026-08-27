@@ -42,13 +42,20 @@ export default function AboutPage() {
             </div>
           </div>
           <div>
-            <div className="hero-panel">
-              <div className="eyebrow">HIGHLIGHT</div>
-              <h2>Featured: AWS SBG BZU MoU Spotlight</h2>
-              <p>Our strategic partnership with AWS SBG at BZU supports campus skill-building and real project mentorship.</p>
-              <div className="hero-panel-links"><a href="/partnerships/aws">Read more</a></div>
-              <div style={{ marginTop: 18 }} className="dq-sponsor-logo" >
-                <Image src="/partners/bzu-mou.jpg" alt="BZU MoU" fill sizes="220px" style={{ objectFit: "cover" }} />
+            <div className="dq-mou-spotlight">
+              <div className="mou-grid">
+                <div className="mou-image">
+                  <span className="mou-badge">MoU Partnership</span>
+                  <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: 260 }}>
+                    <Image src="/partners/bzu-mou.jpg" alt="AWS SBG BZU partnership MoU signing" fill sizes="(max-width: 760px) 320px, 520px" style={{ objectFit: 'cover', objectPosition: 'center' }} />
+                  </div>
+                </div>
+                <div className="mou-content">
+                  <div className="eyebrow">SPOTLIGHT</div>
+                  <h3>Featured: AWS SBG BZU MoU Spotlight</h3>
+                  <p>Our strategic partnership with AWS SBG at BZU supports campus skill-building and real project mentorship.</p>
+                  <div className="hero-panel-links"><Link href="/partnerships/aws" className="mou-cta">Read more</Link></div>
+                </div>
               </div>
             </div>
           </div>
