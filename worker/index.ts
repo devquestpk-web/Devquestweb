@@ -3,9 +3,9 @@ import { handleImageOptimization, DEFAULT_DEVICE_SIZES, DEFAULT_IMAGE_SIZES } fr
 import handler from "vinext/server/app-router-entry";
 
 interface Env {
-  ASSETS: Fetcher;
-  DB: D1Database;
-  IMAGES: {
+  ASSETS?: Fetcher;
+  DB?: D1Database;
+  IMAGES?: {
     input(stream: ReadableStream): {
       transform(options: Record<string, unknown>): {
         output(options: { format: string; quality: number }): Promise<{ response(): Response }>;
@@ -32,8 +32,22 @@ const worker = {
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];
       return handleImageOptimization(request, {
-        fetchAsset: (path) => env.ASSETS.fetch(new Request(new URL(path, request.url))),
+        fetchAsset: async (path) => {
+          const assetUrl = new URL(path, request.url);
+          const assetRequest = new Request(assetUrl);
+          if (env?.ASSETS?.fetch) {
+            try {
+              return await env.ASSETS.fetch(assetRequest);
+            } catch (err) {
+              console.error("[vinext] env.ASSETS.fetch failed, falling back to global fetch:", err);
+            }
+          }
+          return fetch(assetRequest);
+        },
         transformImage: async (body, { width, format, quality }) => {
+          if (!env?.IMAGES?.input) {
+            throw new Error("env.IMAGES is not bound or configured in this environment");
+          }
           const result = await env.IMAGES.input(body).transform(width > 0 ? { width } : {}).output({ format, quality });
           return result.response();
         },

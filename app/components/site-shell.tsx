@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Menu, MessageCircle, Phone, Youtube } from "lucide-react";
+import { ChevronDown, Facebook, Instagram, Linkedin, Mail, MapPin, Menu, MessageCircle, Phone, Youtube } from "lucide-react";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -21,7 +21,7 @@ const navigation = [
   { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
   { href: "/events", label: "Events & Academy" },
-  { href: "/community", label: "Community" },
+  { href: "/community", label: "Community", isDropdown: true },
   { href: "/portal", label: "Portals" },
   { href: "/careers", label: "Careers" },
   { href: "/contact", label: "Contact Us" },
@@ -61,7 +61,21 @@ export function SiteHeader() {
       <div className="dq-shell dq-nav">
         <Brand compact />
         <nav className="dq-desktop-nav" aria-label="Main navigation">
-          {navigation.map((item) => <Link key={item.href} href={item.href}>{item.label}</Link>)}
+          {navigation.map((item) =>
+            item.isDropdown ? (
+              <div key={item.label} className="dq-dropdown">
+                <span className="dq-dropdown-trigger">
+                  {item.label} <ChevronDown className="w-3.5 h-3.5 inline-block" />
+                </span>
+                <div className="dq-dropdown-menu">
+                  <Link href="/community">STUDENT CHAPTERS</Link>
+                  <Link href="/teams-in-collaboration">PARTNERS</Link>
+                </div>
+              </div>
+            ) : (
+              <Link key={item.href} href={item.href}>{item.label}</Link>
+            )
+          )}
         </nav>
         <a className="dq-login" href="#member-signin">Log In</a>
         <div className="dq-mobile-nav" ref={mobileNavRef}>
@@ -76,7 +90,19 @@ export function SiteHeader() {
           </button>
           {isMobileMenuOpen && (
             <nav id="mobile-navigation" aria-label="Mobile navigation">
-              {navigation.map((item) => <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>{item.label}</Link>)}
+              {navigation.map((item) =>
+                item.isDropdown ? (
+                  <div key={item.label} className="dq-mobile-dropdown">
+                    <span className="dq-mobile-dropdown-label">Community</span>
+                    <div className="dq-mobile-dropdown-items">
+                      <Link href="/community" onClick={() => setIsMobileMenuOpen(false)}>STUDENT CHAPTERS</Link>
+                      <Link href="/teams-in-collaboration" onClick={() => setIsMobileMenuOpen(false)}>PARTNERS</Link>
+                    </div>
+                  </div>
+                ) : (
+                  <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>{item.label}</Link>
+                )
+              )}
               <a href="#member-signin" onClick={() => setIsMobileMenuOpen(false)}>Log In</a>
             </nav>
           )}
@@ -94,7 +120,7 @@ export function SiteFooter() {
         <div className="dq-shell dq-footer-grid">
           <div><h3>Reach us</h3><a href="tel:+923704489589"><Phone /> +92 370 4489589</a><a href="mailto:hello@devquestpk.com"><Mail /> hello@devquestpk.com</a><span><MapPin /> Multan, Pakistan</span></div>
           <div><h3>Explore</h3><Link href="/about">About</Link><Link href="/services">Services</Link><Link href="/events">Events &amp; Academy</Link><Link href="/portal">Portals</Link><Link href="/careers">Careers</Link><Link href="/application-status">Application status</Link><Link href="/contact">Contact</Link></div>
-          <div><h3>Community</h3><Link href="/about#team">Our team</Link><Link href="/community#chapters">University chapters</Link><Link href="/careers#campus-ambassador">Become an ambassador</Link></div>
+          <div><h3>Community</h3><Link href="/about#team">Our team</Link><Link href="/community#chapters">University chapters</Link><Link href="/teams-in-collaboration">Teams in Collaboration</Link><Link href="/careers#campus-ambassador">Become an ambassador</Link></div>
           <div><h3>Follow</h3><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer"><Linkedin /> LinkedIn</a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer"><Instagram /> Instagram</a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer"><Facebook /> Facebook</a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer"><Youtube /> YouTube</a></div>
           <div className="dq-newsletter"><h3>Join our newsletter</h3><p>Updates on events, learning, and community opportunities.</p><a href="mailto:hello@devquestpk.com?subject=Subscribe%20me%20to%20DevQuest">Subscribe by email</a></div>
         </div>
