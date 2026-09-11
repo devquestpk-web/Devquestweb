@@ -32,7 +32,7 @@ export default function CareersPage() {
           <div className="dq-careers-heading">
             <div>
               <p className="dq-kicker">{ARE_JOB_APPLICATIONS_OPEN ? "OPEN OPPORTUNITIES" : "CAREER POSITIONS"}</p>
-              <h2>Technical Team</h2>
+              <h2>{ARE_JOB_APPLICATIONS_OPEN ? "Career Opportunities" : "Available Positions"}</h2>
             </div>
             <p>
               {ARE_JOB_APPLICATIONS_OPEN

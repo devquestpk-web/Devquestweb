@@ -166,7 +166,7 @@ export default function Home() {
       </section>
 
       <section className="dq-careers-home">
-        <div className="dq-shell"><div className="dq-careers-heading"><div><p className="dq-kicker">CAREERS AT DEVQUEST</p><h2>Join our<br />Technical Team.</h2></div><p>Work with a growing technology community where engineering, design, cloud, AI, and partnerships come together.</p></div><CareerCards preview /></div>
+        <div className="dq-shell"><div className="dq-careers-heading"><div><p className="dq-kicker">CAREERS AT DEVQUEST</p><h2>Join our<br />Growing Team.</h2></div><p>Work with a growing technology community where engineering, design, cloud, AI, and partnerships come together.</p></div><CareerCards preview /></div>
       </section>
 
       <section className="dq-home-cta"><div className="dq-shell dq-home-cta-grid"><div><p className="dq-kicker">START YOUR QUEST</p><h2>Build skills. Find your people. Create what matters.</h2><p>Join students, developers, mentors, universities, and partners shaping a more collaborative technology ecosystem.</p><div><a className="dq-btn dq-btn-blue" href="#member-signup">Create an account</a><Link className="dq-btn dq-btn-slate" href="/contact">Partner with us</Link></div></div><ContactForm compact /></div></section>
