@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowDown, ArrowUpRight, BadgeCheck, CalendarCheck2, GraduationCap, MessageCircle, Search, Sparkles, Users } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUpRight, BadgeCheck, CalendarCheck2, GraduationCap, MessageCircle, Search, Sparkles, Users } from "lucide-react";
 import { CareerCards } from "../components/career-cards";
 import { AmbassadorForm } from "./ambassador-form";
+import { ARE_JOB_APPLICATIONS_OPEN } from "./jobs";
 
 export const metadata: Metadata = {
   title: "Careers",
@@ -22,13 +23,33 @@ export default function CareersPage() {
       <section className="dq-careers-hero">
         <div className="dq-shell dq-careers-hero-grid">
           <div><p className="dq-kicker"><Sparkles /> JOIN THE QUEST</p><h1>Build technology.<br />Grow with <span>purpose.</span></h1></div>
-          <div><p>Join a collaborative team creating practical technology, community programs, and opportunities for learners across Pakistan.</p><div className="dq-careers-hero-actions"><Link className="dq-btn dq-btn-blue" href="#open-roles">Explore open roles <ArrowDown /></Link><Link className="dq-btn dq-btn-slate" href="#campus-ambassador">Campus Ambassador <GraduationCap /></Link><Link className="dq-careers-status-link" href="/application-status"><Search /> Check application status</Link></div></div>
+          <div><p>Join a collaborative team creating practical technology, community programs, and opportunities for learners across Pakistan.</p><div className="dq-careers-hero-actions"><Link className="dq-btn dq-btn-blue" href="#open-roles">{ARE_JOB_APPLICATIONS_OPEN ? "Explore open roles" : "Explore positions"} <ArrowDown /></Link><Link className="dq-btn dq-btn-slate" href="#campus-ambassador">Campus Ambassador <GraduationCap /></Link><Link className="dq-careers-status-link" href="/application-status"><Search /> Check application status</Link></div></div>
         </div>
       </section>
 
       <section className="dq-careers-list" id="open-roles">
-        <div className="dq-shell"><div className="dq-careers-heading"><div><p className="dq-kicker">OPEN OPPORTUNITIES</p><h2>Technical Team</h2></div><p>Select a role to review its focus areas, then complete the application form for that specific vacancy and attach your CV.</p></div><CareerCards /></div>
+        <div className="dq-shell">
+          <div className="dq-careers-heading">
+            <div>
+              <p className="dq-kicker">{ARE_JOB_APPLICATIONS_OPEN ? "OPEN OPPORTUNITIES" : "CAREER POSITIONS"}</p>
+              <h2>Technical Team</h2>
+            </div>
+            <p>
+              {ARE_JOB_APPLICATIONS_OPEN
+                ? "Select a role to review its focus areas, then complete the application form for that specific vacancy and attach your CV."
+                : "Applications for technical roles are currently closed. Select a role below to review its focus areas and requirements."}
+            </p>
+          </div>
+          {!ARE_JOB_APPLICATIONS_OPEN ? (
+            <div className="dq-careers-closed-notice" role="status">
+              <AlertCircle />
+              <span><strong>Applications Closed — Deadline Ended:</strong> Job applications for open positions are currently closed because the application deadline has ended. You can still review position requirements below or send an open application.</span>
+            </div>
+          ) : null}
+          <CareerCards />
+        </div>
       </section>
+
 
       <section className="dq-careers-ambassador" id="campus-ambassador">
         <div className="dq-shell dq-careers-ambassador-grid">

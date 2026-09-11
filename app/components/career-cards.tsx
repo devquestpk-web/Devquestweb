@@ -12,7 +12,7 @@ import {
   Smartphone,
   LucideIcon,
 } from "lucide-react";
-import { jobs } from "../careers/jobs";
+import { ARE_JOB_APPLICATIONS_OPEN, jobs } from "../careers/jobs";
 
 const icons: LucideIcon[] = [
   Code2,             // 01: Tech Lead / Full-Stack Developer
@@ -35,6 +35,7 @@ export function CareerCards({ preview = false }: { preview?: boolean }) {
       {visibleJobs.map((job, index) => {
         const Icon = icons[index] || BriefcaseBusiness;
         const numberFormatted = String(index + 1).padStart(2, "0");
+        const isOpen = job.status ? job.status === "open" : ARE_JOB_APPLICATIONS_OPEN;
 
         return (
           <article className="dq-career-card" id={preview ? undefined : job.slug} key={job.slug}>
@@ -48,7 +49,9 @@ export function CareerCards({ preview = false }: { preview?: boolean }) {
               <>
                 <div className="dq-career-meta">
                   <span>Multan / Hybrid</span>
-                  <span>Open application</span>
+                  <span className={isOpen ? "dq-status-open" : "dq-status-closed"}>
+                    {isOpen ? "Open application" : "Applications closed · Deadline ended"}
+                  </span>
                 </div>
                 <p className="dq-career-summary">{job.summary}</p>
                 <ul>
@@ -58,12 +61,13 @@ export function CareerCards({ preview = false }: { preview?: boolean }) {
                 </ul>
               </>
             ) : null}
-            <Link href={`/careers/apply/${job.slug}`}>
-              Apply now <ArrowUpRight />
+            <Link href={`/careers/apply/${job.slug}`} className={!isOpen ? "dq-career-closed-link" : undefined}>
+              {isOpen ? "Apply now" : "View details"} <ArrowUpRight />
             </Link>
           </article>
         );
       })}
+
       {preview ? (
         <Link className="dq-career-all" href="/careers">
           View all career details <ArrowUpRight />

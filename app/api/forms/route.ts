@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
-import { jobs } from "../../careers/jobs";
+import { ARE_JOB_APPLICATIONS_OPEN, jobs } from "../../careers/jobs";
 import { createTrackedApplication, createTrackingCredentials, trackingUrlForRequest } from "../../lib/application-tracking";
 import { appendWebsiteFormSubmission, type WebsiteFormType } from "../../lib/google-sheets";
 
@@ -100,8 +100,13 @@ export async function POST(request: Request) {
     }
 
     const position = clean(fields.position, 160);
-    if (validFormType === "career" && !allowedCareerPositions.has(position)) {
-      return NextResponse.json({ error: "Please select a valid open position." }, { status: 400 });
+    if (validFormType === "career") {
+      if (!ARE_JOB_APPLICATIONS_OPEN) {
+        return NextResponse.json({ error: "Job applications are currently closed because the application deadline has ended." }, { status: 400 });
+      }
+      if (!allowedCareerPositions.has(position)) {
+        return NextResponse.json({ error: "Please select a valid open position." }, { status: 400 });
+      }
     }
 
     if (cv) {

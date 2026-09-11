@@ -465,6 +465,32 @@ svg { width: 1.15em; height: 1.15em; stroke-width: 1.8; }
 .job-application-role small { color: #5c7cae; font-size: .58rem; font-weight: 800; letter-spacing: .12em; }
 .job-application-role strong { color: #13234a; font-size: .88rem; line-height: 1.4; }
 
+.dq-status-open { color: #7fe6ff !important; background: rgba(43, 134, 255, .2) !important; border: 1px solid rgba(127, 219, 255, .3); }
+.dq-status-closed { color: #ff9b9b !important; background: rgba(239, 68, 68, .15) !important; border: 1px solid rgba(248, 113, 113, .3); font-weight: 650; }
+
+.dq-careers-closed-notice {
+  margin-bottom: 28px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  color: #ffe4e4;
+  background: linear-gradient(135deg, rgba(82, 17, 26, 0.85), rgba(45, 10, 15, 0.95));
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  border-radius: 12px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.dq-careers-closed-notice svg { flex: none; width: 22px; height: 22px; color: #f87171; margin-top: 2px; }
+
+.job-application-closed-card { padding: 42px 36px; text-align: left; }
+.job-application-closed-card .eyebrow { color: #f87171; }
+.job-application-closed-body { margin-top: 24px; display: grid; gap: 20px; color: #536485; font-size: 0.95rem; line-height: 1.65; }
+.job-application-closed-body .dq-careers-closed-notice { margin-bottom: 0; }
+.job-application-closed-actions { margin-top: 10px; }
+.dq-career-closed-link { opacity: 0.95; }
+
+
 @media (max-width: 900px) {
   .dq-careers-heading, .dq-careers-hero-grid, .dq-careers-ambassador-grid, .dq-job-apply-hero-grid { grid-template-columns: 1fr; gap: 42px; }
   .dq-careers-hero-grid { min-height: auto; padding-block: 80px; }

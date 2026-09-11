@@ -5,7 +5,11 @@ export type JobRole = {
   category?: string;
   summary: string;
   skills: string[];
+  status?: "open" | "closed";
 };
+
+export const ARE_JOB_APPLICATIONS_OPEN = false;
+export const JOB_APPLICATIONS_CLOSED_REASON = "Application deadline ended";
 
 export const jobs: JobRole[] = [
   {

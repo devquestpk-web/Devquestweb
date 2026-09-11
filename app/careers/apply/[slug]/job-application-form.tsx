@@ -1,19 +1,45 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { AlertCircle, FileText, Send, ShieldCheck, UploadCloud } from "lucide-react";
+import { AlertCircle, ArrowUpRight, FileText, Lock, Send, ShieldCheck, UploadCloud } from "lucide-react";
 import { ApplicationSubmissionSuccess } from "../../../components/application-submission-success";
 import { deliverWebsiteForm } from "../../../lib/form-delivery";
+import { ARE_JOB_APPLICATIONS_OPEN } from "../../jobs";
 
 const maxCvBytes = 5 * 1024 * 1024;
 const allowedCvExtensions = ["pdf", "doc", "docx"];
 
-export function JobApplicationForm({ position }: { position: string }) {
+export function JobApplicationForm({ position, isOpen = ARE_JOB_APPLICATIONS_OPEN }: { position: string; isOpen?: boolean }) {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState("");
   const [cvName, setCvName] = useState("");
   const [tracking, setTracking] = useState<{ code: string; url: string } | null>(null);
   const [emailWarning, setEmailWarning] = useState("");
+
+  if (!isOpen) {
+    return (
+      <div className="ambassador-form job-application-form job-application-closed-card">
+        <div className="ambassador-form-head">
+          <p className="eyebrow"><Lock className="inline-icon" /> STATUS: CLOSED</p>
+          <h2>Application deadline ended.</h2>
+          <div className="job-application-role"><small>VACANCY</small><strong>{position}</strong></div>
+        </div>
+        <div className="job-application-closed-body">
+          <div className="dq-careers-closed-notice" role="alert">
+            <AlertCircle />
+            <span>Applications for <strong>{position}</strong> are no longer being accepted because the application deadline has ended.</span>
+          </div>
+          <p>You can still review the role details and skills listed on this page to prepare for future opportunities.</p>
+          <div className="job-application-closed-actions">
+            <a className="dq-btn dq-btn-blue" href={`mailto:careers@devquestpk.com?subject=Inquiry%20-%20${encodeURIComponent(position)}`}>
+              Send an open application <ArrowUpRight />
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
