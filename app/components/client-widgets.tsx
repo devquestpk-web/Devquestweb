@@ -145,7 +145,7 @@ export function AuthDock() {
     let loginData, loginError;
     if (portalRole === "student" && data.get("isSignUp") === "true") {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email, password, options: { data: { full_name: String(data.get("fullName") || "") } }
+        email, password, options: { data: { role: "student", full_name: String(data.get("fullName") || "") } }
       });
       if (signUpError) { setWorking(false); setMessage({ type: "error", text: signUpError.message }); return; }
       
