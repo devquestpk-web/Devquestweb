@@ -88,7 +88,7 @@ export function AuthDock() {
   const [open, setOpen] = useState(false);
   const [portalRole, setPortalRole] = useState<PortalRole | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [accountRole, setAccountRole] = useState<"team" | "admin" | null>(null);
+  const [accountRole, setAccountRole] = useState<"team" | "admin" | "student" | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState<{type: "error" | "success"; text: string} | null>(null);
@@ -112,7 +112,7 @@ export function AuthDock() {
       setUser(activeUser);
       if (!activeUser) { setAccountRole(null); setLoading(false); return; }
       const { data } = await supabase.from("profiles").select("role, is_active").eq("id", activeUser.id).single();
-      setAccountRole(data?.is_active !== false && (data?.role === "team" || data?.role === "admin") ? data.role : null);
+      setAccountRole(data?.is_active !== false && (data?.role === "team" || data?.role === "admin" || data?.role === "student") ? data.role : null);
       setLoading(false);
     };
     supabase.auth.getSession().then(({ data }) => void syncAccount(data.session?.user ?? null));
@@ -121,8 +121,9 @@ export function AuthDock() {
   }, []);
   function close() { setOpen(false); if (window.location.hash.startsWith("#member-")) history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
   function chooseRole(role: "student" | "services" | PortalRole) {
-    if (role === "student" || role === "services") { window.location.assign(`/portal/${role}`); return; }
-    setPortalRole(role); setMessage(null);
+    if (role === "services") { window.location.assign(`/portal/${role}`); return; }
+    // Now student is also handled by the auth modal
+    setPortalRole(role as any); setMessage(null);
   }
   function toggleAccess() { setOpen((value) => { if (!value) { setPortalRole(null); setMessage(null); } return !value; }); }
 
@@ -137,17 +138,40 @@ export function AuthDock() {
     const email = String(data.get("email") || "").trim();
     const password = String(data.get("password") || "");
     setWorking(true);
-    const { data: login, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; }
-    const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", login.user.id).single();
-    if (profile?.is_active === false || profile?.role !== portalRole) {
+    
+    // For student role, if they don't exist yet, we could auto-signup here since it's a public portal,
+    // but for now, we'll keep the strict login flow and assume they sign up elsewhere or we handle it in auth.
+    // Let's modify to allow signup if student role is selected.
+    let loginData, loginError;
+    if (portalRole === "student" && data.get("isSignUp") === "true") {
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email, password, options: { data: { full_name: String(data.get("fullName") || "") } }
+      });
+      if (signUpError) { setWorking(false); setMessage({ type: "error", text: signUpError.message }); return; }
+      
+      // Auto-set role if possible via edge function or trigger, or we just rely on default.
+      // But for login we do:
+      loginData = signUpData; loginError = signUpError;
+    } else {
+      const res = await supabase.auth.signInWithPassword({ email, password });
+      loginData = res.data; loginError = res.error;
+    }
+
+    if (loginError) { setWorking(false); setMessage({ type: "error", text: loginError.message }); return; }
+    
+    const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", loginData.user?.id).single();
+    
+    // If student, we might allow if they just signed up and trigger set default to student. 
+    // This depends on the Supabase triggers. We'll enforce role match for team/admin.
+    if (profile?.is_active === false || (portalRole !== "student" && profile?.role !== portalRole)) {
       await supabase.auth.signOut();
       setWorking(false);
       setMessage({ type: "error", text: profile?.is_active === false ? "This portal account has been disabled." : `This account does not have ${portalRole} portal access.` });
       return;
     }
+    
     setWorking(false);
-    window.location.assign(portalRole === "admin" ? "/portal/admin" : "/portal/team");
+    window.location.assign(portalRole === "admin" ? "/portal/admin" : portalRole === "team" ? "/portal/team" : "/portal/student");
   }
   async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut({ scope: "global" }); if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; } window.location.replace("/portal#member-signin"); }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
@@ -160,8 +184,18 @@ export function AuthDock() {
         <div className="auth-main">
           <div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div>
           {loading ? <div className="auth-loading"><LoaderCircle className="spin" /> Checking your session...</div> : user ? <>
-            <div className="auth-popup-head"><div><small>{accountRole === "admin" ? "ADMIN ACCOUNT" : "TEAM ACCOUNT"}</small><h2>Welcome, {name}</h2><p>Your account opens only its assigned DevQuest portal.</p></div></div>
-            <div className="auth-account"><div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div><div className="auth-account-portals auth-account-portals-single">{accountRole === "admin" && <a href="/portal/admin"><ShieldCheck /> Admin Portal <ChevronRight /></a>}{accountRole === "team" && <a href="/portal/team"><UsersRound /> My Team Portal <ChevronRight /></a>}{!accountRole && <p className="auth-account-warning">This account has no active portal role. Contact the DevQuest administrator.</p>}</div>{message && <Status {...message} />}<button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button></div>
+            <div className="auth-popup-head"><div><small>{accountRole === "admin" ? "ADMIN ACCOUNT" : accountRole === "team" ? "TEAM ACCOUNT" : "STUDENT ACCOUNT"}</small><h2>Welcome, {name}</h2><p>Your account opens only its assigned DevQuest portal.</p></div></div>
+            <div className="auth-account">
+              <div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div>
+              <div className="auth-account-portals auth-account-portals-single">
+                {accountRole === "admin" && <a href="/portal/admin"><ShieldCheck /> Admin Portal <ChevronRight /></a>}
+                {accountRole === "team" && <a href="/portal/team"><UsersRound /> My Team Portal <ChevronRight /></a>}
+                {accountRole === "student" && <a href="/portal/student"><GraduationCap /> My Student Portal <ChevronRight /></a>}
+                {!accountRole && <p className="auth-account-warning">This account has no active portal role. Contact the DevQuest administrator.</p>}
+              </div>
+              {message && <Status {...message} />}
+              <button className="dq-btn dq-btn-slate" type="button" onClick={signOut} disabled={working}>{working ? <LoaderCircle className="spin" /> : <LogOut />} Sign out</button>
+            </div>
           </> : !portalRole ? <>
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
             <div className="auth-role-grid">
@@ -172,15 +206,23 @@ export function AuthDock() {
             </div>
           </> : <>
             <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setMessage(null); }}><ArrowLeft /> Change role</button>
-            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : "TEAM PORTAL"}</small><h2>Sign in to the {portalRole} portal</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : "Use your approved DevQuest team account."}</p></div></div>
+            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>Sign in to the {portalRole} portal</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Use your approved DevQuest team account." : "Access your learning and event dashboard."}</p></div></div>
             <form className="auth-form" onSubmit={submit}>
-              <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "admin" ? "admin@devquest.pk" : "team@devquest.pk"} autoComplete="email" /></div></label>
+              {portalRole === "student" && (
+                <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: "0.85rem", margin: 0, background: "transparent", padding: 0 }}>
+                    <input type="checkbox" name="isSignUp" value="true" style={{ width: "auto" }} /> Create new account
+                  </label>
+                </div>
+              )}
+              <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "you@example.com"} autoComplete="email" /></div></label>
               <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete="current-password" /></div></label>
               {message && <Status {...message} />}
-              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : <>Open {portalRole === "admin" ? "Admin" : "Team"} Portal <LogIn /></>}</button>
+              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : <>Open {portalRole === "admin" ? "Admin" : portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
             </form>
-            <p className="auth-team-note"><ShieldCheck /> Portal accounts are issued and controlled by DevQuest administrators.</p>
+            {portalRole !== "student" && <p className="auth-team-note"><ShieldCheck /> Portal accounts are issued and controlled by DevQuest administrators.</p>}
           </>}
+
         </div>
       </section>
     </>}
