@@ -44,7 +44,7 @@ export async function PATCH(request: Request) {
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
     
     const body = await request.json();
-    const { full_name, phone, city, github_url, linkedin_url, discord_handle, bio, skills } = body;
+    const { full_name, phone, city, github_url, linkedin_url, discord_handle, bio, skills, avatar_url } = body;
 
     const { error } = await auth.supabase
       .from("profiles")
@@ -57,6 +57,7 @@ export async function PATCH(request: Request) {
         discord_handle: discord_handle ? String(discord_handle).trim() : null,
         bio: bio ? String(bio).trim() : null,
         skills: Array.isArray(skills) ? skills : [],
+        avatar_url: avatar_url ? String(avatar_url).trim() : null,
       })
       .eq("id", auth.user.id);
 
