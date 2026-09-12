@@ -1,0 +1,417 @@
+/* Namespaced CSS for the 3D Team Showcase */
+.t3d-wrapper {
+  --t3d-bg: #07090e;
+  --t3d-card-bg: rgba(15, 21, 34, 0.8);
+  --t3d-card-border: rgba(255, 255, 255, 0.12);
+  --t3d-perspective: 1400px;
+  background: var(--t3d-bg);
+  color: #f8fafc;
+  position: relative;
+  z-index: 10;
+}
+
+/* Hero Section (if we keep a small trigger area) */
+.t3d-hero {
+  min-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 1.5rem 3rem;
+  background: #05070a;
+}
+.t3d-scroll-hint {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6366f1;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  animation: t3d-bounce 2s infinite;
+}
+@keyframes t3d-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+  60% { transform: translateY(-3px); }
+}
+
+/* 3D Pinned Scroll Section */
+.t3d-scroll-outer {
+  position: relative;
+  height: 480vh;
+  background: var(--t3d-bg);
+}
+.t3d-scroll-sticky {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  perspective: var(--t3d-perspective);
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.t3d-hud {
+  position: absolute;
+  top: 6.5rem; /* adjusted for global header */
+  left: 0;
+  width: 100%;
+  padding: 0 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  pointer-events: none;
+}
+.t3d-hud > * { pointer-events: auto; }
+.t3d-hud-left h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+.t3d-hud-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(13, 17, 26, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.4rem 0.75rem;
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+}
+.t3d-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 0.45rem 0.95rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: background 0.2s, transform 0.2s;
+  outline: none;
+}
+.t3d-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+.t3d-btn.primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+}
+
+/* 3D Viewport & Moving Track */
+.t3d-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  perspective: var(--t3d-perspective);
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+.t3d-track {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  padding: 0 15vw;
+  transform-style: preserve-3d;
+  will-change: transform;
+  pointer-events: auto;
+}
+
+/* 3D Cards */
+.t3d-card-wrap {
+  width: 330px;
+  height: 490px;
+  flex-shrink: 0;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  position: relative;
+  will-change: transform, opacity;
+}
+.t3d-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  background: var(--t3d-card-bg);
+  border: 1px solid var(--t3d-card-border);
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+}
+.t3d-card:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 35px var(--glow);
+}
+.t3d-card-img-box {
+  width: 100%;
+  height: 62%;
+  position: relative;
+  overflow: hidden;
+  background: #0b0f19;
+}
+.t3d-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.5s;
+}
+.t3d-card:hover .t3d-card-img {
+  transform: scale(1.05);
+}
+.t3d-card-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(7, 9, 14, 0.4) 70%, var(--t3d-card-bg) 100%);
+}
+.t3d-card-idx {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.t3d-card-badge {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.t3d-card-content {
+  padding: 1.1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+}
+.t3d-card-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+.t3d-card-role {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.t3d-card-desc {
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+.t3d-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.t3d-card-tags {
+  display: flex;
+  gap: 0.35rem;
+}
+.t3d-tag {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+/* Timeline & Scrubber */
+.t3d-timeline {
+  position: absolute;
+  bottom: 1.8rem;
+  left: 0;
+  width: 100%;
+  padding: 0 2.5rem;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.t3d-timeline > * { pointer-events: auto; }
+.t3d-scrubber {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+.t3d-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #6366f1, #ec4899);
+  box-shadow: 0 0 10px #6366f1;
+}
+.t3d-nav {
+  display: flex;
+  justify-content: space-between;
+  overflow-x: auto;
+  gap: 0.5rem;
+  scrollbar-width: none;
+}
+.t3d-nav::-webkit-scrollbar { display: none; }
+.t3d-chip {
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(13, 17, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  font-size: 0.72rem;
+  color: #94a3b8;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+.t3d-chip:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+.t3d-chip.active {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: #818cf8;
+  color: #fff;
+}
+
+/* Modal */
+.t3d-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 12, 0.88);
+  backdrop-filter: blur(20px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.t3d-modal-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.t3d-modal-box {
+  width: 100%;
+  max-width: 720px;
+  background: #0d121e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  overflow: hidden;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+  transform: scale(0.95);
+  transition: transform 0.3s;
+}
+.t3d-modal-backdrop.open .t3d-modal-box {
+  transform: scale(1);
+}
+.t3d-modal-left {
+  background: #080c14;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.t3d-modal-img-wrap {
+  width: 160px;
+  height: 220px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+.t3d-modal-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.t3d-modal-right {
+  padding: 2rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.t3d-close-btn {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.t3d-modal-quote {
+  font-style: italic;
+  color: #cbd5e1;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  border-radius: 0 8px 8px 0;
+  margin: 0.8rem 0;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 800px) {
+  .t3d-card-wrap { width: 270px; height: 430px; }
+  .t3d-modal-box { grid-template-columns: 1fr; }
+  .t3d-modal-left { border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 1.5rem; }
+  .t3d-modal-img-wrap { width: 120px; height: 160px; }
+  .t3d-hud { top: 4.5rem; flex-direction: column; gap: 0.5rem; align-items: flex-start; padding: 0 1.5rem; }
+  .t3d-hud-controls { display: none; }
+  .t3d-timeline { bottom: 1rem; padding: 0 1.5rem; }
+}
