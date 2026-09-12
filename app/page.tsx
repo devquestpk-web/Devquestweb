@@ -78,7 +78,7 @@ export default function Home() {
             <p>DevQuest empowers students, early-career developers, and technology enthusiasts through practical learning, collaborative events, and impactful solutions.</p>
             <div className="dq-course-actions"><Link className="dq-btn dq-btn-blue" href="/services">Explore Services <ArrowRight /></Link><a className="dq-btn dq-btn-slate" href={joinLink} target="_blank" rel="noreferrer">Join Community <ArrowUpRight /></a></div>
             <div className="dq-hero-stats" aria-label="DevQuest community statistics">
-              <div><strong>4.3K+</strong><span>community followers</span></div>
+              <div><strong>5K+</strong><span>community followers</span></div>
               <div><strong>2+</strong><span>years of impact</span></div>
               <div><strong>2</strong><span>university hubs</span></div>
             </div>
