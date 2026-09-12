@@ -19,10 +19,11 @@ export async function GET(request: Request) {
     if (profileError) throw profileError;
 
     // Fetch stats
-    const [enrollments, tickets, certificates] = await Promise.all([
+    const [enrollments, tickets, certificates, completed_lessons] = await Promise.all([
       supabase.from("enrollments").select("id", { count: "exact" }).eq("user_id", user.id),
       supabase.from("tickets").select("id", { count: "exact" }).eq("user_id", user.id),
       supabase.from("certificates").select("id", { count: "exact" }).eq("user_id", user.id),
+      supabase.from("lesson_progress").select("user_id", { count: "exact" }).eq("user_id", user.id).eq("is_completed", true),
     ]);
 
     return NextResponse.json({
@@ -31,6 +32,7 @@ export async function GET(request: Request) {
         enrollments: enrollments.count || 0,
         tickets: tickets.count || 0,
         certificates: certificates.count || 0,
+        completed_lessons: completed_lessons.count || 0,
       }
     });
   } catch (error) {

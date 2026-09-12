@@ -4,7 +4,7 @@ import type { StudentTab } from "../student-portal";
 import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
 export function DashboardModule({ setTab }: { setTab: (tab: StudentTab) => void }) {
-  const [stats, setStats] = useState({ enrollments: 0, tickets: 0, certificates: 0 });
+  const [stats, setStats] = useState({ enrollments: 0, tickets: 0, certificates: 0, completed_lessons: 0 });
   const [loading, setLoading] = useState(true);
   const supabase = getSupabaseBrowserClient();
 
@@ -68,7 +68,35 @@ export function DashboardModule({ setTab }: { setTab: (tab: StudentTab) => void 
         </div>
       </section>
       
-      {/* Stats Grid */}
+      {/* Progress & Stats Grid */}
+      {!loading && stats.enrollments > 0 && (
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-6 justify-between">
+          <div className="flex-1 w-full">
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-bold text-slate-700 text-sm">Learning Progress</span>
+              <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-2 py-0.5 rounded-full">{stats.completed_lessons} Lessons Completed</span>
+            </div>
+            <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-1000" 
+                style={{ width: `${Math.min((stats.completed_lessons / (stats.enrollments * 5)) * 100, 100)}%` }}
+              ></div>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">Keep up the momentum! You're doing great.</p>
+          </div>
+          <div className="hidden md:block w-px h-12 bg-slate-100"></div>
+          <div className="flex shrink-0 items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 font-black text-xl">
+              🔥
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-800">3 Day</p>
+              <p className="text-xs font-medium text-slate-500">Streak</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {statCards.map(({ label, value, icon: Icon, iconColor }) => (
           <article 
@@ -80,15 +108,38 @@ export function DashboardModule({ setTab }: { setTab: (tab: StudentTab) => void 
             </div>
             <div>
               <div className="flex items-baseline gap-2">
-                <strong className="text-3xl font-black text-slate-800 tracking-tight">
-                  {loading ? <LoaderCircle className="animate-spin h-6 w-6 text-slate-300 my-1" /> : value}
-                </strong>
+                {loading ? (
+                  <div className="h-9 w-16 bg-slate-200 rounded-lg animate-pulse my-0.5"></div>
+                ) : (
+                  <strong className="text-3xl font-black text-slate-800 tracking-tight">
+                    {value}
+                  </strong>
+                )}
               </div>
               <p className="text-sm font-medium text-slate-500 tracking-wide">{label}</p>
             </div>
           </article>
         ))}
       </div>
+
+      {/* Rich Empty State for New Users */}
+      {!loading && stats.enrollments === 0 && (
+        <div className="rounded-3xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-8 text-center flex flex-col items-center gap-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-2">
+            <BookOpen size={32} />
+          </div>
+          <h3 className="text-2xl font-bold text-slate-800">Your journey starts here</h3>
+          <p className="text-slate-600 max-w-md">
+            You aren't enrolled in any courses yet. Browse our library of premium development courses to kickstart your career.
+          </p>
+          <button 
+            onClick={() => setTab("courses")}
+            className="mt-4 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-500 transition-all"
+          >
+            Explore Courses
+          </button>
+        </div>
+      )}
 
       {/* Action Bento Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -149,8 +149,31 @@ export function ProfileModule() {
 
   if (loading) {
     return (
-      <div className="flex h-[400px] items-center justify-center">
-        <LoaderCircle className="animate-spin text-blue-500 h-8 w-8" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4 pb-12 animate-pulse">
+        <div className="lg:col-span-2">
+          <section className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm h-[600px] flex flex-col gap-6">
+            <div className="h-4 w-32 bg-slate-200 rounded-md mb-2"></div>
+            <div className="h-8 w-48 bg-slate-200 rounded-md mb-6"></div>
+            <div className="h-12 w-full bg-slate-100 rounded-xl"></div>
+            <div className="h-24 w-full bg-slate-100 rounded-xl"></div>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="h-12 w-full bg-slate-100 rounded-xl"></div>
+              <div className="h-12 w-full bg-slate-100 rounded-xl"></div>
+            </div>
+            <div className="h-12 w-full bg-slate-100 rounded-xl mt-4"></div>
+          </section>
+        </div>
+        <aside className="lg:col-span-1">
+          <section className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center">
+            <div className="h-28 w-28 rounded-full bg-slate-200 mb-6"></div>
+            <div className="h-6 w-32 bg-slate-200 rounded-md mb-2"></div>
+            <div className="h-4 w-24 bg-slate-100 rounded-md mb-6"></div>
+            <div className="flex gap-2">
+              <div className="h-6 w-16 bg-slate-100 rounded-full"></div>
+              <div className="h-6 w-20 bg-slate-100 rounded-full"></div>
+            </div>
+          </section>
+        </aside>
       </div>
     );
   }
