@@ -13,11 +13,12 @@ BEGIN
   requested_role := NEW.raw_user_meta_data ->> 'role';
   
   -- For security, only allow the 'student' role to be auto-assigned.
-  -- Any other role (like 'admin' or 'team') will default to 'member'.
-  IF requested_role = 'student' THEN
-    assigned_role := 'student';
-  ELSE
+  -- Team and Admin roles must be manually assigned by an administrator.
+  -- By default, any new signup (including Google Auth) becomes a 'student'.
+  IF requested_role = 'team' OR requested_role = 'admin' THEN
     assigned_role := 'member';
+  ELSE
+    assigned_role := 'student';
   END IF;
 
   INSERT INTO public.profiles (id, full_name, role)
