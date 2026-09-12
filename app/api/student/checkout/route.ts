@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireStudent } from "../../../lib/student-auth";
 import { generateTicketCode, generateQrPayload } from "../../../lib/ticket-codes";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {

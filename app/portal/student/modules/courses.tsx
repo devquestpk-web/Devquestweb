@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, BookOpenCheck, CheckCircle2, Circle, GraduationCap, LoaderCircle, PlayCircle, ShieldCheck } from "lucide-react";
-import { getSupabaseBrowserClient } from "../../../../lib/supabase-browser";
+import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
 export function CoursesModule() {
   const [courses, setCourses] = useState<any[]>([]);
