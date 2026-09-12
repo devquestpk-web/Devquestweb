@@ -3,8 +3,9 @@ import { requireStudent } from "../../../../lib/student-auth";
 
 export const runtime = "edge";
 
-export async function GET(request: Request, { params }: { params: { resourceId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ resourceId: string }> }) {
   try {
+    const { resourceId } = await params;
     const auth = await requireStudent(request);
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
     const { supabase, user } = auth;
@@ -13,7 +14,7 @@ export async function GET(request: Request, { params }: { params: { resourceId: 
     const { data: resource, error: resourceError } = await supabase
       .from("resources")
       .select("*")
-      .eq("id", params.resourceId)
+      .eq("id", resourceId)
       .single();
 
     if (resourceError || !resource) {

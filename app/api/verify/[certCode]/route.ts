@@ -3,8 +3,9 @@ import { getSupabaseAdminClient } from "../../../lib/supabase-admin";
 
 export const runtime = "edge";
 
-export async function GET(request: Request, { params }: { params: { certCode: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ certCode: string }> }) {
   try {
+    const { certCode } = await params;
     const adminSupabase = getSupabaseAdminClient();
 
     // Fetch the certificate and joined item data
@@ -16,7 +17,7 @@ export async function GET(request: Request, { params }: { params: { certCode: st
         courses:course_id(title, instructor_name),
         webinars:webinar_id(title, speaker_name)
       `)
-      .eq("cert_code", params.certCode)
+      .eq("cert_code", certCode)
       .single();
 
     if (error || !certificate) {

@@ -14,13 +14,14 @@ async function getVerificationData(certCode: string, origin: string) {
   }
 }
 
-export default async function VerifyPage({ params }: { params: { certCode: string } }) {
+export default async function VerifyPage({ params }: { params: Promise<{ certCode: string }> }) {
+  const { certCode } = await params;
   const headersList = await headers();
   const host = headersList.get("host");
   const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
   const origin = `${protocol}://${host}`;
   
-  const data = await getVerificationData(params.certCode, origin);
+  const data = await getVerificationData(certCode, origin);
 
   if (!data || !data.verified) {
     return (
@@ -29,7 +30,7 @@ export default async function VerifyPage({ params }: { params: { certCode: strin
           <ShieldAlert size={40} />
         </div>
         <h1 style={{ fontSize: "2rem", color: "#061e3d", marginBottom: 16 }}>Certificate Not Found</h1>
-        <p style={{ color: "#637086", fontSize: "1.1rem", marginBottom: 32 }}>We could not verify a certificate with the code <strong>{params.certCode}</strong>. Please check the code and try again.</p>
+        <p style={{ color: "#637086", fontSize: "1.1rem", marginBottom: 32 }}>We could not verify a certificate with the code <strong>{certCode}</strong>. Please check the code and try again.</p>
         <a href="/" className="portal-secondary" style={{ display: "inline-flex" }}>Return to DevQuest</a>
       </div>
     );

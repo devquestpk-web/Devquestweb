@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         certCode,
         qrCodeDataUrl,
         itemType
-      })
+      }) as any
     );
     
     // Convert Web ReadableStream to Buffer for Supabase Storage
@@ -90,7 +90,7 @@ export async function POST(request: Request) {
     for await (const chunk of pdfStream) {
       chunks.push(chunk);
     }
-    const pdfBuffer = Buffer.concat(chunks);
+    const pdfBuffer = Buffer.concat(chunks as Uint8Array[]);
 
     // 7. Upload to Supabase Storage
     const fileName = `${targetUserId}/${certCode}.pdf`;
