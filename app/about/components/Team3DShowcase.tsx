@@ -194,19 +194,7 @@ export function Team3DShowcase() {
               <span style={{ fontSize: '0.72rem', color: '#38bdf8', fontWeight: 700, textTransform: 'uppercase' }}>Leadership Track</span>
               <h2>Executive & Engineering Team</h2>
             </div>
-            <div className="t3d-hud-controls">
-              <button className="t3d-btn" onClick={toggleDirection}>
-                {direction === 1 ? '⇄ Left → Right' : '⇄ Right → Left'}
-              </button>
-              <select className="t3d-btn" style={{ background: 'rgba(13, 17, 26, 0.9)', outline: 'none' }} value={style} onChange={(e) => setStyle(e.target.value)}>
-                <option value="amphitheater">Curved Amphitheater</option>
-                <option value="cylinder">Orbit Cylinder</option>
-                <option value="spotlight">Cinematic Spotlight</option>
-              </select>
-              <button className="t3d-btn" onClick={toggleTour}>
-                {isTouring ? '⏸ Pause Tour' : '▶ Auto Tour'}
-              </button>
-            </div>
+
           </div>
 
           <div className="t3d-viewport">
