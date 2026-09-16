@@ -28,7 +28,7 @@ export async function GET(request: Request) {
       .from("applications")
       .select("id, tracking_code, application_type, full_name, email, phone, city, position, details, cv_filename, status, public_note, created_at, status_updated_at")
       .order("created_at", { ascending: false })
-      .limit(500);
+      .limit(5000);
     if (error) throw error;
     return NextResponse.json({ applications: data ?? [] });
   } catch (error) {
@@ -42,6 +42,54 @@ export async function PATCH(request: Request) {
     const auth = await requireAdmin(request);
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
     const body = await request.json();
+
+    if (body.bulk) {
+      const fromStatus = clean(body.fromStatus, 30);
+      const toStatus = clean(body.toStatus || body.status, 30);
+      const publicNote = clean(body.publicNote, 1000);
+
+      if (!isApplicationStatus(toStatus)) {
+        return NextResponse.json({ error: "A valid target status is required." }, { status: 400 });
+      }
+
+      let query = auth.supabase
+        .from("applications")
+        .update({
+          status: toStatus,
+          status_updated_at: new Date().toISOString(),
+          ...(publicNote ? { public_note: publicNote } : {}),
+        });
+
+      if (fromStatus && fromStatus !== "all" && isApplicationStatus(fromStatus)) {
+        query = query.eq("status", fromStatus);
+      }
+
+      const { data: updatedApps, error: updateError } = await query
+        .select("id, tracking_code, full_name, email, status");
+
+      if (updateError) throw updateError;
+
+      const updatedCount = updatedApps?.length || 0;
+
+      if (updatedApps && updatedApps.length > 0) {
+        const historyEntries = updatedApps.map((app) => ({
+          application_id: app.id,
+          status: toStatus,
+          public_note: publicNote || `Status updated to ${applicationStatusLabels[toStatus]}.`,
+          changed_by: auth.user.id,
+        }));
+        for (let i = 0; i < historyEntries.length; i += 100) {
+          const chunk = historyEntries.slice(i, i + 100);
+          await auth.supabase.from("application_status_history").insert(chunk);
+        }
+      }
+
+      return NextResponse.json({
+        message: `Successfully moved ${updatedCount} application${updatedCount === 1 ? "" : "s"} to '${applicationStatusLabels[toStatus]}'.`,
+        count: updatedCount,
+      });
+    }
+
     const id = clean(body.id, 80);
     const status = clean(body.status, 30);
     const publicNote = clean(body.publicNote, 1000);
@@ -108,3 +156,40 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Could not update this application." }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const auth = await requireAdmin(request);
+    if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+    let id = "";
+    const contentType = request.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      const body = await request.json();
+      id = clean(body.id, 80);
+    } else {
+      const { searchParams } = new URL(request.url);
+      id = clean(searchParams.get("id"), 80);
+    }
+
+    if (!id) {
+      return NextResponse.json({ error: "A valid application ID is required." }, { status: 400 });
+    }
+
+    const { error: deleteError } = await auth.supabase
+      .from("applications")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) throw deleteError;
+
+    return NextResponse.json({
+      message: "Application permanently deleted.",
+      id,
+    });
+  } catch (error) {
+    console.error("Admin application delete error", error);
+    return NextResponse.json({ error: "Could not delete this application." }, { status: 500 });
+  }
+}
+
