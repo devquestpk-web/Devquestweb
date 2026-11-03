@@ -9,8 +9,9 @@ export async function requireStudent(request: Request) {
   
   if (error || !data.user) return { error: "Invalid or expired session", status: 401 } as const;
   
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", data.user.id).single();
   
+  if (profile?.is_active === false) return { error: "This account has been disabled", status: 403 } as const;
   if (profile?.role !== "student") return { error: "Student access required", status: 403 } as const;
   
   return { supabase, user: data.user } as const;
@@ -25,7 +26,8 @@ export async function requireStudentOrAdmin(request: Request) {
   
   if (error || !data.user) return { error: "Invalid or expired session", status: 401 } as const;
   
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", data.user.id).single();
+  if (profile?.is_active === false) return { error: "This account has been disabled", status: 403 } as const;
   
   if (profile?.role !== "student" && profile?.role !== "admin") {
     return { error: "Student or Administrator access required", status: 403 } as const;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { ArrowLeft, Award, BookOpen, FolderLock, LayoutDashboard, LoaderCircle, LogOut, ShieldCheck, Ticket, UserRound, Video } from "lucide-react";
+import { ArrowLeft, Award, BookOpen, CalendarClock, FolderLock, LayoutDashboard, LifeBuoy, LoaderCircle, LogOut, ShieldCheck, Ticket, UserRound, Video } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
 import { DashboardModule } from "./modules/dashboard";
 import { CoursesModule } from "./modules/courses";
@@ -12,16 +12,20 @@ import { TicketsModule } from "./modules/tickets";
 import { VaultModule } from "./modules/vault";
 import { CertificatesModule } from "./modules/certificates";
 import { ProfileModule } from "./modules/profile";
+import { SessionsModule } from "./modules/sessions";
+import { SupportModule } from "./modules/support";
 
-export type StudentTab = "dashboard" | "courses" | "webinars" | "tickets" | "vault" | "certificates" | "profile";
+export type StudentTab = "dashboard" | "courses" | "webinars" | "sessions" | "tickets" | "vault" | "certificates" | "support" | "profile";
 
 const navItems = [
   { id: "dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
   { id: "courses" as const, label: "Courses", icon: BookOpen },
   { id: "webinars" as const, label: "Webinars", icon: Video },
+  { id: "sessions" as const, label: "My Sessions", icon: CalendarClock },
   { id: "tickets" as const, label: "My Tickets", icon: Ticket },
   { id: "vault" as const, label: "Resource Vault", icon: FolderLock },
   { id: "certificates" as const, label: "Certificates", icon: Award },
+  { id: "support" as const, label: "Support", icon: LifeBuoy },
   { id: "profile" as const, label: "Profile", icon: UserRound },
 ];
 
@@ -29,6 +33,7 @@ export function StudentPortal() {
   const [tab, setTab] = useState<StudentTab>("dashboard");
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const supabase = getSupabaseBrowserClient();
@@ -37,11 +42,12 @@ export function StudentPortal() {
     if (!supabase) return;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, is_active")
       .eq("id", activeUser.id)
       .single();
     
     setRole(profile?.role || null);
+    setIsActive(profile?.is_active !== false);
   }, [supabase]);
 
   useEffect(() => {
@@ -74,7 +80,7 @@ export function StudentPortal() {
   if (!isSupabaseConfigured()) return <PortalState title="Portal configuration required" copy="The Supabase connection is not available in this deployment." />;
   if (!user) return <PortalState title="Sign in to the Student Portal" copy="Log in to access your courses, webinars, and certificates." action={<a href="#member-signin"><UserRound /> Open login</a>} />;
   
-  if (role !== "student" && role !== "admin") {
+  if (!isActive || (role !== "student" && role !== "admin")) {
     return <PortalState title="Student access required" copy="Your account exists, but you do not have Student access." />;
   }
 
@@ -126,9 +132,11 @@ export function StudentPortal() {
           {tab === "dashboard" && <DashboardModule setTab={setTab} />}
           {tab === "courses" && <CoursesModule />}
           {tab === "webinars" && <WebinarsModule />}
+          {tab === "sessions" && <SessionsModule />}
           {tab === "tickets" && <TicketsModule />}
           {tab === "vault" && <VaultModule />}
           {tab === "certificates" && <CertificatesModule />}
+          {tab === "support" && <SupportModule />}
           {tab === "profile" && <ProfileModule />}
         </div>
       </main>

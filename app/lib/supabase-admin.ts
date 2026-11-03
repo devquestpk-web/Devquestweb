@@ -13,7 +13,8 @@ export async function requireAdmin(request: Request) {
   const supabase = getSupabaseAdminClient();
   const { data, error } = await supabase.auth.getUser(token);
   if (error || !data.user) return { error: "Invalid or expired session", status: 401 } as const;
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", data.user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", data.user.id).single();
+  if (profile?.is_active === false) return { error: "This account has been disabled", status: 403 } as const;
   if (profile?.role !== "admin") return { error: "Administrator access required", status: 403 } as const;
   return { supabase, user: data.user } as const;
 }

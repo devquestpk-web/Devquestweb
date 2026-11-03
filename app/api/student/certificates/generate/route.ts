@@ -3,9 +3,10 @@ import { requireStudentOrAdmin } from "../../../../lib/student-auth";
 import { getSupabaseAdminClient } from "../../../../lib/supabase-admin";
 import { generateCertCode } from "../../../../lib/ticket-codes";
 import React from "react";
-import { renderToStream } from "@react-pdf/renderer";
+import { renderToStream, type DocumentProps } from "@react-pdf/renderer";
 import { CertificateDocument } from "../../../../lib/certificate-pdf";
 import QRCode from "qrcode";
+import { evaluateCertificateEligibility, resolveCertificateTemplate } from "../../../../lib/certificate-eligibility";
 
 export const runtime = "nodejs"; // Needed for PDF generation
 
@@ -17,13 +18,20 @@ export async function POST(request: Request) {
     const adminSupabase = getSupabaseAdminClient();
     
     const body = await request.json();
-    const { itemType, courseId, webinarId, userId } = body;
+    const { itemType, courseId, webinarId, sessionId, userId } = body;
     
     // Target user is either the requesting user or specified by admin
     const targetUserId = auth.role === "admin" && userId ? userId : auth.user.id;
     const itemId = itemType === "COURSE" ? courseId : webinarId;
 
-    if (!itemType || !itemId) return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
+    if (!(["COURSE", "WEBINAR"].includes(itemType)) || !itemId) return NextResponse.json({ error: "Missing or invalid certificate scope" }, { status: 400 });
+    if (sessionId) {
+      const { data: scopedSession } = await adminSupabase.from("event_sessions").select("id, course_id, webinar_id").eq("id", sessionId).maybeSingle();
+      const belongsToItem = scopedSession && (itemType === "COURSE" ? scopedSession.course_id === courseId : scopedSession.webinar_id === webinarId);
+      if (!belongsToItem) return NextResponse.json({ error: "Session does not belong to this certificate item" }, { status: 400 });
+    }
+    const scope = { itemType, courseId: itemType === "COURSE" ? courseId : null, webinarId: itemType === "WEBINAR" ? webinarId : null, sessionId: sessionId || null } as const;
+    const template = await resolveCertificateTemplate(adminSupabase, scope);
 
     // 1. Fetch Item Details
     const { data: itemData, error: itemError } = await adminSupabase
@@ -48,14 +56,20 @@ export async function POST(request: Request) {
       .from("certificates")
       .select("id")
       .eq("user_id", targetUserId)
-      .eq("item_type", itemType)
-      .eq(itemType === "COURSE" ? "course_id" : "webinar_id", itemId)
-      .single();
+      .eq(sessionId ? "session_id" : itemType === "COURSE" ? "course_id" : "webinar_id", sessionId || itemId)
+      .is("revoked_at", null)
+      .maybeSingle();
 
     if (existingCert) return NextResponse.json({ error: "Certificate already exists" }, { status: 400 });
 
-    // 4. Verification Check (Course completed or Webinar attended)
-    // Assuming this check was already done or admin is forcing it.
+    // 4. Enforce eligibility for every automatic/student issuance. Admins may
+    // manually issue only by explicitly providing a reason, which is audited.
+    const manualReason = typeof body.manualReason === "string" ? body.manualReason.trim().slice(0, 500) : "";
+    if (auth.role === "admin" && manualReason) {
+      await adminSupabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: "certificate.manual_issue", entity_type: "certificates", entity_id: itemId, details: { target_user_id: targetUserId, item_type: itemType, reason: manualReason } });
+    }
+    const eligibility = await evaluateCertificateEligibility(adminSupabase, targetUserId, scope, (template?.eligibility_rules || {}) as Record<string, unknown>);
+    if (!(auth.role === "admin" && manualReason) && !eligibility.eligible) return NextResponse.json({ error: eligibility.reason }, { status: 403 });
 
     // 5. Generate Certificate Codes
     const certCode = generateCertCode();
@@ -80,13 +94,13 @@ export async function POST(request: Request) {
         issueDate,
         certCode,
         qrCodeDataUrl,
-        itemType
-      }) as any
+        itemType,
+        template: (template?.config || {}) as Record<string, string>
+      }) as unknown as React.ReactElement<DocumentProps>
     );
     
     // Convert Web ReadableStream to Buffer for Supabase Storage
     const chunks = [];
-    // @ts-ignore - The stream is a Node.js Readable stream since we are in nodejs runtime
     for await (const chunk of pdfStream) {
       chunks.push(chunk);
     }
@@ -94,7 +108,7 @@ export async function POST(request: Request) {
 
     // 7. Upload to Supabase Storage
     const fileName = `${targetUserId}/${certCode}.pdf`;
-    const { data: uploadData, error: uploadError } = await adminSupabase.storage
+    const { error: uploadError } = await adminSupabase.storage
       .from("certificates")
       .upload(fileName, pdfBuffer, {
         contentType: "application/pdf",
@@ -115,6 +129,11 @@ export async function POST(request: Request) {
         item_type: itemType,
         course_id: itemType === "COURSE" ? courseId : null,
         webinar_id: itemType === "WEBINAR" ? webinarId : null,
+        session_id: sessionId || null,
+        template_id: template?.id || null,
+        issuance_mode: auth.role === "admin" && manualReason ? "manual" : "automatic",
+        eligibility_snapshot: { ...eligibility.snapshot, overrideReason: manualReason || null },
+        uploaded_by: auth.role === "admin" ? auth.user.id : null,
         pdf_url: publicUrlData.publicUrl,
         verification_url: verificationUrl
       })

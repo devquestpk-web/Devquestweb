@@ -143,40 +143,54 @@ export interface CertificateProps {
   certCode: string;
   qrCodeDataUrl: string;
   itemType: "COURSE" | "WEBINAR";
+  template?: {
+    primaryColor?: string;
+    accentColor?: string;
+    issuerName?: string;
+    issuerTitle?: string;
+    brandName?: string;
+  };
 }
 
-export const CertificateDocument = ({ studentName, courseTitle, issueDate, certCode, qrCodeDataUrl, itemType }: CertificateProps) => (
+export const CertificateDocument = ({ studentName, courseTitle, issueDate, certCode, qrCodeDataUrl, itemType, template = {} }: CertificateProps) => {
+  const primaryColor = /^#[0-9a-f]{6}$/i.test(template.primaryColor || "") ? template.primaryColor : "#061e3d";
+  const accentColor = /^#[0-9a-f]{6}$/i.test(template.accentColor || "") ? template.accentColor : "#469bff";
+  const issuerName = String(template.issuerName || "DevQuest Administration").slice(0, 100);
+  const issuerTitle = String(template.issuerTitle || "Issued digitally by DevQuest PK").slice(0, 140);
+  const brandName = String(template.brandName || "DevQuest").slice(0, 60);
+  return (
   <Document>
     <Page size="A4" orientation="landscape" style={styles.page}>
-      <View style={styles.borderWrap}>
-        <View style={styles.innerBorder} />
+      <View style={[styles.borderWrap, { borderColor: primaryColor }]}>
+        <View style={[styles.innerBorder, { borderColor: accentColor }]} />
         
         <View style={styles.header}>
-          <Text style={styles.brand}>
-            DevQuest<Text style={styles.brandAccent}>.</Text>
+          <Text style={[styles.brand, { color: primaryColor }]}>
+            {brandName}<Text style={[styles.brandAccent, { color: accentColor }]}>.</Text>
           </Text>
           <View>
-            <Text style={styles.certTitle}>Certificate of {itemType === "COURSE" ? "Completion" : "Attendance"}</Text>
+            <Text style={[styles.certTitle, { color: accentColor }]}>Certificate of {itemType === "COURSE" ? "Completion" : "Attendance"}</Text>
             <Text style={styles.certCode}>ID: {certCode}</Text>
           </View>
         </View>
 
         <View style={styles.body}>
           <Text style={styles.kicker}>This is to certify that</Text>
-          <Text style={styles.studentName}>{studentName}</Text>
+          <Text style={[styles.studentName, { color: primaryColor }]}>{studentName}</Text>
           <Text style={styles.description}>
             has successfully {itemType === "COURSE" ? "completed the course" : "attended the webinar"}
           </Text>
-          <Text style={styles.courseTitle}>{courseTitle}</Text>
+          <Text style={[styles.courseTitle, { color: primaryColor }]}>{courseTitle}</Text>
         </View>
 
         <View style={styles.footer}>
           <View style={styles.signatureBlock}>
-            <Text style={styles.signatureName}>DevQuest Administration</Text>
-            <Text style={styles.signatureTitle}>Issued digitally by DevQuest PK</Text>
+            <Text style={[styles.signatureName, { color: primaryColor }]}>{issuerName}</Text>
+            <Text style={styles.signatureTitle}>{issuerTitle}</Text>
           </View>
           
           <View style={styles.qrContainer}>
+            {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf Image does not render an HTML img element */}
             {qrCodeDataUrl && <Image style={styles.qrImage} src={qrCodeDataUrl} />}
           </View>
 
@@ -188,4 +202,5 @@ export const CertificateDocument = ({ studentName, courseTitle, issueDate, certC
       </View>
     </Page>
   </Document>
-);
+  );
+};

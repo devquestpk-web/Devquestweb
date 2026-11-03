@@ -120,10 +120,10 @@ export function AuthDock() {
     return () => data.subscription.unsubscribe();
   }, []);
   function close() { setOpen(false); if (window.location.hash.startsWith("#member-")) history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
-  function chooseRole(role: "student" | "services" | PortalRole) {
+  function chooseRole(role: PortalRole) {
     if (role === "services") { window.location.assign(`/portal/${role}`); return; }
     // Now student is also handled by the auth modal
-    setPortalRole(role as any); setMessage(null);
+    setPortalRole(role); setMessage(null);
   }
   function toggleAccess() { setOpen((value) => { if (!value) { setPortalRole(null); setMessage(null); } return !value; }); }
 
@@ -163,7 +163,7 @@ export function AuthDock() {
     
     // If student, we might allow if they just signed up and trigger set default to student. 
     // This depends on the Supabase triggers. We'll enforce role match for team/admin.
-    if (profile?.is_active === false || (portalRole !== "student" && profile?.role !== portalRole)) {
+    if (profile?.is_active === false || profile?.role !== portalRole) {
       await supabase.auth.signOut();
       setWorking(false);
       setMessage({ type: "error", text: profile?.is_active === false ? "This portal account has been disabled." : `This account does not have ${portalRole} portal access.` });

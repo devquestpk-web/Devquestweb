@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     // Fetch base profile
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("full_name, phone, city, github_url, linkedin_url, discord_handle, bio, skills, avatar_url")
+      .select("student_id, full_name, phone, city, university, degree, semester, github_url, linkedin_url, discord_handle, bio, skills, avatar_url, profile_completed, email_notifications, marketing_emails")
       .eq("id", user.id)
       .single();
 
@@ -46,20 +46,25 @@ export async function PATCH(request: Request) {
     if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
     
     const body = await request.json();
-    const { full_name, phone, city, github_url, linkedin_url, discord_handle, bio, skills, avatar_url } = body;
+    const { full_name, phone, city, university, degree, semester, github_url, linkedin_url, discord_handle, bio, skills, avatar_url, email_notifications, marketing_emails } = body;
+    const clean = (value: unknown, max: number) => value ? String(value).trim().slice(0, max) : null;
+    const fullName = clean(full_name, 120) || "";
+    const normalizedUniversity = clean(university, 180);
+    const normalizedDegree = clean(degree, 180);
 
     const { error } = await auth.supabase
       .from("profiles")
       .update({
-        full_name: String(full_name || "").trim(),
-        phone: phone ? String(phone).trim() : null,
-        city: city ? String(city).trim() : null,
-        github_url: github_url ? String(github_url).trim() : null,
-        linkedin_url: linkedin_url ? String(linkedin_url).trim() : null,
-        discord_handle: discord_handle ? String(discord_handle).trim() : null,
-        bio: bio ? String(bio).trim() : null,
-        skills: Array.isArray(skills) ? skills : [],
-        avatar_url: avatar_url ? String(avatar_url).trim() : null,
+        full_name: fullName,
+        phone: clean(phone, 40), city: clean(city, 100), university: normalizedUniversity,
+        degree: normalizedDegree, semester: clean(semester, 60),
+        github_url: clean(github_url, 300), linkedin_url: clean(linkedin_url, 300),
+        discord_handle: clean(discord_handle, 100), bio: clean(bio, 1000),
+        skills: Array.isArray(skills) ? skills.map((skill) => String(skill).slice(0, 60)).slice(0, 30) : [],
+        avatar_url: clean(avatar_url, 500),
+        profile_completed: Boolean(fullName && normalizedUniversity && normalizedDegree),
+        ...(typeof email_notifications === "boolean" ? { email_notifications } : {}),
+        ...(typeof marketing_emails === "boolean" ? { marketing_emails } : {}),
       })
       .eq("id", auth.user.id);
 

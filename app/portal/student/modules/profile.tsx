@@ -3,7 +3,6 @@ import { LoaderCircle, Save, Camera, UserRound } from "lucide-react";
 import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
 export function ProfileModule() {
-  const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -13,11 +12,16 @@ export function ProfileModule() {
     bio: "",
     phone: "",
     city: "",
+    university: "",
+    degree: "",
+    semester: "",
     github_url: "",
     linkedin_url: "",
     discord_handle: "",
     skills_input: "",
     avatar_url: "",
+    email_notifications: true,
+    marketing_emails: false,
   });
   
   const supabase = getSupabaseBrowserClient();
@@ -36,17 +40,21 @@ export function ProfileModule() {
         const data = await response.json();
         
         if (data.profile) {
-          setProfile(data.profile);
           setFormData({
             full_name: data.profile.full_name || "",
             bio: data.profile.bio || "",
             phone: data.profile.phone || "",
             city: data.profile.city || "",
+            university: data.profile.university || "",
+            degree: data.profile.degree || "",
+            semester: data.profile.semester || "",
             github_url: data.profile.github_url || "",
             linkedin_url: data.profile.linkedin_url || "",
             discord_handle: data.profile.discord_handle || "",
             skills_input: (data.profile.skills || []).join(", "),
             avatar_url: data.profile.avatar_url || "",
+            email_notifications: data.profile.email_notifications !== false,
+            marketing_emails: data.profile.marketing_emails === true,
           });
         }
       } catch (e) {
@@ -59,7 +67,7 @@ export function ProfileModule() {
   }, [supabase]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value }));
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +89,7 @@ export function ProfileModule() {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/avatar-${Date.now()}.${fileExt}`;
 
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('student-avatars')
         .upload(fileName, file, { upsert: true });
 
@@ -140,7 +148,7 @@ export function ProfileModule() {
       } else {
         alert(result.error || "Update failed");
       }
-    } catch (err) {
+    } catch {
       alert("Error updating profile");
     } finally {
       setSaving(false);
@@ -159,6 +167,12 @@ export function ProfileModule() {
             <div className="grid grid-cols-2 gap-6">
               <div className="h-12 w-full bg-slate-100 rounded-xl"></div>
               <div className="h-12 w-full bg-slate-100 rounded-xl"></div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-slate-700">University / Institute</label><input className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" name="university" value={formData.university} onChange={handleChange} /></div>
+              <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-slate-700">Degree / Program</label><input className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" name="degree" value={formData.degree} onChange={handleChange} /></div>
+              <div className="flex flex-col gap-2"><label className="text-sm font-semibold text-slate-700">Semester</label><input className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm" name="semester" value={formData.semester} onChange={handleChange} /></div>
             </div>
             <div className="h-12 w-full bg-slate-100 rounded-xl mt-4"></div>
           </section>
@@ -242,6 +256,10 @@ export function ProfileModule() {
                 type="url" name="github_url" value={formData.github_url} onChange={handleChange} placeholder="https://github.com/username" 
               />
             </div>
+
+            <h3 className="text-lg font-bold text-slate-800 mt-6 pt-6 border-t border-slate-100">Email preferences</h3>
+            <label className="flex items-start gap-3"><input type="checkbox" name="email_notifications" checked={formData.email_notifications} onChange={handleChange} /><span><strong>Operational notifications</strong><small className="block text-slate-500">Enrollment confirmations, session reminders, schedule changes, certificates, and support replies.</small></span></label>
+            <label className="flex items-start gap-3"><input type="checkbox" name="marketing_emails" checked={formData.marketing_emails} onChange={handleChange} /><span><strong>Optional announcements</strong><small className="block text-slate-500">News and relevant opportunities from DevQuest PK.</small></span></label>
             
             <div className="flex flex-col gap-2">
               <label className="text-sm font-semibold text-slate-700">LinkedIn URL</label>

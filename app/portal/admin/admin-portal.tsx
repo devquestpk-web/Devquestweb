@@ -3,10 +3,13 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { AlertCircle, ArrowLeft, BarChart3, BriefcaseBusiness, CalendarCheck2, CheckCircle2, Circle, ClipboardList, KeyRound, LayoutDashboard, LoaderCircle, LogOut, Mail, Plus, ShieldCheck, Trash2, UserCog, UsersRound } from "lucide-react";
+import { AlertCircle, ArrowLeft, Award, BarChart3, BriefcaseBusiness, CalendarCheck2, CalendarClock, CheckCircle2, Circle, ClipboardList, KeyRound, LayoutDashboard, LoaderCircle, LogOut, Mail, MailCheck, Plus, ShieldCheck, Trash2, UserCog, UsersRound } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
+import { CommunicationsCenter } from "./communications-center";
+import { SessionManagement } from "./session-management";
+import { CertificateManagement } from "./certificate-management";
 
-type Tab = "overview" | "applications" | "members" | "tasks" | "attendance" | "reports";
+type Tab = "overview" | "applications" | "members" | "tasks" | "attendance" | "reports" | "sessions" | "communications" | "certificates";
 type Member = { id: string; email?: string; full_name?: string | null; role?: "member" | "ambassador" | "team" | "admin"; department?: string | null; job_title?: string | null; is_active?: boolean; lastSignInAt?: string | null };
 type Task = { id: string; title: string; description: string | null; assignee_id: string | null; assignee_name: string | null; priority: "low" | "medium" | "high"; status: "todo" | "in_progress" | "completed"; due_date: string | null };
 type Attendance = { id: string; user_id: string; attendance_date: string; check_in: string | null; check_out: string | null; status: string };
@@ -31,6 +34,9 @@ const nav = [
   { id: "tasks" as const, label: "Task management", icon: ClipboardList },
   { id: "attendance" as const, label: "Attendance", icon: CalendarCheck2 },
   { id: "reports" as const, label: "Reports", icon: BarChart3 },
+  { id: "sessions" as const, label: "Event sessions", icon: CalendarClock },
+  { id: "communications" as const, label: "Communications", icon: MailCheck },
+  { id: "certificates" as const, label: "Certificates", icon: Award },
 ];
 const fmt = (value?: string | null) => value ? new Intl.DateTimeFormat("en-PK", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(value)) : "—";
 
@@ -78,6 +84,9 @@ export function AdminPortal() {
     {tab === "tasks" && <Tasks members={members} tasks={tasks} saving={saving} onCreate={createTask} onDelete={deleteTask} />}
     {tab === "attendance" && <section className="portal-panel portal-work-grid"><Head kicker="TEAM RECORD" title="Attendance overview" /><div className="admin-table"><div className="admin-table-row admin-table-head"><span>Member</span><span>Date</span><span>Check in</span><span>Check out</span><span>Status</span></div>{attendance.map((entry) => <div className="admin-table-row" key={entry.id}><b>{memberName(entry.user_id)}</b><span>{entry.attendance_date}</span><span>{fmt(entry.check_in)}</span><span>{fmt(entry.check_out)}</span><span>{entry.status}</span></div>)}{!attendance.length && <Empty text="No attendance records yet." />}</div></section>}
     {tab === "reports" && <section className="portal-panel portal-work-grid"><Head kicker="TEAM OUTPUT" title="Submitted reports" /><div className="portal-report-list">{reports.map((report) => <article key={report.id}><span><BarChart3 /></span><div><div><b>{memberName(report.user_id)} · {report.report_type}</b><small>{fmt(report.submitted_at)}</small></div><p>{report.summary}</p>{report.blockers && <em>Blocker: {report.blockers}</em>}</div></article>)}{!reports.length && <Empty text="No reports submitted yet." />}</div></section>}
+    {tab === "sessions" && <SessionManagement />}
+    {tab === "communications" && <CommunicationsCenter />}
+    {tab === "certificates" && <CertificateManagement />}
   </main></div>;
 }
 

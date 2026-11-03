@@ -45,58 +45,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "You are already enrolled in this item" }, { status: 400 });
     }
 
-    // 3. Create Order (simulating instant payment for now)
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        user_id: user.id,
-        item_type: itemType,
+    if (Number(itemData.price) > 0) {
+      const { data: order, error: orderError } = await supabase.from("orders").insert({
+        user_id: user.id, item_type: itemType,
         course_id: itemType === "COURSE" ? courseId : null,
         webinar_id: itemType === "WEBINAR" ? webinarId : null,
-        amount: itemData.price,
-        payment_status: "COMPLETED",
-      })
-      .select("id")
-      .single();
+        amount: itemData.price, payment_status: "PENDING",
+      }).select("id").single();
+      if (orderError) throw orderError;
+      return NextResponse.json({ success: false, paymentRequired: true, orderId: order.id, message: "Enrollment will be confirmed after verified payment." }, { status: 202 });
+    }
 
-    if (orderError) throw orderError;
-
-    // 4. Generate Ticket
+    // Free enrollment is completed atomically by PostgreSQL.
     const ticketCode = generateTicketCode(itemType);
     const qrPayload = generateQrPayload(ticketCode, itemId, user.id, itemType);
-
-    const { data: ticket, error: ticketError } = await supabase
-      .from("tickets")
-      .insert({
-        ticket_code: ticketCode,
-        order_id: order.id,
-        user_id: user.id,
-        item_type: itemType,
-        course_id: itemType === "COURSE" ? courseId : null,
-        webinar_id: itemType === "WEBINAR" ? webinarId : null,
-        qr_payload: qrPayload,
-      })
-      .select("ticket_code, id")
-      .single();
-
-    if (ticketError) throw ticketError;
-
-    // 5. Create Enrollment
-    const { error: enrollmentError } = await supabase
-      .from("enrollments")
-      .insert({
-        user_id: user.id,
-        item_type: itemType,
-        course_id: itemType === "COURSE" ? courseId : null,
-        webinar_id: itemType === "WEBINAR" ? webinarId : null,
-      });
-
+    const { error: enrollmentError } = await supabase.rpc("complete_free_enrollment", { p_user_id: user.id, p_item_type: itemType, p_item_id: itemId, p_ticket_code: ticketCode, p_qr_payload: qrPayload });
     if (enrollmentError) throw enrollmentError;
 
     return NextResponse.json({ 
       success: true, 
       message: "Enrollment successful",
-      ticketCode: ticket.ticket_code 
+      ticketCode
     });
   } catch (error) {
     console.error("Checkout error", error);
