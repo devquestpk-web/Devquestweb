@@ -4,7 +4,7 @@ import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { AlertCircle, ArrowLeft, BriefcaseBusiness, CheckCircle2, ChevronRight, GraduationCap, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, ShieldCheck, UserRound, UsersRound, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, BriefcaseBusiness, CheckCircle2, ChevronRight, GraduationCap, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, MapPin, ShieldCheck, UserRound, UsersRound, X } from "lucide-react";
 import { deliverWebsiteForm } from "../lib/form-delivery";
 
 const getSupabase = getSupabaseBrowserClient;
@@ -197,7 +197,7 @@ export function AuthDock() {
   return <div className={`auth-dock ${open ? "is-open" : ""}`}>
     {open && <>
       <button className="auth-backdrop" onClick={close} aria-label="Close account dialog" />
-      <section className={`auth-popup auth-${portalRole ? "signin" : "role"}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
+      <section className={`auth-popup auth-${portalRole ? "signin" : "role"} ${portalRole === "student" && studentSignup ? "auth-student-signup" : ""}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
         <button className="auth-close" type="button" onClick={close} aria-label="Close portal access"><X /></button>
         <div className="auth-main">
           <div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div>
@@ -225,20 +225,20 @@ export function AuthDock() {
           </> : <>
             <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); }}><ArrowLeft /> Change role</button>
             <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : `Sign in to the ${portalRole} portal`}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Use your approved DevQuest team account." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Access your learning and event dashboard."}</p></div></div>
-            <form className="auth-form" onSubmit={submit}>
+            <form className={`auth-form ${portalRole === "student" && studentSignup ? "auth-enrollment-form" : ""}`} onSubmit={submit}>
               {portalRole === "student" && (
-                <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
-                  <button type="button" className="auth-role-back" onClick={() => { setStudentSignup((value) => !value); setMessage(null); }}>{studentSignup ? "Already enrolled? Sign in" : "New student? Create an account"}</button>
+                <div className="auth-mode-row">
+                  <button type="button" className="auth-mode-switch" onClick={() => { setStudentSignup((value) => !value); setMessage(null); }}>{studentSignup ? "Already have an account? Sign in" : "New student? Create an account"}</button>
                 </div>
               )}
-              {portalRole === "student" && studentSignup && <><label><span>Full name</span><div><UserRound /><input name="fullName" required autoComplete="name" placeholder="Your full name" /></div></label><label><span>Phone number</span><div><UserRound /><input name="phone" required autoComplete="tel" placeholder="+92..." /></div></label><div className="auth-form-row"><label><span>City</span><input name="city" autoComplete="address-level2" placeholder="Your city" /></label><label><span>Semester</span><input name="semester" placeholder="e.g. 6th" /></label></div><label><span>University / institute</span><div><GraduationCap /><input name="university" required autoComplete="organization" placeholder="Your university or institute" /></div></label><label><span>Degree / program</span><div><GraduationCap /><input name="degree" required placeholder="e.g. BS Computer Science" /></div></label></>}
+              {portalRole === "student" && studentSignup && <><label><span>Full name</span><div><UserRound /><input name="fullName" required autoComplete="name" placeholder="Your full name" /></div></label><label><span>Phone number</span><div><UserRound /><input name="phone" required autoComplete="tel" placeholder="+92 300 0000000" /></div></label><label><span>City</span><div><MapPin /><input name="city" autoComplete="address-level2" placeholder="Your city" /></div></label><label><span>Semester</span><div><GraduationCap /><input name="semester" placeholder="e.g. 6th semester" /></div></label><label><span>University / institute</span><div><GraduationCap /><input name="university" required autoComplete="organization" placeholder="Your university or institute" /></div></label><label><span>Degree / program</span><div><GraduationCap /><input name="degree" required placeholder="e.g. BS Computer Science" /></div></label></>}
               <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "you@example.com"} autoComplete="email" /></div></label>
               <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete={studentSignup ? "new-password" : "current-password"} /></div></label>
               {message && <Status {...message} />}
               <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup ? <>Create student account <ChevronRight /></> : <>Open {portalRole === "admin" ? "Admin" : portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
             </form>
             
-            {portalRole === "student" && (
+            {portalRole === "student" && !studentSignup && (
               <div style={{ marginTop: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0", color: "#637086", fontSize: "0.8rem", textTransform: "uppercase", fontWeight: 700 }}>
                   <div style={{ flex: 1, height: 1, background: "#edf0f5" }}></div>
