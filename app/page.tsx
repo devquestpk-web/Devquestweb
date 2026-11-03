@@ -11,7 +11,6 @@ import {
   Handshake,
   MapPin,
   Palette,
-  Rocket,
   Sparkles,
   Users,
 } from "lucide-react";
@@ -91,7 +90,14 @@ export default function Home() {
             <div className="dq-portrait p-three"><Image src="/figma/hero-2.png" alt="Student with notebooks" fill sizes="190px" /></div>
             <div className="dq-portrait p-four"><Image src="/figma/hero-4.png" alt="Learner holding a tablet" fill sizes="190px" /></div>
             <i className="dq-dot dot-gold" /><i className="dq-dot dot-blue" />
-            <article className="dq-next-event"><span><Rocket /></span><small>COMING SOON</small><strong>Innovate Pakistan 2.0</strong><p><CalendarDays /> Details coming soon</p><p><MapPin /> Pakistan · Hybrid</p><Link href="/events">Learn more <ArrowUpRight /></Link></article>
+            <article className="dq-next-event">
+              <span><GraduationCap /></span>
+              <small>AWS EXAM PREP SERIES</small>
+              <strong>AWS Cloud Practitioner Exam Preparation</strong>
+              <p><CalendarDays /> Friday–Sunday · 8–10 PM</p>
+              <p><MapPin /> Virtual · Google Meet</p>
+              <Link href="/events#student-enrollment">Create account and enroll <ArrowUpRight /></Link>
+            </article>
           </div>
         </div>
         <ThemeToggle />
