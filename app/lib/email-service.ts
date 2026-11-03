@@ -18,6 +18,19 @@ export function renderTemplate(source: string, variables: Record<string, unknown
   });
 }
 
+export function normalizeEmailVariables(variables: Record<string, unknown>) {
+  const configuredBase = process.env.APP_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (!configuredBase) throw new Error("APP_BASE_URL is not configured");
+  const base = new URL(configuredBase);
+  if (!['http:', 'https:'].includes(base.protocol)) throw new Error("APP_BASE_URL must use HTTP or HTTPS");
+  const normalized = { ...variables };
+  for (const key of ["portal_url", "certificate_url"] as const) {
+    const value = normalized[key];
+    if (typeof value === "string" && value) normalized[key] = new URL(value, base).toString();
+  }
+  return normalized;
+}
+
 export function brandedEmail(content: string) {
   return `<div style="margin:0;background:#f4f7fb;padding:32px 16px;font-family:Arial,sans-serif;color:#0b193a"><div style="max-width:680px;margin:auto;background:#fff;border:1px solid #dce5f0;border-radius:16px;overflow:hidden"><div style="padding:24px 28px;background:#071426;color:#fff"><div style="color:#7fe6ff;font-size:12px;font-weight:700;letter-spacing:.14em">DEVQUEST PK</div><div style="margin-top:8px;font-size:24px;font-weight:700">Learn. Build. Lead.</div></div><div style="padding:28px;line-height:1.65">${content}</div><div style="padding:18px 28px;background:#f7f9fc;color:#67748c;font-size:12px">This operational message was sent by DevQuest PK. Manage optional email preferences in your Student Portal.</div></div></div>`;
 }

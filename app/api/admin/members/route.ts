@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const password = String(body.password || "");
     const fullName = String(body.fullName || "").trim();
     if (!email || !fullName || password.length < 8) return NextResponse.json({ error: "Name, email, and a password of at least 8 characters are required." }, { status: 400 });
-    const { data, error } = await auth.supabase.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: fullName } });
+    const { data, error } = await auth.supabase.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: fullName, role: "team" } });
     if (error || !data.user) throw error || new Error("Account could not be created");
     const { error: profileError } = await auth.supabase.from("profiles").update({ full_name: fullName, role: "team", department: String(body.department || "").trim() || null, job_title: String(body.jobTitle || "").trim() || null, is_active: true }).eq("id", data.user.id);
     if (profileError) throw profileError;

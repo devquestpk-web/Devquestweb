@@ -2,6 +2,7 @@ import { createSign } from "node:crypto";
 
 const tokenEndpoint = "https://oauth2.googleapis.com/token";
 const sheetsBase = "https://sheets.googleapis.com/v4/spreadsheets";
+export const DEVQUEST_MASTER_SPREADSHEET_ID = "194kjBck1wr7c1u3kB9DW6jnI5xn5ag84NkeIm3IsNfw";
 
 function base64url(value: string | Buffer) {
   return Buffer.from(value).toString("base64url");
@@ -34,9 +35,15 @@ async function accessToken() {
   return result.access_token;
 }
 
-async function sheetsRequest(path: string, init?: RequestInit) {
+export function configuredSpreadsheetId() {
   const spreadsheetId = process.env.GOOGLE_SHEETS_SPREADSHEET_ID;
   if (!spreadsheetId) throw new Error("GOOGLE_SHEETS_SPREADSHEET_ID is not configured");
+  if (spreadsheetId !== DEVQUEST_MASTER_SPREADSHEET_ID) throw new Error("GOOGLE_SHEETS_SPREADSHEET_ID must reference the DevQuest PK - Master Database spreadsheet");
+  return spreadsheetId;
+}
+
+async function sheetsRequest(path: string, init?: RequestInit) {
+  const spreadsheetId = configuredSpreadsheetId();
   const token = await accessToken();
   const response = await fetch(`${sheetsBase}/${encodeURIComponent(spreadsheetId)}${path}`, {
     ...init,

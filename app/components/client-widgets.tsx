@@ -92,11 +92,14 @@ export function AuthDock() {
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState<{type: "error" | "success"; text: string} | null>(null);
+  const [studentSignup, setStudentSignup] = useState(false);
 
   useEffect(() => {
     const syncHash = () => {
-      if (["#member-signup", "#member-signin", "#member-access"].includes(window.location.hash)) {
-        setPortalRole(null);
+      if (["#student-enrollment", "#member-signup", "#member-signin", "#member-access"].includes(window.location.hash)) {
+        const enrollment = ["#student-enrollment", "#member-signup"].includes(window.location.hash);
+        setPortalRole(enrollment ? "student" : null);
+        setStudentSignup(enrollment);
         setMessage(null);
         setOpen(true);
       }
@@ -119,11 +122,11 @@ export function AuthDock() {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => { void syncAccount(session?.user ?? null); });
     return () => data.subscription.unsubscribe();
   }, []);
-  function close() { setOpen(false); if (window.location.hash.startsWith("#member-")) history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
+  function close() { setOpen(false); if (window.location.hash.startsWith("#member-") || window.location.hash === "#student-enrollment") history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
   function chooseRole(role: PortalRole) {
     if (role === "services") { window.location.assign(`/portal/${role}`); return; }
     // Now student is also handled by the auth modal
-    setPortalRole(role); setMessage(null);
+    setPortalRole(role); setStudentSignup(false); setMessage(null);
   }
   function toggleAccess() { setOpen((value) => { if (!value) { setPortalRole(null); setMessage(null); } return !value; }); }
 
@@ -143,14 +146,12 @@ export function AuthDock() {
     // but for now, we'll keep the strict login flow and assume they sign up elsewhere or we handle it in auth.
     // Let's modify to allow signup if student role is selected.
     let loginData, loginError;
-    if (portalRole === "student" && data.get("isSignUp") === "true") {
+    if (portalRole === "student" && studentSignup) {
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email, password, options: { data: { role: "student", full_name: String(data.get("fullName") || "") } }
+        email, password, options: { emailRedirectTo: `${window.location.origin}/portal/student`, data: { role: "student", full_name: String(data.get("fullName") || "").trim(), phone: String(data.get("phone") || "").trim(), city: String(data.get("city") || "").trim(), university: String(data.get("university") || "").trim(), degree: String(data.get("degree") || "").trim(), semester: String(data.get("semester") || "").trim() } }
       });
       if (signUpError) { setWorking(false); setMessage({ type: "error", text: signUpError.message }); return; }
-      
-      // Auto-set role if possible via edge function or trigger, or we just rely on default.
-      // But for login we do:
+      if (!signUpData.session) { setWorking(false); setMessage({ type: "success", text: "Your student account has been created. Check your email to confirm it, then sign in." }); return; }
       loginData = signUpData; loginError = signUpError;
     } else {
       const res = await supabase.auth.signInWithPassword({ email, password });
@@ -222,20 +223,19 @@ export function AuthDock() {
               <button type="button" onClick={() => chooseRole("admin")}><span><ShieldCheck /></span><div><b>Admin</b><small>Accounts, assignments, attendance, and reports</small></div><ChevronRight /></button>
             </div>
           </> : <>
-            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setMessage(null); }}><ArrowLeft /> Change role</button>
-            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>Sign in to the {portalRole} portal</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Use your approved DevQuest team account." : "Access your learning and event dashboard."}</p></div></div>
+            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); }}><ArrowLeft /> Change role</button>
+            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : `Sign in to the ${portalRole} portal`}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Use your approved DevQuest team account." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Access your learning and event dashboard."}</p></div></div>
             <form className="auth-form" onSubmit={submit}>
               {portalRole === "student" && (
                 <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: "0.85rem", margin: 0, background: "transparent", padding: 0 }}>
-                    <input type="checkbox" name="isSignUp" value="true" style={{ width: "auto" }} /> Create new account
-                  </label>
+                  <button type="button" className="auth-role-back" onClick={() => { setStudentSignup((value) => !value); setMessage(null); }}>{studentSignup ? "Already enrolled? Sign in" : "New student? Create an account"}</button>
                 </div>
               )}
+              {portalRole === "student" && studentSignup && <><label><span>Full name</span><div><UserRound /><input name="fullName" required autoComplete="name" placeholder="Your full name" /></div></label><label><span>Phone number</span><div><UserRound /><input name="phone" required autoComplete="tel" placeholder="+92..." /></div></label><div className="auth-form-row"><label><span>City</span><input name="city" autoComplete="address-level2" placeholder="Your city" /></label><label><span>Semester</span><input name="semester" placeholder="e.g. 6th" /></label></div><label><span>University / institute</span><div><GraduationCap /><input name="university" required autoComplete="organization" placeholder="Your university or institute" /></div></label><label><span>Degree / program</span><div><GraduationCap /><input name="degree" required placeholder="e.g. BS Computer Science" /></div></label></>}
               <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "you@example.com"} autoComplete="email" /></div></label>
-              <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete="current-password" /></div></label>
+              <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete={studentSignup ? "new-password" : "current-password"} /></div></label>
               {message && <Status {...message} />}
-              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : <>Open {portalRole === "admin" ? "Admin" : portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
+              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup ? <>Create student account <ChevronRight /></> : <>Open {portalRole === "admin" ? "Admin" : portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
             </form>
             
             {portalRole === "student" && (

@@ -42,7 +42,7 @@ None of these values may use a `NEXT_PUBLIC_` prefix. Verify the sender domain a
 
 ## Database
 
-Review [`supabase/communications-upgrade.sql`](../supabase/communications-upgrade.sql), take a database backup, test it in an isolated Supabase project, and only then request approval to apply it to production.
+Review [`supabase/communications-upgrade.sql`](../supabase/communications-upgrade.sql), [`certificates-upgrade.sql`](../supabase/certificates-upgrade.sql), [`sheets-sync-hardening.sql`](../supabase/sheets-sync-hardening.sql), [`student-profile-sheets-sync.sql`](../supabase/student-profile-sheets-sync.sql), and [`student-login-email.sql`](../supabase/student-login-email.sql), take a database backup, test them in an isolated Supabase project, and only then request approval to apply them to production. The hardening migration ensures course enrollments also enqueue a Sheets update; the student-profile migration guarantees student registration/profile changes enter that same outbox and performs an initial student backfill; the login-email migration installs the branded portal-login button.
 
 Supabase remains authoritative. Google Sheets is an eventually consistent reporting mirror. Direct Sheet edits never update Supabase.
 

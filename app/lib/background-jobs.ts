@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseAdminClient } from "./supabase-admin";
 import { ensureSheetHeaders, upsertSheetRow } from "./google-sheets-api";
-import { renderTemplate, sendBrandedEmail } from "./email-service";
+import { normalizeEmailVariables, renderTemplate, sendBrandedEmail } from "./email-service";
 
 const sheetHeaders = {
-  Students: ["supabase_user_id", "student_id", "full_name", "email", "phone", "university", "degree", "semester", "profile_completed", "account_status", "created_at", "updated_at", "last_synced_at"],
+  Students: ["supabase_user_id", "student_id", "full_name", "email", "phone", "city", "university", "degree", "semester", "github_url", "linkedin_url", "discord_handle", "skills", "avatar_url", "profile_completed", "account_status", "created_at", "updated_at", "last_synced_at"],
   Events: ["event_id", "title", "type", "status", "start_date", "end_date", "published", "event_enrollment_count"],
   Sessions: ["session_id", "event_id", "session_title", "trainer", "start_at", "end_at", "session_status", "enrolled_count", "attended_count", "updated_at"],
   Session_Enrollments: ["session_enrollment_id", "session_id", "event_id", "student_id", "supabase_user_id", "student_name", "student_email", "enrollment_status", "registered_at", "cancelled_at", "last_synced_at"],
@@ -22,12 +22,13 @@ async function studentEmail(supabase: SupabaseClient, userId: string) {
 async function syncEntity(supabase: SupabaseClient, job: OutboxRecord) {
   const syncedAt = new Date().toISOString();
   if (job.entity_type === "profiles") {
-    const { data, error } = await supabase.from("profiles").select("id, student_id, full_name, phone, university, degree, semester, profile_completed, is_active, created_at, updated_at, role").eq("id", job.entity_id).maybeSingle();
+    const { data, error } = await supabase.from("profiles").select("id, student_id, full_name, phone, city, university, degree, semester, github_url, linkedin_url, discord_handle, skills, avatar_url, profile_completed, is_active, created_at, updated_at, role").eq("id", job.entity_id).maybeSingle();
     if (error) throw error;
     if (!data || data.role !== "student") return;
     const email = await studentEmail(supabase, data.id);
     await ensureSheetHeaders("Students", [...sheetHeaders.Students]);
-    const row = await upsertSheetRow("Students", data.id, [data.id, data.student_id, data.full_name, email, data.phone, data.university, data.degree, data.semester, data.profile_completed, data.is_active ? "active" : "disabled", data.created_at, data.updated_at, syncedAt]);
+    const skills = Array.isArray(data.skills) ? data.skills.join(", ") : "";
+    const row = await upsertSheetRow("Students", data.id, [data.id, data.student_id, data.full_name, email, data.phone, data.city, data.university, data.degree, data.semester, data.github_url, data.linkedin_url, data.discord_handle, skills, data.avatar_url, data.profile_completed, data.is_active ? "active" : "disabled", data.created_at, data.updated_at, syncedAt]);
     await supabase.from("sheet_row_mapping").upsert({ entity_type: "profiles", entity_id: data.id, sheet_name: "Students", row_number: row, last_version: job.entity_version, last_synced_at: syncedAt, last_error: null });
     return;
   }
@@ -39,6 +40,16 @@ async function syncEntity(supabase: SupabaseClient, job: OutboxRecord) {
     const values = data ? [data.id, data.title, "webinar", data.status, data.start_time, data.end_time, data.is_published, count || 0] : [job.entity_id, "", "webinar", "deleted", "", "", false, 0];
     const row = await upsertSheetRow("Events", job.entity_id, values);
     await supabase.from("sheet_row_mapping").upsert({ entity_type: "webinars", entity_id: job.entity_id, sheet_name: "Events", row_number: row, last_version: job.entity_version, last_synced_at: syncedAt, last_error: null });
+    return;
+  }
+  if (job.entity_type === "courses") {
+    const { data, error } = await supabase.from("courses").select("id, title, is_published, created_at, updated_at").eq("id", job.entity_id).maybeSingle();
+    if (error) throw error;
+    const { count } = await supabase.from("enrollments").select("id", { count: "exact", head: true }).eq("item_type", "COURSE").eq("course_id", job.entity_id);
+    await ensureSheetHeaders("Events", [...sheetHeaders.Events]);
+    const values = data ? [data.id, data.title, "course", data.is_published ? "published" : "draft", data.created_at, data.updated_at, data.is_published, count || 0] : [job.entity_id, "", "course", "deleted", "", "", false, 0];
+    const row = await upsertSheetRow("Events", job.entity_id, values);
+    await supabase.from("sheet_row_mapping").upsert({ entity_type: "courses", entity_id: job.entity_id, sheet_name: "Events", row_number: row, last_version: job.entity_version, last_synced_at: syncedAt, last_error: null });
     return;
   }
   if (job.entity_type === "event_sessions") {
@@ -79,12 +90,12 @@ async function syncEntity(supabase: SupabaseClient, job: OutboxRecord) {
     return;
   }
   if (job.entity_type === "certificates") {
-    const { data, error } = await supabase.from("certificates").select("id, cert_code, user_id, webinar_id, issued_at").eq("id", job.entity_id).maybeSingle();
+    const { data, error } = await supabase.from("certificates").select("id, cert_code, user_id, webinar_id, course_id, session_id, issued_at, revoked_at").eq("id", job.entity_id).maybeSingle();
     if (error) throw error;
     if (!data) return;
     const { data: profile } = await supabase.from("profiles").select("student_id").eq("id", data.user_id).single();
     await ensureSheetHeaders("Certificates", [...sheetHeaders.Certificates]);
-    const row = await upsertSheetRow("Certificates", data.id, [data.id, data.cert_code, profile?.student_id, data.webinar_id, "", data.issued_at, "valid"]);
+    const row = await upsertSheetRow("Certificates", data.id, [data.id, data.cert_code, profile?.student_id, data.webinar_id || data.course_id, data.session_id || "", data.issued_at, data.revoked_at ? "revoked" : "valid"]);
     await supabase.from("sheet_row_mapping").upsert({ entity_type: "certificates", entity_id: data.id, sheet_name: "Certificates", row_number: row, last_version: job.entity_version, last_synced_at: syncedAt, last_error: null });
   }
 }
@@ -129,7 +140,8 @@ export async function processNotificationJobs(limit = 20) {
       }
       const { data: template } = await supabase.from("email_templates").select("subject, html_body").eq("template_key", job.template_key).eq("is_active", true).order("version", { ascending: false }).limit(1).single();
       if (!template) throw new Error(`Active template '${job.template_key}' was not found`);
-      const messageId = await sendBrandedEmail({ to: recipient, subject: renderTemplate(template.subject, job.variables), html: renderTemplate(template.html_body, job.variables, true) });
+      const variables = normalizeEmailVariables(job.variables);
+      const messageId = await sendBrandedEmail({ to: recipient, subject: renderTemplate(template.subject, variables), html: renderTemplate(template.html_body, variables, true) });
       await supabase.from("notification_outbox").update({ status: "sent", provider_message_id: messageId, sent_at: new Date().toISOString(), last_error: null }).eq("id", job.id);
       await supabase.from("email_delivery_logs").insert({ notification_id: job.id, provider_message_id: messageId, recipient_email: recipient, status: "sent" });
       sent++;
