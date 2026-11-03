@@ -58,6 +58,7 @@ export function SiteHeader() {
 
   return (
     <header className="dq-header">
+      <Link className="dq-member-login" href="/team">Member login</Link>
       <div className="dq-shell dq-nav">
         <Brand compact />
         <nav className="dq-desktop-nav" aria-label="Main navigation">

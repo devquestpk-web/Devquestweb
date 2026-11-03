@@ -96,9 +96,10 @@ export function AuthDock() {
 
   useEffect(() => {
     const syncHash = () => {
-      if (["#student-enrollment", "#member-signup", "#member-signin", "#member-access"].includes(window.location.hash)) {
+      if (["#student-enrollment", "#member-signup", "#member-signin", "#member-access", "#team-login", "#admin-login"].includes(window.location.hash)) {
         const enrollment = ["#student-enrollment", "#member-signup"].includes(window.location.hash);
-        setPortalRole(enrollment ? "student" : null);
+        const directRole = window.location.hash === "#team-login" ? "team" : window.location.hash === "#admin-login" ? "admin" : null;
+        setPortalRole(enrollment ? "student" : directRole);
         setStudentSignup(enrollment);
         setMessage(null);
         setOpen(true);
@@ -122,7 +123,7 @@ export function AuthDock() {
     const { data } = supabase.auth.onAuthStateChange((_event, session) => { void syncAccount(session?.user ?? null); });
     return () => data.subscription.unsubscribe();
   }, []);
-  function close() { setOpen(false); if (window.location.hash.startsWith("#member-") || window.location.hash === "#student-enrollment") history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
+  function close() { setOpen(false); if (window.location.hash.startsWith("#member-") || window.location.hash === "#student-enrollment" || window.location.hash === "#team-login" || window.location.hash === "#admin-login") history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); }
   function chooseRole(role: PortalRole) {
     if (role === "services") { window.location.assign(`/portal/${role}`); return; }
     // Now student is also handled by the auth modal
@@ -172,7 +173,7 @@ export function AuthDock() {
     }
     
     setWorking(false);
-    window.location.assign(portalRole === "admin" ? "/portal/admin" : portalRole === "team" ? "/portal/team" : "/portal/student");
+    window.location.assign(portalRole === "admin" ? "/admin" : portalRole === "team" ? "/team" : "/portal/student");
   }
 
   async function signInWithGoogle() {
@@ -206,8 +207,8 @@ export function AuthDock() {
             <div className="auth-account">
               <div className="auth-user-row"><span>{name.slice(0, 2).toUpperCase()}</span><div><strong>{name}</strong><small>{user.email}</small></div></div>
               <div className="auth-account-portals auth-account-portals-single">
-                {accountRole === "admin" && <a href="/portal/admin"><ShieldCheck /> Admin Portal <ChevronRight /></a>}
-                {accountRole === "team" && <a href="/portal/team"><UsersRound /> My Team Portal <ChevronRight /></a>}
+                {accountRole === "admin" && <a href="/admin"><ShieldCheck /> Admin Portal <ChevronRight /></a>}
+                {accountRole === "team" && <a href="/team"><UsersRound /> My Team Portal <ChevronRight /></a>}
                 {accountRole === "student" && <a href="/portal/student"><GraduationCap /> My Student Portal <ChevronRight /></a>}
                 {!accountRole && <p className="auth-account-warning">This account has no active portal role. Contact the DevQuest administrator.</p>}
               </div>
@@ -218,9 +219,7 @@ export function AuthDock() {
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
             <div className="auth-role-grid">
               <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student</b><small>Learning, events, certificates, and opportunities</small></div><ChevronRight /></button>
-              <button type="button" onClick={() => chooseRole("team")}><span><UsersRound /></span><div><b>Team</b><small>Tasks, attendance, and progress reports</small></div><ChevronRight /></button>
               <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services</b><small>Client projects and delivery — coming soon</small></div><ChevronRight /></button>
-              <button type="button" onClick={() => chooseRole("admin")}><span><ShieldCheck /></span><div><b>Admin</b><small>Accounts, assignments, attendance, and reports</small></div><ChevronRight /></button>
             </div>
           </> : <>
             <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); }}><ArrowLeft /> Change role</button>

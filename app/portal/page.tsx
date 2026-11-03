@@ -5,8 +5,8 @@ import { ArrowRight, BriefcaseBusiness, FileSearch, GraduationCap, Search, Shiel
 export const metadata: Metadata = { title: "Portals", description: "Access DevQuest application, student, services, team, and admin portals." };
 
 const portals = [
-  { name: "Team Portal", status: "Live workspace", copy: "View assigned tasks, maintain your profile and credentials, mark attendance, and submit reports.", href: "/portal/team", icon: UsersRound, tone: "team" },
-  { name: "Admin Portal", status: "Administrators only", copy: "Manage team accounts, assignments, attendance, reports, and operational access from one place.", href: "/portal/admin", icon: ShieldCheck, tone: "admin" },
+  { name: "Team Portal", status: "Live workspace", copy: "View assigned tasks, maintain your profile and credentials, mark attendance, and submit reports.", href: "/team", icon: UsersRound, tone: "team" },
+  { name: "Admin Portal", status: "Administrators only", copy: "Manage team accounts, assignments, attendance, reports, and operational access from one place.", href: "/admin", icon: ShieldCheck, tone: "admin" },
   { name: "Services Portal", status: "Coming soon", copy: "A dedicated client workspace for service requests, project communication, milestones, and delivery.", href: "/portal/services", icon: BriefcaseBusiness, tone: "services" },
   { name: "Student Portal", status: "Live workspace", copy: "Learning paths, events, certificates, opportunities, and student progress in one connected space.", href: "/portal/student", icon: GraduationCap, tone: "student" },
 ];
