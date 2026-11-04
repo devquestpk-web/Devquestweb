@@ -111,6 +111,7 @@ export function SiteHeader() {
                   <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>{item.label}</Link>
                 )
               )}
+              <Link href="/team" onClick={() => setIsMobileMenuOpen(false)}>Member Login</Link>
               <a href="#member-signin" onClick={() => setIsMobileMenuOpen(false)}>Log In</a>
             </nav>
           )}
