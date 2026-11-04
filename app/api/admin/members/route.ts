@@ -51,3 +51,41 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: "Member access updated." });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Could not update account" }, { status: 500 }); }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const auth = await requireAdmin(request);
+    if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const body = await request.json();
+    const id = String(body.id || "");
+    if (!id) return NextResponse.json({ error: "Student id is required." }, { status: 400 });
+    if (id === auth.user.id) return NextResponse.json({ error: "Administrators cannot delete their own account." }, { status: 403 });
+
+    const { data: student, error: studentError } = await auth.supabase
+      .from("profiles")
+      .select("id, role, is_active")
+      .eq("id", id)
+      .maybeSingle();
+    if (studentError) throw studentError;
+    if (!student || student.role !== "student") return NextResponse.json({ error: "Only student accounts can be deleted here." }, { status: 403 });
+    if (student.is_active === false) return NextResponse.json({ error: "This student account is already deleted or disabled." }, { status: 409 });
+
+    const { error: deactivateError } = await auth.supabase.from("profiles").update({ is_active: false }).eq("id", id).eq("role", "student");
+    if (deactivateError) throw deactivateError;
+
+    await auth.supabase.from("admin_audit_logs").insert({
+      actor_id: auth.user.id,
+      action: "student.account_deleted_by_admin",
+      entity_type: "profiles",
+      entity_id: id,
+      details: { deletion_mode: "supabase_auth_soft_delete" },
+    });
+
+    const { error: deleteError } = await auth.supabase.auth.admin.deleteUser(id, true);
+    if (deleteError) {
+      await auth.supabase.from("profiles").update({ is_active: true }).eq("id", id);
+      throw deleteError;
+    }
+    return NextResponse.json({ message: "Student account deleted. Historical enrollment, attendance, and certificate records were retained." });
+  } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Could not delete student account" }, { status: 500 }); }
+}

@@ -1627,4 +1627,5 @@ body {
 .portal-inline-form *, .portal-report-form * { box-sizing: border-box; }
 .portal-inline-form label { min-width: 0; }
 .admin-members-layout .portal-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.admin-student-accounts { grid-column: 1 / -1; }
 
