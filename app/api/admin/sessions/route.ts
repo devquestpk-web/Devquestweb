@@ -8,8 +8,13 @@ function cleanResources(value: unknown) { if (!Array.isArray(value)) return []; 
 
 export async function GET(request: Request) {
   const auth = await requireAdmin(request); if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
-  const { data, error } = await auth.supabase.from("event_sessions").select("*, webinars(title), courses(title), session_enrollments(id, user_id, status, registered_at), session_attendance(id, user_id, status, checked_in_at)").order("starts_at", { ascending: false });
+  const [{ data, error }, { data: webinars, error: webinarsError }, { data: courses, error: coursesError }] = await Promise.all([
+    auth.supabase.from("event_sessions").select("*, webinars(title), courses(title), session_enrollments(id, user_id, status, registered_at), session_attendance(id, user_id, status, checked_in_at)").order("starts_at", { ascending: false }),
+    auth.supabase.from("webinars").select("id, title").order("title"),
+    auth.supabase.from("courses").select("id, title").order("title"),
+  ]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (webinarsError || coursesError) return NextResponse.json({ error: webinarsError?.message || coursesError?.message || "Could not load parent programs" }, { status: 500 });
   const userIds = Array.from(new Set((data || []).flatMap((session) => [
     ...(session.session_enrollments || []).map((entry: { user_id: string }) => entry.user_id),
     ...(session.session_attendance || []).map((entry: { user_id: string }) => entry.user_id),
@@ -24,7 +29,7 @@ export async function GET(request: Request) {
     session_enrollments: (session.session_enrollments || []).map((entry: { user_id: string }) => ({ ...entry, profiles: profilesById.get(entry.user_id) || null })),
     session_attendance: (session.session_attendance || []).map((entry: { user_id: string }) => ({ ...entry, profiles: profilesById.get(entry.user_id) || null })),
   }));
-  return NextResponse.json({ sessions }, { headers: { "Cache-Control": "no-store, private" } });
+  return NextResponse.json({ sessions, webinars: webinars || [], courses: courses || [] }, { headers: { "Cache-Control": "no-store, private" } });
 }
 
 export async function POST(request: Request) {
