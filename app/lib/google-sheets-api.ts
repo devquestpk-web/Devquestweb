@@ -3,6 +3,7 @@ import { createSign } from "node:crypto";
 const tokenEndpoint = "https://oauth2.googleapis.com/token";
 const sheetsBase = "https://sheets.googleapis.com/v4/spreadsheets";
 export const DEVQUEST_MASTER_SPREADSHEET_ID = "194kjBck1wr7c1u3kB9DW6jnI5xn5ag84NkeIm3IsNfw";
+const appsScriptHost = "script.google.com";
 
 function base64url(value: string | Buffer) {
   return Buffer.from(value).toString("base64url");
@@ -11,6 +12,33 @@ function base64url(value: string | Buffer) {
 function escapeFormula(value: unknown) {
   const text = String(value ?? "");
   return /^[=+\-@]/.test(text) ? `'${text}` : text;
+}
+
+function appsScriptConfiguration() {
+  const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL_2?.trim();
+  const secret = process.env.GOOGLE_SHEETS_WEBHOOK_SECRET?.trim();
+  if (!webhookUrl || !secret) return null;
+  const url = new URL(webhookUrl);
+  if (url.protocol !== "https:" || url.hostname !== appsScriptHost || !url.pathname.endsWith("/exec")) {
+    throw new Error("GOOGLE_SHEETS_WEBHOOK_URL_2 must be a deployed Google Apps Script /exec URL.");
+  }
+  return { url: url.toString(), secret };
+}
+
+async function appsScriptRequest(payload: Record<string, unknown>) {
+  const configuration = appsScriptConfiguration();
+  if (!configuration) return null;
+  const response = await fetch(configuration.url, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=UTF-8" },
+    body: JSON.stringify({ secret: configuration.secret, spreadsheetId: DEVQUEST_MASTER_SPREADSHEET_ID, ...payload }),
+    cache: "no-store",
+    redirect: "follow",
+    signal: AbortSignal.timeout(15_000),
+  });
+  const result = await response.json().catch(() => null) as { ok?: boolean; rowNumber?: number; error?: string } | null;
+  if (!response.ok || !result?.ok) throw new Error(result?.error || `Google Apps Script returned HTTP ${response.status}.`);
+  return result;
 }
 
 async function accessToken() {
@@ -56,6 +84,8 @@ async function sheetsRequest(path: string, init?: RequestInit) {
 }
 
 export async function ensureSheetHeaders(sheetName: string, headers: string[]) {
+  const scriptResult = await appsScriptRequest({ action: "ensure_headers", sheetName, headers });
+  if (scriptResult) return;
   const metadata = await sheetsRequest("?fields=sheets.properties.title") as { sheets?: Array<{ properties?: { title?: string } }> };
   if (!metadata.sheets?.some((sheet) => sheet.properties?.title === sheetName)) {
     await sheetsRequest(":batchUpdate", { method: "POST", body: JSON.stringify({ requests: [{ addSheet: { properties: { title: sheetName } } }] }) });
@@ -67,10 +97,12 @@ export async function ensureSheetHeaders(sheetName: string, headers: string[]) {
 }
 
 export async function upsertSheetRow(sheetName: string, stableId: string, values: unknown[]) {
+  const safeValues = values.map(escapeFormula);
+  const scriptResult = await appsScriptRequest({ action: "upsert", sheetName, stableId, values: safeValues });
+  if (scriptResult) return scriptResult.rowNumber || null;
   const idRange = encodeURIComponent(`${sheetName}!A:A`);
   const current = await sheetsRequest(`/values/${idRange}`) as { values?: string[][] };
   const rowIndex = current.values?.findIndex((row) => row[0] === stableId) ?? -1;
-  const safeValues = values.map(escapeFormula);
   if (rowIndex >= 1) {
     const rowNumber = rowIndex + 1;
     const range = encodeURIComponent(`${sheetName}!A${rowNumber}`);
