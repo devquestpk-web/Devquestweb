@@ -66,7 +66,7 @@ export function SiteHeader() {
       <div className="dq-announcement">
         <div className="dq-shell dq-announcement-inner">
           <a href="/events#student-enrollment"><Megaphone /> <span>Upcoming: AWS Cloud Practitioner Prep Series</span><b /> <span>Fri–Sun, 8 PM – 10 PM</span><b /> <strong>Register now <ArrowRight /></strong></a>
-          <div className="dq-announcement-meta"><span><MapPin /> MNS-UET Multan</span><span><UsersRound /> Dev Community</span><i /><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="DevQuest PK on LinkedIn"><Linkedin /></a><a href="https://github.com/DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on GitHub"><Github /></a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on YouTube"><Youtube /></a><a href="https://discord.com" target="_blank" rel="noreferrer" aria-label="DevQuest PK community"><MessageCircle /></a></div>
+          <div className="dq-announcement-meta"><span><UsersRound /> Dev Community</span><i /><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="DevQuest PK on LinkedIn"><Linkedin /></a><a href="https://github.com/DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on GitHub"><Github /></a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on YouTube"><Youtube /></a><a href="https://discord.com" target="_blank" rel="noreferrer" aria-label="DevQuest PK community"><MessageCircle /></a></div>
         </div>
       </div>
       <div className="dq-shell dq-nav-frame">
