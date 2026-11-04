@@ -71,21 +71,21 @@ export function SiteHeader() {
           {navigation.map((item) =>
             item.isDropdown ? (
               <div key={item.label} className="dq-dropdown">
-                <span className="dq-dropdown-trigger">
-                  <item.icon /> {item.label} <ChevronDown />
-                </span>
+                <span className="dq-dropdown-trigger">{item.label} <ChevronDown /></span>
                 <div className="dq-dropdown-menu">
                   <Link href="/community">STUDENT CHAPTERS</Link>
                   <Link href="/teams-in-collaboration">PARTNERS</Link>
                 </div>
               </div>
             ) : (
-              <Link key={item.href} href={item.href} className={pathname === item.href ? "is-active" : ""}><item.icon /> {item.label}</Link>
+              <Link key={item.href} href={item.href} className={pathname === item.href ? "is-active" : ""}>{item.label}</Link>
             )
           )}
           </nav>
-          <Link className="dq-member-login" href="/team"><UserRound /> Member Login</Link>
-          <a className="dq-login" href="#member-signin">Log In <ArrowRight /></a>
+          <div className="dq-account-actions">
+            <Link className="dq-member-login" href="/team">Member Login</Link>
+            <a className="dq-login" href="#member-signin">Log In</a>
+          </div>
           <div className="dq-mobile-nav" ref={mobileNavRef}>
           <button
             type="button"
