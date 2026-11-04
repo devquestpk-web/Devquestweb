@@ -27,11 +27,15 @@ const navigation = [
   { href: "/contact", label: "Contact Us", icon: Mail },
 ];
 
+function isPortalWorkspacePath(pathname: string) {
+  return pathname === "/admin" || pathname === "/team" || pathname.startsWith("/portal/");
+}
+
 export function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
-  const isPortalWorkspace = pathname === "/admin" || pathname === "/team" || pathname.startsWith("/portal/admin") || pathname.startsWith("/portal/student") || pathname.startsWith("/portal/team");
+  const isPortalWorkspace = isPortalWorkspacePath(pathname);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -128,6 +132,9 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
+  const pathname = usePathname();
+  if (isPortalWorkspacePath(pathname)) return null;
+
   return (
     <>
       <footer className="dq-footer">

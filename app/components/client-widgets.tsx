@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
@@ -85,6 +86,7 @@ export function FigmaContactForm() {
 type PortalRole = "team" | "admin" | "student" | "services";
 
 export function AuthDock() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [portalRole, setPortalRole] = useState<PortalRole | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -216,6 +218,8 @@ export function AuthDock() {
 
   async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut({ scope: "global" }); if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; } window.location.replace("/portal#member-signin"); }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
+  const isPortalWorkspace = pathname === "/admin" || pathname === "/team" || pathname.startsWith("/portal/");
+  if (isPortalWorkspace && user) return null;
 
   return <div className={`auth-dock ${open ? "is-open" : ""}`}>
     {open && <>
