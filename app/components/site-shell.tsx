@@ -83,8 +83,8 @@ export function SiteHeader() {
           )}
           </nav>
           <div className="dq-account-actions">
-            <Link className="dq-member-login" href="/team">Member Login</Link>
             <a className="dq-login" href="#member-signin">Log In</a>
+            <Link className="dq-member-login" href="/team">Member Login</Link>
           </div>
           <div className="dq-mobile-nav" ref={mobileNavRef}>
           <button
