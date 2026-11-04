@@ -4,17 +4,80 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { LoaderCircle, Upload } from "lucide-react";
 import { getSupabaseBrowserClient } from "../../lib/supabase-browser";
 
-type Item = { id: string; title?: string; full_name?: string; student_id?: string };
+type Item = { id: string; title?: string; full_name?: string; student_id?: string; email?: string };
 type Template = { id: string; name: string; scope_type: string; is_active: boolean };
 type CertificateData = { templates: Template[]; courses: Item[]; webinars: Item[]; sessions: Item[]; students: Item[] };
 
 export function CertificateManagement() {
-  const supabase = getSupabaseBrowserClient(); const [data, setData] = useState<CertificateData>({ templates: [], courses: [], webinars: [], sessions: [], students: [] }); const [message, setMessage] = useState(""); const [saving, setSaving] = useState(false); const [itemType, setItemType] = useState<"COURSE" | "WEBINAR">("COURSE"); const [templateScope, setTemplateScope] = useState("DEFAULT");
+  const supabase = getSupabaseBrowserClient();
+  const [data, setData] = useState<CertificateData>({ templates: [], courses: [], webinars: [], sessions: [], students: [] });
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [itemType, setItemType] = useState<"COURSE" | "WEBINAR">("COURSE");
+  const [templateScope, setTemplateScope] = useState("DEFAULT");
+  const [studentSearch, setStudentSearch] = useState("");
   const itemOptions = useMemo(() => itemType === "COURSE" ? data.courses : data.webinars, [data.courses, data.webinars, itemType]);
   const scopeOptions = useMemo(() => templateScope === "COURSE" ? data.courses : templateScope === "WEBINAR" ? data.webinars : templateScope === "SESSION" ? data.sessions : [], [data, templateScope]);
-  const call = useCallback(async (method: string, body?: BodyInit, json = false) => { if (!supabase) throw new Error("Supabase is not configured"); const token = (await supabase.auth.getSession()).data.session?.access_token; const response = await fetch("/api/admin/certificates", { method, headers: { Authorization: `Bearer ${token}`, ...(json ? { "Content-Type": "application/json" } : {}) }, body }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Certificate request failed"); return result; }, [supabase]);
-  const load = useCallback(() => call("GET").then(setData).catch((error) => setMessage(error.message)), [call]); useEffect(() => { void load(); }, [load]);
-  async function template(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setSaving(true); const values = Object.fromEntries(new FormData(event.currentTarget)); try { await call("POST", JSON.stringify({ action: "template", ...values, requireAllSessions: true }), true); setMessage("Certificate template saved."); event.currentTarget.reset(); setTemplateScope("DEFAULT"); await load(); } catch (error) { setMessage(error instanceof Error ? error.message : "Could not save template"); } finally { setSaving(false); } }
-  async function upload(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setSaving(true); try { await call("POST", new FormData(event.currentTarget)); setMessage("Verified certificate uploaded and issued."); event.currentTarget.reset(); await load(); } catch (error) { setMessage(error instanceof Error ? error.message : "Could not upload certificate"); } finally { setSaving(false); } }
-  return <div className="portal-work-grid admin-members-layout">{message && <div className="portal-message">{message}</div>}<section className="portal-panel"><div className="portal-panel-head"><div><p>CERTIFICATE DESIGN</p><h2>Reusable templates</h2></div></div><form className="portal-inline-form" onSubmit={template}><label>Template name<input name="name" required placeholder="e.g. AWS event completion" /></label><label>Apply template to<select name="scopeType" value={templateScope} onChange={(event) => setTemplateScope(event.target.value)}><option value="DEFAULT">All programs by default</option><option value="COURSE">A course</option><option value="WEBINAR">An event</option><option value="SESSION">A session</option></select></label>{templateScope !== "DEFAULT" && <label>{templateScope === "COURSE" ? "Course" : templateScope === "WEBINAR" ? "Event" : "Session"}<select name="scopeId" required defaultValue=""><option value="" disabled>Select an item</option>{scopeOptions.map((item) => <option key={item.id} value={item.id}>{item.title || item.id}</option>)}</select></label>}<div className="portal-form-row"><label>Primary color<input name="primaryColor" type="color" defaultValue="#061e3d" /></label><label>Accent color<input name="accentColor" type="color" defaultValue="#469bff" /></label></div><label>Issuer name<input name="issuerName" defaultValue="DevQuest Administration" /></label><label>Minimum attendance %<input name="minimumAttendancePercent" type="number" min="0" max="100" defaultValue="100" /></label><button className="portal-primary" disabled={saving}>{saving && <LoaderCircle className="spin" />} Save template</button></form><div className="portal-template-list">{data.templates.map((item) => <p key={item.id}><strong>{item.name}</strong> · {item.scope_type} · {item.is_active ? "Active" : "Inactive"}</p>)}</div></section><section className="portal-panel"><div className="portal-panel-head"><div><p>MANUAL CERTIFICATE ISSUANCE</p><h2>Upload verified PDF</h2></div></div><p className="portal-security-note">Upload a final PDF only. The portal verifies eligibility first; an override needs a recorded reason.</p><form className="portal-inline-form" onSubmit={upload}><label>Student<select name="userId" required defaultValue=""><option value="" disabled>Select student</option>{data.students.map((item) => <option key={item.id} value={item.id}>{item.full_name || "Student"} {item.student_id ? `(${item.student_id})` : ""}</option>)}</select></label><label>Certificate for<select name="itemType" value={itemType} onChange={(event) => setItemType(event.target.value as "COURSE" | "WEBINAR")}><option value="COURSE">Course</option><option value="WEBINAR">Event</option></select></label><label>{itemType === "COURSE" ? "Course" : "Event"}<select name="itemId" required defaultValue=""><option value="" disabled>Select an item</option>{itemOptions.map((item) => <option key={item.id} value={item.id}>{item.title || item.id}</option>)}</select></label><label>Related session <select name="sessionId" defaultValue=""><option value="">No specific session</option>{data.sessions.map((item) => <option key={item.id} value={item.id}>{item.title || item.id}</option>)}</select></label><label>Override reason <textarea name="overrideReason" rows={3} placeholder="Required only if the student does not meet the configured eligibility rule." /></label><label>Certificate PDF<input name="file" type="file" accept="application/pdf" required /></label><button className="portal-primary" disabled={saving || !itemOptions.length}>{saving ? <LoaderCircle className="spin" /> : <Upload />} Upload and issue certificate</button></form></section></div>;
+  const studentOptions = useMemo(() => {
+    const query = studentSearch.trim().toLowerCase();
+    return query ? data.students.filter((student) => [student.full_name, student.student_id, student.email].some((value) => value?.toLowerCase().includes(query))) : data.students;
+  }, [data.students, studentSearch]);
+
+  const call = useCallback(async (method: string, body?: BodyInit, json = false) => {
+    if (!supabase) throw new Error("Supabase is not configured");
+    const token = (await supabase.auth.getSession()).data.session?.access_token;
+    const response = await fetch("/api/admin/certificates", { method, headers: { Authorization: `Bearer ${token}`, ...(json ? { "Content-Type": "application/json" } : {}) }, body });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || "Certificate request failed");
+    return result;
+  }, [supabase]);
+
+  const load = useCallback(() => call("GET").then(setData).catch((error) => setMessage(error.message)), [call]);
+  useEffect(() => { void load(); }, [load]);
+
+  async function template(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setSaving(true);
+    const values = Object.fromEntries(new FormData(event.currentTarget));
+    try { await call("POST", JSON.stringify({ action: "template", ...values, requireAllSessions: true }), true); setMessage("Certificate template saved."); event.currentTarget.reset(); setTemplateScope("DEFAULT"); await load(); }
+    catch (error) { setMessage(error instanceof Error ? error.message : "Could not save template"); }
+    finally { setSaving(false); }
+  }
+
+  async function upload(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setSaving(true);
+    try { await call("POST", new FormData(event.currentTarget)); setMessage("Verified certificate uploaded and issued."); event.currentTarget.reset(); setStudentSearch(""); await load(); }
+    catch (error) { setMessage(error instanceof Error ? error.message : "Could not upload certificate"); }
+    finally { setSaving(false); }
+  }
+
+  return <div className="portal-work-grid admin-members-layout">
+    {message && <div className="portal-message" role="status">{message}</div>}
+    <section className="portal-panel">
+      <div className="portal-panel-head"><div><p>CERTIFICATE DESIGN</p><h2>Reusable templates</h2></div></div>
+      <form className="portal-inline-form" onSubmit={template}>
+        <label>Template name<input name="name" required placeholder="e.g. AWS event completion" /></label>
+        <label>Apply template to<select name="scopeType" value={templateScope} onChange={(event) => setTemplateScope(event.target.value)}><option value="DEFAULT">All programs by default</option><option value="COURSE">A course</option><option value="WEBINAR">An event</option><option value="SESSION">A session</option></select></label>
+        {templateScope !== "DEFAULT" && <label>{templateScope === "COURSE" ? "Course" : templateScope === "WEBINAR" ? "Event" : "Session"}<select name="scopeId" required defaultValue=""><option value="" disabled>Select an item</option>{scopeOptions.map((item) => <option key={item.id} value={item.id}>{item.title || item.id}</option>)}</select></label>}
+        <div className="portal-form-row"><label>Primary color<input name="primaryColor" type="color" defaultValue="#061e3d" /></label><label>Accent color<input name="accentColor" type="color" defaultValue="#469bff" /></label></div>
+        <label>Issuer name<input name="issuerName" defaultValue="DevQuest Administration" /></label>
+        <label>Minimum attendance %<input name="minimumAttendancePercent" type="number" min="0" max="100" defaultValue="100" /></label>
+        <button className="portal-primary" disabled={saving}>{saving && <LoaderCircle className="spin" />} Save template</button>
+      </form>
+      <div className="portal-template-list">{data.templates.map((item) => <p key={item.id}><strong>{item.name}</strong> · {item.scope_type} · {item.is_active ? "Active" : "Inactive"}</p>)}</div>
+    </section>
+    <section className="portal-panel">
+      <div className="portal-panel-head"><div><p>MANUAL CERTIFICATE ISSUANCE</p><h2>Upload verified PDF</h2></div></div>
+      <p className="portal-security-note">Upload a final PDF only. The portal verifies eligibility first; an override needs a recorded reason.</p>
+      <form className="portal-inline-form" onSubmit={upload}>
+        <label>Search student<input type="search" value={studentSearch} onChange={(event) => setStudentSearch(event.target.value)} placeholder="Name, email, or student ID" autoComplete="off" /></label>
+        <label>Student<select name="userId" required defaultValue=""><option value="" disabled>{studentOptions.length ? "Select student" : "No matching students"}</option>{studentOptions.map((item) => <option key={item.id} value={item.id}>{item.full_name || "Student"}{item.student_id ? ` (${item.student_id})` : ""}{item.email ? ` — ${item.email}` : ""}</option>)}</select><small>{studentOptions.length} matching student{studentOptions.length === 1 ? "" : "s"}</small></label>
+        <label>Certificate for<select name="itemType" value={itemType} onChange={(event) => setItemType(event.target.value as "COURSE" | "WEBINAR")}><option value="COURSE">Course</option><option value="WEBINAR">Event</option></select></label>
+        <label>{itemType === "COURSE" ? "Course" : "Event"}<select name="itemId" required defaultValue=""><option value="" disabled>Select an item</option>{itemOptions.map((item) => <option key={item.id} value={item.id}>{item.title || item.id}</option>)}</select></label>
+        <label>Related session<select name="sessionId" defaultValue=""><option value="">No specific session</option>{data.sessions.map((item) => <option key={item.id} value={item.id}>{item.title || item.id}</option>)}</select></label>
+        <label>Override reason<textarea name="overrideReason" rows={3} placeholder="Required only if the student does not meet the configured eligibility rule." /></label>
+        <label>Certificate PDF<input name="file" type="file" accept="application/pdf" required /></label>
+        <button className="portal-primary" disabled={saving || !itemOptions.length}>{saving ? <LoaderCircle className="spin" /> : <Upload />} Upload and issue certificate</button>
+      </form>
+    </section>
+  </div>;
 }

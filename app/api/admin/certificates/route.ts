@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     auth.supabase.from("courses").select("id, title").order("title"),
     auth.supabase.from("webinars").select("id, title").order("title"),
     auth.supabase.from("event_sessions").select("id, title, course_id, webinar_id").is("deleted_at", null).order("starts_at", { ascending: false }),
-    auth.supabase.from("profiles").select("id, full_name, student_id").eq("role", "student").order("full_name"),
+    auth.supabase.from("profiles").select("id, full_name, student_id, email").eq("role", "student").order("full_name"),
   ]);
   if (templatesResult.error) return NextResponse.json({ error: templatesResult.error.message }, { status: 500 });
   if (certificatesResult.error) return NextResponse.json({ error: certificatesResult.error.message }, { status: 500 });
