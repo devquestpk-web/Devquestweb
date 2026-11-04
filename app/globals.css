@@ -259,6 +259,9 @@ svg { width: 1.15em; height: 1.15em; stroke-width: 1.8; }
 .dq-featured-event-copy > a svg { width: 17px; }
 .dq-featured-event.techtrivium { box-shadow: inset 0 4px #8ca3b9, 0 28px 70px rgba(0,0,0,.22); }
 .dq-featured-event.innovate-pakistan { box-shadow: inset 0 4px #22b63b, 0 28px 70px rgba(0,0,0,.22); }
+.dq-featured-event.aws-cloud { border-color: rgba(255, 153, 0, .55); box-shadow: inset 0 4px #ff9900, 0 28px 70px rgba(0,0,0,.22); }
+.dq-featured-event.aws-cloud .dq-featured-event-image { background: #10001f; }
+.dq-featured-event.aws-cloud .dq-featured-event-image img { object-fit: contain; }
 .history-card { padding: 22px 22px 30px; background: #0c1947; border: 1px solid var(--line); border-radius: 18px; }
 .history-visual { height: 190px; display: grid; place-items: center; margin-bottom: 26px; color: #a3e8ff; background: linear-gradient(145deg, #142b82, #0b1540); border-radius: 13px; }.history-visual svg { width: 58px; height: 58px; }
 .history-card > span { color: #7bd9ff; font-size: .7rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }.history-card h3 { margin: 8px 0; font-size: 1.5rem; }.history-card p { color: #a8b5d3; line-height: 1.65; }
