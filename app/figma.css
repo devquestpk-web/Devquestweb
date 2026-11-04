@@ -1621,4 +1621,5 @@ body {
 .dq-login:hover { background: #f5cb11; }.dq-login svg { display: none; }
 @media (max-width: 1370px) { .dq-nav-frame { width: min(1230px, calc(100% - 64px)); } .dq-header { min-height: auto; } .dq-nav { min-height: 82px; padding: 0 22px; border: 1px solid rgba(120,197,255,.35); border-radius: 20px; background: rgba(4,14,39,.94); } .dq-brand.is-compact { min-width: 0; } .dq-account-actions { display: none; } }
 @media (max-width: 760px) { .dq-header { padding: 8px 0; } .dq-announcement { display: none; } .dq-nav-frame { width: calc(100% - 32px); } .dq-nav { min-height: 70px; padding: 0 16px; } }
+@media (min-width: 1121px) { .dq-course-hero { min-height: 730px; } .dq-course-grid { padding: 24px 0 45px; } }
 
