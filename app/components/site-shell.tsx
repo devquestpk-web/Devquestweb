@@ -31,6 +31,7 @@ export function SiteHeader() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const mobileNavRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
+  const isPortalWorkspace = pathname === "/admin" || pathname === "/team" || pathname.startsWith("/portal/admin") || pathname.startsWith("/portal/student") || pathname.startsWith("/portal/team");
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -55,6 +56,10 @@ export function SiteHeader() {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [isMobileMenuOpen]);
+
+  // Each authenticated workspace provides its own portal navigation and sign-out
+  // controls. Keep the public website header out of that focused experience.
+  if (isPortalWorkspace) return null;
 
   return (
     <header className="dq-header">
