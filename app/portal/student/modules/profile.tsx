@@ -1,11 +1,13 @@
 import { useEffect, useState, useRef } from "react";
-import { LoaderCircle, Save, Camera, UserRound } from "lucide-react";
+import { LoaderCircle, Save, Camera, UserRound, TriangleAlert, Trash2 } from "lucide-react";
 import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
 export function ProfileModule() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [studentId, setStudentId] = useState("");
   
   const [formData, setFormData] = useState({
@@ -157,6 +159,30 @@ export function ProfileModule() {
     }
   };
 
+  const handleDeleteAccount = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!supabase || deleteConfirmation !== "DELETE") return;
+    if (!window.confirm("Delete your DevQuest student account? You will immediately lose access and cannot undo this.")) return;
+
+    setDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch("/api/student/profile", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token || ""}` },
+        body: JSON.stringify({ confirmation: deleteConfirmation }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not delete your account");
+      await supabase.auth.signOut();
+      window.location.assign("/");
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Could not delete your account");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4 pb-12 animate-pulse">
@@ -291,6 +317,27 @@ export function ProfileModule() {
               </button>
             </div>
           </form>
+
+          <section className="mt-10 border-t border-red-100 pt-7" aria-labelledby="delete-account-heading">
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+              <div className="flex items-start gap-3">
+                <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-600" aria-hidden="true" />
+                <div>
+                  <h3 id="delete-account-heading" className="font-bold text-red-900">Delete student account</h3>
+                  <p className="mt-1 text-sm leading-6 text-red-800">This permanently removes your sign-in access. Your existing enrollment, attendance, and certificate records are retained for DevQuest’s historical records.</p>
+                </div>
+              </div>
+              <form className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={handleDeleteAccount}>
+                <label className="flex flex-1 flex-col gap-2 text-sm font-semibold text-red-900">Type <span className="font-mono">DELETE</span> to confirm
+                  <input className="rounded-xl border border-red-200 bg-white px-4 py-3 font-mono text-sm text-slate-900 outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10" value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} autoComplete="off" aria-describedby="delete-account-help" />
+                </label>
+                <button type="submit" disabled={deleting || deleteConfirmation !== "DELETE"} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500/20 disabled:cursor-not-allowed disabled:opacity-60">
+                  {deleting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} {deleting ? "Deleting…" : "Delete account"}
+                </button>
+              </form>
+              <p id="delete-account-help" className="mt-3 text-xs text-red-700">This action cannot be undone.</p>
+            </div>
+          </section>
         </section>
       </div>
 

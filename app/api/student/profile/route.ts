@@ -74,3 +74,45 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Could not update profile" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const auth = await requireStudent(request);
+    if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+    const body = await request.json().catch(() => ({}));
+    if (body.confirmation !== "DELETE") {
+      return NextResponse.json({ error: 'Type DELETE to confirm account deletion.' }, { status: 400 });
+    }
+
+    // Keep learning records intact for attendance and certificate verification,
+    // but immediately block the account before removing its auth identity.
+    const { error: deactivateError } = await auth.supabase
+      .from("profiles")
+      .update({ is_active: false })
+      .eq("id", auth.user.id)
+      .eq("role", "student");
+    if (deactivateError) throw deactivateError;
+
+    await auth.supabase.from("admin_audit_logs").insert({
+      actor_id: auth.user.id,
+      action: "student.account_deleted",
+      entity_type: "profiles",
+      entity_id: auth.user.id,
+      details: { deletion_mode: "supabase_auth_soft_delete" },
+    });
+
+    // Soft deletion is intentionally irreversible. It disables authentication
+    // without cascading away certificate and attendance history.
+    const { error: deleteError } = await auth.supabase.auth.admin.deleteUser(auth.user.id, true);
+    if (deleteError) {
+      await auth.supabase.from("profiles").update({ is_active: true }).eq("id", auth.user.id);
+      throw deleteError;
+    }
+
+    return NextResponse.json({ message: "Your account has been deleted." });
+  } catch (error) {
+    console.error("Student account deletion failed", error);
+    return NextResponse.json({ error: "Could not delete your account. Please contact support if this continues." }, { status: 500 });
+  }
+}
