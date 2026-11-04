@@ -93,6 +93,16 @@ export function AuthDock() {
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState<{type: "error" | "success"; text: string} | null>(null);
   const [studentSignup, setStudentSignup] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState("");
+  const [confirmationSent, setConfirmationSent] = useState(false);
+  const [resendingConfirmation, setResendingConfirmation] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (!resendCooldown) return;
+    const timer = window.setTimeout(() => setResendCooldown((seconds) => Math.max(0, seconds - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
 
   useEffect(() => {
     const syncHash = () => {
@@ -101,7 +111,7 @@ export function AuthDock() {
         const directRole = window.location.hash === "#team-login" ? "team" : window.location.hash === "#admin-login" ? "admin" : null;
         setPortalRole(enrollment ? "student" : directRole);
         setStudentSignup(enrollment);
-        setMessage(null);
+        setMessage(null); setConfirmationSent(false); setConfirmationEmail(""); setResendCooldown(0);
         setOpen(true);
       }
     };
@@ -129,6 +139,7 @@ export function AuthDock() {
     // Now student is also handled by the auth modal
     setPortalRole(role); setStudentSignup(false); setMessage(null);
   }
+  function clearConfirmationState() { setConfirmationSent(false); setConfirmationEmail(""); setResendCooldown(0); }
   function toggleAccess() { setOpen((value) => { if (!value) { setPortalRole(null); setMessage(null); } return !value; }); }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -152,7 +163,7 @@ export function AuthDock() {
         email, password, options: { emailRedirectTo: `${window.location.origin}/portal/student`, data: { role: "student", full_name: String(data.get("fullName") || "").trim(), phone: String(data.get("phone") || "").trim(), city: String(data.get("city") || "").trim(), university: String(data.get("university") || "").trim(), degree: String(data.get("degree") || "").trim(), semester: String(data.get("semester") || "").trim() } }
       });
       if (signUpError) { setWorking(false); setMessage({ type: "error", text: signUpError.message }); return; }
-      if (!signUpData.session) { setWorking(false); setMessage({ type: "success", text: "Your student account has been created. Check your email to confirm it, then sign in." }); return; }
+      if (!signUpData.session) { setWorking(false); setConfirmationEmail(email); setConfirmationSent(true); setResendCooldown(60); setMessage({ type: "success", text: "Your student account has been created. We sent a confirmation email." }); return; }
       loginData = signUpData; loginError = signUpError;
     } else {
       const res = await supabase.auth.signInWithPassword({ email, password });
@@ -192,6 +203,17 @@ export function AuthDock() {
     }
   }
 
+  async function resendConfirmationEmail() {
+    const supabase = getSupabase();
+    if (!supabase || !confirmationEmail || resendCooldown > 0) return;
+    setResendingConfirmation(true); setMessage(null);
+    const { error } = await supabase.auth.resend({ type: "signup", email: confirmationEmail, options: { emailRedirectTo: `${window.location.origin}/portal/student` } });
+    setResendingConfirmation(false);
+    if (error) { setMessage({ type: "error", text: error.message }); return; }
+    setResendCooldown(60);
+    setMessage({ type: "success", text: "A new confirmation email has been sent." });
+  }
+
   async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut({ scope: "global" }); if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; } window.location.replace("/portal#member-signin"); }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
 
@@ -222,19 +244,20 @@ export function AuthDock() {
               <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services</b><small>Client projects and delivery — coming soon</small></div><ChevronRight /></button>
             </div>
           </> : <>
-            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); }}><ArrowLeft /> Change role</button>
+            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); clearConfirmationState(); }}><ArrowLeft /> Change role</button>
             <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : `Sign in to the ${portalRole} portal`}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Use your approved DevQuest team account." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Access your learning and event dashboard."}</p></div></div>
             <form className={`auth-form ${portalRole === "student" && studentSignup ? "auth-enrollment-form" : ""}`} onSubmit={submit}>
               {portalRole === "student" && (
                 <div className="auth-mode-row">
-                  <button type="button" className="auth-mode-switch" onClick={() => { setStudentSignup((value) => !value); setMessage(null); }}>{studentSignup ? "Already have an account? Sign in" : "New student? Create an account"}</button>
+                  <button type="button" className="auth-mode-switch" onClick={() => { setStudentSignup((value) => !value); setMessage(null); clearConfirmationState(); }}>{studentSignup ? "Already have an account? Sign in" : "New student? Create an account"}</button>
                 </div>
               )}
               {portalRole === "student" && studentSignup && <><label><span>Full name</span><div><UserRound /><input name="fullName" required autoComplete="name" placeholder="Your full name" /></div></label><label><span>Phone number</span><div><UserRound /><input name="phone" required autoComplete="tel" placeholder="+92 300 0000000" /></div></label><label><span>City</span><div><MapPin /><input name="city" autoComplete="address-level2" placeholder="Your city" /></div></label><label><span>Semester</span><div><GraduationCap /><input name="semester" placeholder="e.g. 6th semester" /></div></label><label><span>University / institute</span><div><GraduationCap /><input name="university" required autoComplete="organization" placeholder="Your university or institute" /></div></label><label><span>Degree / program</span><div><GraduationCap /><input name="degree" required placeholder="e.g. BS Computer Science" /></div></label></>}
               <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "you@example.com"} autoComplete="email" /></div></label>
               <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete={studentSignup ? "new-password" : "current-password"} /></div></label>
               {message && <Status {...message} />}
-              <button className="auth-submit" type="submit" disabled={working}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup ? <>Create student account <ChevronRight /></> : <>Open {portalRole === "admin" ? "Admin" : portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
+              {portalRole === "student" && studentSignup && confirmationSent && <div className="auth-confirmation-help" role="status"><p>Didn&apos;t receive the email? Check your <strong>Spam</strong> or <strong>Junk</strong> folder.</p><button type="button" onClick={() => void resendConfirmationEmail()} disabled={resendingConfirmation || resendCooldown > 0}>{resendingConfirmation ? <><LoaderCircle className="spin" /> Sending…</> : resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Resend confirmation email"}</button></div>}
+              <button className="auth-submit" type="submit" disabled={working || (portalRole === "student" && studentSignup && confirmationSent)}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup && confirmationSent ? <>Confirmation email sent <CheckCircle2 /></> : studentSignup ? <>Create student account <ChevronRight /></> : <>Open {portalRole === "admin" ? "Admin" : portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
             </form>
             
             {portalRole === "student" && !studentSignup && (

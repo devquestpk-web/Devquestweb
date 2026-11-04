@@ -6,6 +6,7 @@ export function ProfileModule() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [studentId, setStudentId] = useState("");
   
   const [formData, setFormData] = useState({
     full_name: "",
@@ -40,6 +41,7 @@ export function ProfileModule() {
         const data = await response.json();
         
         if (data.profile) {
+          setStudentId(data.profile.student_id || "");
           setFormData({
             full_name: data.profile.full_name || "",
             bio: data.profile.bio || "",
@@ -203,6 +205,7 @@ export function ProfileModule() {
           <div className="mb-8">
             <span className="text-xs font-bold tracking-widest text-blue-600/80 mb-2 block">ACCOUNT SETTINGS</span>
             <h2 className="text-2xl font-bold text-slate-800">Student Profile</h2>
+            <p className="mt-2 text-sm text-slate-500">Your DevQuest Student ID: <strong className="font-mono text-slate-700">{studentId || "Assigning…"}</strong></p>
           </div>
           
           <form onSubmit={handleSave} className="flex flex-col gap-6">
@@ -326,6 +329,7 @@ export function ProfileModule() {
 
           <h3 className="text-xl font-bold text-slate-800 mb-1">{formData.full_name || "Student Name"}</h3>
           <p className="text-sm text-slate-500 font-medium mb-6">{formData.city || "Student"}</p>
+          <div className="mb-6 w-full rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-left"><span className="block text-[11px] font-bold uppercase tracking-wider text-blue-500">DevQuest Student ID</span><strong className="mt-1 block font-mono text-sm text-blue-900">{studentId || "Assigning…"}</strong></div>
           
           {skillsList.length > 0 ? (
             <div className="flex flex-wrap gap-2 justify-center w-full">
