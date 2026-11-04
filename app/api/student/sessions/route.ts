@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   if (error) return NextResponse.json({ error: "Could not load sessions" }, { status: 500 });
   const webinarIds = (enrollments || []).map((item) => item.webinar_id).filter(Boolean);
   const courseIds = (enrollments || []).map((item) => item.course_id).filter(Boolean);
-  const selection = "id, webinar_id, course_id, title, topic, trainer, starts_at, ends_at, status, enrollment_mode, resources, join_releases_at, webinars(title), courses(title)";
+  const selection = "id, webinar_id, course_id, title, topic, trainer, starts_at, ends_at, status, enrollment_mode, resources, join_releases_at, join_url, google_meet_code, webinars(title), courses(title)";
   const [eventResult, courseResult] = await Promise.all([
     webinarIds.length ? auth.supabase.from("event_sessions").select(selection).in("webinar_id", webinarIds).is("deleted_at", null).neq("status", "draft") : Promise.resolve({ data: [], error: null }),
     courseIds.length ? auth.supabase.from("event_sessions").select(selection).in("course_id", courseIds).is("deleted_at", null).neq("status", "draft") : Promise.resolve({ data: [], error: null }),
@@ -22,9 +22,22 @@ export async function GET(request: Request) {
   if (sessionEnrollmentError) return NextResponse.json({ error: "Could not load session enrollments" }, { status: 500 });
   const enrolledSessionIds = new Set((ownSessionEnrollments || []).map((entry) => entry.session_id));
   const now = Date.now();
+  const safeMeetCode = (value: string | null | undefined) => {
+    const code = String(value || "").trim().toLowerCase();
+    return /^[a-z]{3}-[a-z]{4}-[a-z]{3}$/.test(code) ? code : null;
+  };
   const safeSessions = sessions.map((session) => {
     const enrolled = enrolledSessionIds.has(session.id);
-    return { ...session, resources: enrolled ? session.resources : [], enrolled, joinAvailable: enrolled && (session.status === "live" || Boolean(session.join_releases_at && new Date(session.join_releases_at).getTime() <= now)) };
+    const joinAvailable = enrolled && (session.status === "live" || Boolean(session.join_releases_at && new Date(session.join_releases_at).getTime() <= now));
+    const codeFromUrl = typeof session.join_url === "string" ? session.join_url.match(/meet\.google\.com\/([a-z]{3}-[a-z]{4}-[a-z]{3})/i)?.[1] : null;
+    const { join_url: _joinUrl, google_meet_code: _googleMeetCode, ...safeSession } = session;
+    return {
+      ...safeSession,
+      resources: enrolled ? session.resources : [],
+      enrolled,
+      joinAvailable,
+      meetingCode: joinAvailable ? safeMeetCode(session.google_meet_code) || safeMeetCode(codeFromUrl) : null,
+    };
   });
   return NextResponse.json({ sessions: safeSessions });
 }
