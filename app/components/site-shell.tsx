@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Facebook, Instagram, Linkedin, Mail, MapPin, Menu, MessageCircle, Phone, Youtube } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, Facebook, Github, Home, Info, Instagram, Layers3, Linkedin, Mail, MapPin, Megaphone, Menu, MessageCircle, Phone, UserRound, UsersRound, Youtube } from "lucide-react";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -17,14 +17,14 @@ export function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 const navigation = [
-  { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
-  { href: "/services", label: "Services" },
-  { href: "/events", label: "Events & Academy" },
-  { href: "/community", label: "Community", isDropdown: true },
-  { href: "/portal", label: "Portals" },
-  { href: "/careers", label: "Careers" },
-  { href: "/contact", label: "Contact Us" },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/about", label: "About", icon: Info },
+  { href: "/services", label: "Services", icon: Layers3 },
+  { href: "/events", label: "Events & Academy", icon: CalendarDays },
+  { href: "/community", label: "Community", icon: UsersRound, isDropdown: true },
+  { href: "/portal", label: "Portals", icon: Layers3 },
+  { href: "/careers", label: "Careers", icon: BriefcaseBusiness },
+  { href: "/contact", label: "Contact Us", icon: Mail },
 ];
 
 export function SiteHeader() {
@@ -58,15 +58,21 @@ export function SiteHeader() {
 
   return (
     <header className="dq-header">
-      <Link className="dq-member-login" href="/team">Member login</Link>
-      <div className="dq-shell dq-nav">
-        <Brand compact />
-        <nav className="dq-desktop-nav" aria-label="Main navigation">
+      <div className="dq-announcement">
+        <div className="dq-shell dq-announcement-inner">
+          <a href="/events#student-enrollment"><Megaphone /> <span>Upcoming: AWS Cloud Practitioner Prep Series</span><b /> <span>Fri–Sun, 8 PM – 10 PM</span><b /> <strong>Register now <ArrowRight /></strong></a>
+          <div className="dq-announcement-meta"><span><MapPin /> MNS-UET Multan</span><span><UsersRound /> Dev Community</span><i /><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="DevQuest PK on LinkedIn"><Linkedin /></a><a href="https://github.com/DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on GitHub"><Github /></a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on YouTube"><Youtube /></a><a href="https://discord.com" target="_blank" rel="noreferrer" aria-label="DevQuest PK community"><MessageCircle /></a></div>
+        </div>
+      </div>
+      <div className="dq-shell dq-nav-frame">
+        <div className="dq-nav">
+          <Brand compact />
+          <nav className="dq-desktop-nav" aria-label="Main navigation">
           {navigation.map((item) =>
             item.isDropdown ? (
               <div key={item.label} className="dq-dropdown">
                 <span className="dq-dropdown-trigger">
-                  {item.label} <ChevronDown className="w-3.5 h-3.5 inline-block" />
+                  <item.icon /> {item.label} <ChevronDown />
                 </span>
                 <div className="dq-dropdown-menu">
                   <Link href="/community">STUDENT CHAPTERS</Link>
@@ -74,12 +80,13 @@ export function SiteHeader() {
                 </div>
               </div>
             ) : (
-              <Link key={item.href} href={item.href}>{item.label}</Link>
+              <Link key={item.href} href={item.href} className={pathname === item.href ? "is-active" : ""}><item.icon /> {item.label}</Link>
             )
           )}
-        </nav>
-        <a className="dq-login" href="#member-signin">Log In</a>
-        <div className="dq-mobile-nav" ref={mobileNavRef}>
+          </nav>
+          <Link className="dq-member-login" href="/team"><UserRound /> Member Login</Link>
+          <a className="dq-login" href="#member-signin">Log In <ArrowRight /></a>
+          <div className="dq-mobile-nav" ref={mobileNavRef}>
           <button
             type="button"
             aria-label={isMobileMenuOpen ? "Close navigation" : "Open navigation"}
@@ -107,6 +114,7 @@ export function SiteHeader() {
               <a href="#member-signin" onClick={() => setIsMobileMenuOpen(false)}>Log In</a>
             </nav>
           )}
+          </div>
         </div>
       </div>
     </header>
