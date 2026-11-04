@@ -1623,3 +1623,8 @@ body {
 @media (max-width: 760px) { .dq-header { padding: 8px 0; } .dq-announcement { display: none; } .dq-nav-frame { width: calc(100% - 32px); } .dq-nav { min-height: 70px; padding: 0 16px; } }
 @media (min-width: 1121px) { .dq-course-hero { min-height: 730px; } .dq-course-grid { padding: 24px 0 45px; } }
 
+/* Keep admin session fields contained within their panel. */
+.portal-inline-form *, .portal-report-form * { box-sizing: border-box; }
+.portal-inline-form label { min-width: 0; }
+.admin-members-layout .portal-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
