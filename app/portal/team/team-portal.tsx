@@ -137,7 +137,7 @@ export function TeamPortal() {
   const currentAttendance = attendance.find((entry) => entry.attendance_date === today());
   return <div className="team-portal-shell">
     <aside className="team-portal-sidebar">
-      <Link className="team-portal-wordmark" href="/portal"><span>DQ</span><b>Team<br />Portal</b></Link>
+      <Link className="team-portal-wordmark" href="/"><span>DQ</span><b>Team<br />Portal</b></Link>
       <nav aria-label="Team portal navigation">{navItems.map(({ id, label, icon: Icon }) => <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); setMessage(null); }} title={label}><Icon /> {label}</button>)}</nav>
       <div className="team-portal-user"><ProfileAvatar name={name} url={profile.avatar_url} /><div><b>{name}</b><small>{profile.role}</small></div></div>
     </aside>
@@ -153,7 +153,7 @@ export function TeamPortal() {
   </div>;
 }
 
-function PortalState({ title, copy, action }: { title: string; copy: string; action?: React.ReactNode }) { return <div className="portal-state"><section><Link className="portal-back" href="/portal"><ArrowLeft /> All portals</Link><div className="portal-state-icon"><ShieldCheck /></div><p className="portal-kicker">TEAM PORTAL</p><h1>{title}</h1><p>{copy}</p>{action && <div className="portal-state-action">{action}</div>}</section></div>; }
+function PortalState({ title, copy, action }: { title: string; copy: string; action?: React.ReactNode }) { return <div className="portal-state"><section><Link className="portal-back" href="/"><ArrowLeft /> Back to website</Link><div className="portal-state-icon"><ShieldCheck /></div><p className="portal-kicker">TEAM PORTAL</p><h1>{title}</h1><p>{copy}</p>{action && <div className="portal-state-action">{action}</div>}</section></div>; }
 
 function PanelHead({ kicker, title }: { kicker: string; title: string }) { return <div className="portal-panel-head"><div><p>{kicker}</p><h2>{title}</h2></div></div>; }
 function Tasks({ tasks, saving, onUpdate }: { tasks: Task[]; saving: boolean; onUpdate: (id: string, status: Task["status"]) => void }) { return <div className="portal-work-grid"><section className="portal-panel"><PanelHead kicker="MY ASSIGNMENTS" title="Tasks assigned by administration" /><div className="portal-task-cards">{tasks.map((task) => <article key={task.id}><div className="portal-task-title"><span className={`task-dot ${task.status}`} /><div><h3>{task.title}</h3><p>{task.description || "No additional details."}</p></div><em className={`priority-${task.priority}`}>{task.priority}</em></div><div className="portal-task-meta"><span>{task.assignee_name || "Assigned to you"}</span><span>{formatDate(task.due_date)}</span><select value={task.status} onChange={(e) => onUpdate(task.id, e.target.value as Task["status"])} disabled={saving}><option value="todo">To do</option><option value="in_progress">In progress</option><option value="completed">Completed</option></select></div></article>)}{!tasks.length && <Empty text="No tasks have been assigned to you." />}</div></section></div>; }

@@ -34,6 +34,8 @@ export function StudentPortal() {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
+  const [studentName, setStudentName] = useState("");
+  const [studentId, setStudentId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const supabase = getSupabaseBrowserClient();
@@ -42,12 +44,14 @@ export function StudentPortal() {
     if (!supabase) return;
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role, is_active")
+      .select("role, is_active, full_name, student_id")
       .eq("id", activeUser.id)
       .single();
     
     setRole(profile?.role || null);
     setIsActive(profile?.is_active !== false);
+    setStudentName(profile?.full_name || "");
+    setStudentId(profile?.student_id || "");
   }, [supabase]);
 
   useEffect(() => {
@@ -73,7 +77,7 @@ export function StudentPortal() {
     if (!supabase) return;
     setSaving(true);
     await supabase.auth.signOut({ scope: "global" });
-    window.location.replace("/portal#member-signin");
+    window.location.replace("/#member-signin");
   }
 
   if (loading) return <PortalState title="Opening your learning space" copy="Checking your DevQuest access…" />;
@@ -84,12 +88,12 @@ export function StudentPortal() {
     return <PortalState title="Student access required" copy="Your account exists, but you do not have Student access." />;
   }
 
-  const name = user.email?.split("@")[0] || "Student";
+  const name = studentName || user.email?.split("@")[0] || "Student";
 
   return (
     <div className="team-portal-shell student-portal-shell">
       <aside className="team-portal-sidebar student-sidebar">
-        <Link className="team-portal-wordmark" href="/portal">
+        <Link className="team-portal-wordmark" href="/">
           <span>DQ</span><b>Student<br />Portal</b>
         </Link>
         <nav aria-label="Student portal navigation">
@@ -103,7 +107,7 @@ export function StudentPortal() {
           <span className="student-avatar-placeholder">ST</span>
           <div>
             <b>{name}</b>
-            <small>DevQuest Student</small>
+            <small>{studentId || "DevQuest Student"}</small>
           </div>
         </div>
       </aside>
@@ -148,7 +152,7 @@ function PortalState({ title, copy, action }: { title: string; copy: string; act
   return (
     <div className="portal-state">
       <section>
-        <Link className="portal-back" href="/portal"><ArrowLeft /> All portals</Link>
+        <Link className="portal-back" href="/"><ArrowLeft /> Back to website</Link>
         <div className="portal-state-icon"><ShieldCheck /></div>
         <p className="portal-kicker">STUDENT PORTAL</p>
         <h1>{title}</h1>

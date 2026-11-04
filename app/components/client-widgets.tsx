@@ -216,7 +216,7 @@ export function AuthDock() {
     setMessage({ type: "success", text: "A new confirmation email has been sent." });
   }
 
-  async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut({ scope: "global" }); if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; } window.location.replace("/portal#member-signin"); }
+  async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut({ scope: "global" }); if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; } window.location.replace("/#member-signin"); }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
   const isPortalWorkspace = pathname === "/admin" || pathname === "/team" || pathname.startsWith("/portal/");
   if (isPortalWorkspace && user) return null;

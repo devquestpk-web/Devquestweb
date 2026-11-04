@@ -1,193 +1,166 @@
+"use client";
+
 import { useEffect, useState } from "react";
-import { Award, BookOpen, ChevronRight, FolderLock, LayoutDashboard, Ticket, Video, ArrowUpRight, LoaderCircle } from "lucide-react";
+import { ArrowRight, Award, BookOpen, CalendarClock, CheckCircle2, CircleHelp, GraduationCap, LoaderCircle, Play, Ticket, Video, Zap } from "lucide-react";
 import type { StudentTab } from "../student-portal";
 import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
+type Course = { id: string; title: string; slug: string; isEnrolled: boolean; thumbnail_url?: string | null };
+type Webinar = { id: string; title: string; slug: string; start_time: string; isRegistered: boolean };
+type Session = { id: string; title: string; starts_at: string; status: string; enrolled: boolean; joinAvailable: boolean; webinars?: { title?: string } | null; courses?: { title?: string } | null };
+type TicketItem = { id?: string; ticket_code?: string; status?: string; issued_at?: string; courses?: { title?: string } | null; webinars?: { title?: string } | null };
+type Certificate = { id: string; issued_at?: string; courses?: { title?: string } | null; webinars?: { title?: string } | null };
+type StudentDashboardData = {
+  name: string;
+  studentId: string | null;
+  stats: { enrollments: number; tickets: number; certificates: number; completed_lessons: number };
+  courses: Course[];
+  webinars: Webinar[];
+  sessions: Session[];
+  tickets: TicketItem[];
+  certificates: Certificate[];
+};
+
+const emptyData: StudentDashboardData = {
+  name: "Student",
+  studentId: null,
+  stats: { enrollments: 0, tickets: 0, certificates: 0, completed_lessons: 0 },
+  courses: [], webinars: [], sessions: [], tickets: [], certificates: [],
+};
+
+async function authorizedJson(path: string, token: string) {
+  const response = await fetch(path, { headers: { Authorization: `Bearer ${token}` } });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error || `Could not load ${path}`);
+  return payload;
+}
+
+function dateLabel(value: string) {
+  return new Intl.DateTimeFormat("en-PK", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Karachi" }).format(new Date(value));
+}
+
+function relativeDate(value?: string) {
+  if (!value) return "Recently";
+  const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86_400_000));
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return `${days} days ago`;
+}
+
 export function DashboardModule({ setTab }: { setTab: (tab: StudentTab) => void }) {
-  const [stats, setStats] = useState({ enrollments: 0, tickets: 0, certificates: 0, completed_lessons: 0 });
+  const [data, setData] = useState<StudentDashboardData>(emptyData);
   const [loading, setLoading] = useState(true);
-  const supabase = getSupabaseBrowserClient();
+  const [loadError, setLoadError] = useState("");
+  const [loadedAt, setLoadedAt] = useState(0);
 
   useEffect(() => {
+    let active = true;
     async function load() {
-      if (!supabase) return;
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) { if (active) setLoading(false); return; }
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
-        
-        const response = await fetch("/api/student/profile", {
-          headers: { Authorization: `Bearer ${session.access_token}` }
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (!token) { if (active) setLoading(false); return; }
+        const results = await Promise.allSettled([
+          authorizedJson("/api/student/profile", token),
+          authorizedJson("/api/student/courses", token),
+          authorizedJson("/api/student/webinars", token),
+          authorizedJson("/api/student/sessions", token),
+          authorizedJson("/api/student/tickets", token),
+          authorizedJson("/api/student/certificates", token),
+        ]);
+        if (!active) return;
+        const [profileResult, courseResult, webinarResult, sessionResult, ticketResult, certificateResult] = results;
+        const profileData = profileResult.status === "fulfilled" ? profileResult.value : {};
+        const coursesData = courseResult.status === "fulfilled" ? courseResult.value : {};
+        const webinarsData = webinarResult.status === "fulfilled" ? webinarResult.value : {};
+        const sessionsData = sessionResult.status === "fulfilled" ? sessionResult.value : {};
+        const ticketsData = ticketResult.status === "fulfilled" ? ticketResult.value : {};
+        const certificatesData = certificateResult.status === "fulfilled" ? certificateResult.value : {};
+        const profile = profileData.profile || {};
+        const firstFailure = results.find((result) => result.status === "rejected");
+        setData({
+          name: profile.full_name || sessionData.session?.user?.email?.split("@")[0] || "Student",
+          studentId: profile.student_id || null,
+          stats: profileData.stats || emptyData.stats,
+          courses: (coursesData.courses || []).filter((course: Course) => course.isEnrolled),
+          webinars: [...(webinarsData.upcoming || []), ...(webinarsData.past || [])].filter((webinar: Webinar) => webinar.isRegistered),
+          sessions: (sessionsData.sessions || []).filter((session: Session) => session.enrolled && session.status !== "cancelled"),
+          tickets: ticketsData.tickets || [],
+          certificates: certificatesData.certificates || [],
         });
-        const data = await response.json();
-        
-        if (data.stats) {
-          setStats(data.stats);
-        }
-      } catch (e) {
-        console.error(e);
+        setLoadedAt(Date.now());
+        if (firstFailure?.status === "rejected") setLoadError("Some dashboard details could not be refreshed. Try again in a moment.");
+      } catch {
+        if (active) setLoadError("We couldn’t load your dashboard right now.");
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
-    load();
-  }, [supabase]);
+    void load();
+    return () => { active = false; };
+  }, []);
 
-  const statCards = [
-    { label: "Active Enrollments", value: stats.enrollments, icon: BookOpen, bgColor: "bg-blue-500", iconColor: "text-blue-500" },
-    { label: "My Tickets", value: stats.tickets, icon: Ticket, bgColor: "bg-amber-500", iconColor: "text-amber-500" },
-    { label: "Certificates", value: stats.certificates, icon: Award, bgColor: "bg-purple-500", iconColor: "text-purple-500" },
-  ] as const;
+  const upcomingSessions = data.sessions.filter((session) => new Date(session.starts_at).getTime() >= loadedAt).slice(0, 3);
+  const enrollments = [...data.courses.map((course) => ({ id: course.id, title: course.title, kind: "Course", onOpen: () => setTab("courses") })), ...data.webinars.map((webinar) => ({ id: webinar.id, title: webinar.title, kind: "Event", onOpen: () => setTab("webinars") }))].slice(0, 4);
+  const recentActivity = [
+    ...data.certificates.map((certificate) => ({ id: `certificate-${certificate.id}`, icon: Award, color: "mint", label: `Certificate issued: ${certificate.courses?.title || certificate.webinars?.title || "Program completion"}`, date: certificate.issued_at, tab: "certificates" as StudentTab })),
+    ...data.tickets.map((ticket, index) => ({ id: `ticket-${ticket.id || ticket.ticket_code || index}`, icon: Ticket, color: "amber", label: `Support ticket ${ticket.ticket_code || "updated"}${ticket.status ? ` · ${ticket.status}` : ""}`, date: ticket.issued_at, tab: "tickets" as StudentTab })),
+  ].sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()).slice(0, 3);
+
+  const stats = [
+    { label: "Active enrollments", value: data.stats.enrollments, icon: GraduationCap, color: "blue", tab: "courses" as StudentTab },
+    { label: "My tickets", value: data.stats.tickets, icon: Ticket, color: "coral", tab: "tickets" as StudentTab },
+    { label: "Certificates", value: data.stats.certificates, icon: Award, color: "violet", tab: "certificates" as StudentTab },
+    { label: "Lessons completed", value: data.stats.completed_lessons, icon: BookOpen, color: "sky", tab: "courses" as StudentTab },
+  ];
 
   return (
-    <div className="flex flex-col gap-6 pt-4 pb-12">
-      {/* Welcome Hero Banner */}
-      <section className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#061e3d] via-[#0a2e5c] to-[#145adc] p-8 md:p-12 text-white shadow-xl shadow-blue-900/20">
-        {/* Decorative elements */}
-        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl pointer-events-none"></div>
-        <div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-emerald-500/20 blur-3xl pointer-events-none"></div>
-        
-        <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
-          <div className="max-w-xl">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wider text-blue-200 backdrop-blur-md border border-white/10 mb-6">
-              <LayoutDashboard size={14} /> DASHBOARD
-            </span>
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight">
-              Welcome back to <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300">DevQuest.</span>
-            </h2>
-            <p className="text-blue-100/80 text-lg max-w-md leading-relaxed">
-              Continue your learning journey, explore new programs, and track your achievements.
-            </p>
+    <div className="student-dashboard">
+      {loadError && <div className="student-dashboard-alert" role="status"><CircleHelp /> {loadError}</div>}
+      <section className="student-dashboard-hero">
+        <div className="student-dashboard-hero-copy">
+          <p>YOUR LEARNING JOURNEY</p>
+          <h2>Welcome back to<br /><strong>DevQuest, {data.name}!</strong> <span aria-hidden="true">👋</span></h2>
+          <span>Pick up where you left off, find your next session, and keep building your skills.</span>
+          <div className="student-dashboard-hero-actions">
+            <button type="button" onClick={() => setTab("courses")}><Play /> Browse courses <ArrowRight /></button>
+            <button type="button" className="secondary" onClick={() => setTab("sessions")}><CalendarClock /> Upcoming sessions</button>
           </div>
-          <button 
-            onClick={() => setTab("courses")}
-            className="group inline-flex items-center justify-center gap-2 rounded-full bg-emerald-400 hover:bg-emerald-300 transition-all px-6 py-3.5 text-sm font-bold text-[#061e3d] shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            Browse courses
-            <ArrowUpRight size={18} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </button>
         </div>
+        <div className="student-dashboard-hero-art" aria-hidden="true"><div className="student-hero-screen"><span>DQ</span><i>&lt;/&gt;</i></div><div className="student-hero-book book-one" /><div className="student-hero-book book-two" /><div className="student-hero-cap">◆</div></div>
       </section>
-      
-      {/* Progress & Stats Grid */}
-      {!loading && stats.enrollments > 0 && (
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-6 justify-between">
-          <div className="flex-1 w-full">
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-bold text-slate-700 text-sm">Learning Progress</span>
-              <span className="text-emerald-600 font-bold text-sm bg-emerald-50 px-2 py-0.5 rounded-full">{stats.completed_lessons} Lessons Completed</span>
-            </div>
-            <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-1000" 
-                style={{ width: `${Math.min((stats.completed_lessons / (stats.enrollments * 5)) * 100, 100)}%` }}
-              ></div>
-            </div>
-            <p className="text-xs text-slate-500 mt-2">Keep up the momentum! You're doing great.</p>
-          </div>
-          <div className="hidden md:block w-px h-12 bg-slate-100"></div>
-          <div className="flex shrink-0 items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-500 font-black text-xl">
-              🔥
-            </div>
-            <div>
-              <p className="text-sm font-bold text-slate-800">3 Day</p>
-              <p className="text-xs font-medium text-slate-500">Streak</p>
-            </div>
-          </div>
-        </div>
-      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {statCards.map(({ label, value, icon: Icon, iconColor }) => (
-          <article 
-            key={label}
-            className="flex items-center gap-5 rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-md hover:border-blue-100 group"
-          >
-            <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-50 transition-colors group-hover:bg-blue-50/50 ${iconColor}`}>
-              <Icon size={24} strokeWidth={2.5} />
-            </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                {loading ? (
-                  <div className="h-9 w-16 bg-slate-200 rounded-lg animate-pulse my-0.5"></div>
-                ) : (
-                  <strong className="text-3xl font-black text-slate-800 tracking-tight">
-                    {value}
-                  </strong>
-                )}
-              </div>
-              <p className="text-sm font-medium text-slate-500 tracking-wide">{label}</p>
-            </div>
-          </article>
-        ))}
+      <section className="student-dashboard-stats" aria-label="Learning summary">
+        {stats.map(({ label, value, icon: Icon, color, tab: target }) => <button className={`student-summary-card ${color}`} type="button" key={label} onClick={() => setTab(target)}><span><Icon /></span><div><strong>{loading ? <LoaderCircle className="spin" /> : value}</strong><small>{label}</small></div><ArrowRight className="student-summary-arrow" /></button>)}
+      </section>
+
+      <div className="student-dashboard-grid">
+        <section className="student-dashboard-panel student-upcoming-panel">
+          <header><div><span className="panel-icon blue"><CalendarClock /></span><h3>Upcoming sessions</h3></div><button type="button" onClick={() => setTab("sessions")}>View all <ArrowRight /></button></header>
+          {loading ? <div className="student-dashboard-loading"><LoaderCircle className="spin" /> Loading your sessions…</div> : upcomingSessions.length ? <div className="student-session-list">{upcomingSessions.map((session) => <article key={session.id}><span className="student-program-icon"><Video /></span><div><b>{session.title}</b><small>{dateLabel(session.starts_at)}</small></div>{session.joinAvailable ? <span className="student-live-badge">Join now</span> : <span className="student-session-status">Scheduled</span>}<button type="button" aria-label={`Open ${session.title}`} onClick={() => setTab("sessions")}><ArrowRight /></button></article>)}</div> : <div className="student-dashboard-empty"><CalendarClock /><div><b>No upcoming sessions yet</b><small>New sessions for your enrolled programs will show up here.</small></div><button type="button" onClick={() => setTab("sessions")}>Browse sessions</button></div>}
+        </section>
+
+        <section className="student-dashboard-panel student-enrollments-panel">
+          <header><div><span className="panel-icon violet"><BookOpen /></span><h3>My enrollments</h3></div><button type="button" onClick={() => setTab("courses")}>View all <ArrowRight /></button></header>
+          {loading ? <div className="student-dashboard-loading"><LoaderCircle className="spin" /> Loading your learning…</div> : enrollments.length ? <div className="student-enrollment-list">{enrollments.map((item) => <button type="button" key={`${item.kind}-${item.id}`} onClick={item.onOpen}><span className="student-program-icon"><BookOpen /></span><span><b>{item.title}</b><small>{item.kind} · Enrolled</small></span><span className="student-enrolled-tag"><CheckCircle2 /> Active</span><ArrowRight /></button>)}</div> : <div className="student-dashboard-empty"><GraduationCap /><div><b>Your learning starts here</b><small>Explore the course and event catalog to find your next program.</small></div><button type="button" onClick={() => setTab("courses")}>Explore courses</button></div>}
+        </section>
+
+        <section className="student-dashboard-panel student-activity-panel">
+          <header><div><span className="panel-icon mint"><Zap /></span><h3>Recent activity</h3></div><button type="button" onClick={() => setTab("tickets")}>View tickets <ArrowRight /></button></header>
+          {recentActivity.length ? <div className="student-activity-list">{recentActivity.map(({ id, icon: Icon, color, label, date, tab: target }) => <button type="button" key={id} onClick={() => setTab(target)}><span className={`student-activity-icon ${color}`}><Icon /></span><b>{label}</b><small>{relativeDate(date)}</small></button>)}</div> : <div className="student-dashboard-empty compact"><Zap /><div><b>Your activity will show here</b><small>Enrollments, certificates, and ticket updates will appear as you use the portal.</small></div></div>}
+        </section>
+
+        <section className="student-dashboard-panel student-quick-panel">
+          <header><div><span className="panel-icon blue"><Zap /></span><h3>Quick actions</h3></div></header>
+          <div className="student-quick-actions"><button type="button" onClick={() => setTab("courses")}><span className="blue"><BookOpen /></span><b>Enroll in a course</b></button><button type="button" onClick={() => setTab("support")}><span className="amber"><Ticket /></span><b>Create a ticket</b></button><button type="button" onClick={() => setTab("certificates")}><span className="mint"><Award /></span><b>My certificates</b></button><button type="button" onClick={() => setTab("profile")}><span className="violet"><UserIcon /></span><b>Update profile</b></button></div>
+        </section>
       </div>
 
-      {/* Rich Empty State for New Users */}
-      {!loading && stats.enrollments === 0 && (
-        <div className="rounded-3xl border-2 border-dashed border-blue-200 bg-blue-50/50 p-8 text-center flex flex-col items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-2">
-            <BookOpen size={32} />
-          </div>
-          <h3 className="text-2xl font-bold text-slate-800">Your journey starts here</h3>
-          <p className="text-slate-600 max-w-md">
-            You aren't enrolled in any courses yet. Browse our library of premium development courses to kickstart your career.
-          </p>
-          <button 
-            onClick={() => setTab("courses")}
-            className="mt-4 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-blue-500/20 hover:bg-blue-500 transition-all"
-          >
-            Explore Courses
-          </button>
-        </div>
-      )}
-
-      {/* Action Bento Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <button 
-          onClick={() => setTab("webinars")} 
-          className="group text-left relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-emerald-200"
-        >
-          <div className="absolute top-0 right-0 p-6 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1">
-            <ChevronRight className="text-emerald-500" />
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-5 group-hover:scale-110 transition-transform duration-300">
-            <Video size={22} strokeWidth={2.5} />
-          </div>
-          <span className="block text-xs font-bold tracking-widest text-emerald-600/80 mb-2">LIVE SESSIONS</span>
-          <h3 className="text-xl font-bold text-slate-800 mb-2">Upcoming Webinars</h3>
-          <p className="text-sm text-slate-500 leading-relaxed pr-6">Join live expert sessions and exclusive masterclasses.</p>
-        </button>
-        
-        <button 
-          onClick={() => setTab("vault")} 
-          className="group text-left relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-indigo-200"
-        >
-          <div className="absolute top-0 right-0 p-6 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1">
-            <ChevronRight className="text-indigo-500" />
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 mb-5 group-hover:scale-110 transition-transform duration-300">
-            <FolderLock size={22} strokeWidth={2.5} />
-          </div>
-          <span className="block text-xs font-bold tracking-widest text-indigo-600/80 mb-2">DOWNLOADS</span>
-          <h3 className="text-xl font-bold text-slate-800 mb-2">Resource Vault</h3>
-          <p className="text-sm text-slate-500 leading-relaxed pr-6">Access presentation slides, source code, and PDFs.</p>
-        </button>
-        
-        <button 
-          onClick={() => setTab("profile")} 
-          className="group text-left relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm border border-slate-100 transition-all hover:shadow-lg hover:-translate-y-1 hover:border-blue-200"
-        >
-          <div className="absolute top-0 right-0 p-6 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1">
-            <ChevronRight className="text-blue-500" />
-          </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 mb-5 group-hover:scale-110 transition-transform duration-300">
-            <LayoutDashboard size={22} strokeWidth={2.5} />
-          </div>
-          <span className="block text-xs font-bold tracking-widest text-blue-600/80 mb-2">ACCOUNT</span>
-          <h3 className="text-xl font-bold text-slate-800 mb-2">Update Profile</h3>
-          <p className="text-sm text-slate-500 leading-relaxed pr-6">Keep your tech stack, resume, and details current.</p>
-        </button>
-      </div>
+      <div className="student-dashboard-id"><GraduationCap /> {data.studentId ? <>DevQuest Student ID <strong>{data.studentId}</strong></> : <>Your profile details help us keep your learning records up to date.</>} <button type="button" onClick={() => setTab("profile")}>Manage profile <ArrowRight /></button></div>
     </div>
   );
 }
+
+function UserIcon() { return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M5 21v-2a7 7 0 0 1 14 0v2" /></svg>; }

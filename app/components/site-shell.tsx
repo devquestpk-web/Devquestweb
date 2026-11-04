@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, Facebook, Github, Home, Info, Instagram, Layers3, Linkedin, Mail, MapPin, Megaphone, Menu, MessageCircle, Phone, UserRound, UsersRound, Youtube } from "lucide-react";
+import { ArrowRight, BriefcaseBusiness, CalendarDays, ChevronDown, Facebook, Github, Home, Info, Instagram, Layers3, Linkedin, Mail, MapPin, Megaphone, Menu, MessageCircle, Phone, UsersRound, Youtube } from "lucide-react";
 
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
@@ -22,7 +22,6 @@ const navigation = [
   { href: "/services", label: "Services", icon: Layers3 },
   { href: "/events", label: "Events & Academy", icon: CalendarDays },
   { href: "/community", label: "Community", icon: UsersRound, isDropdown: true },
-  { href: "/portal", label: "Portals", icon: Layers3 },
   { href: "/careers", label: "Careers", icon: BriefcaseBusiness },
   { href: "/contact", label: "Contact Us", icon: Mail },
 ];
@@ -36,10 +35,6 @@ export function SiteHeader() {
   const mobileNavRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const isPortalWorkspace = isPortalWorkspacePath(pathname);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return;
@@ -141,7 +136,7 @@ export function SiteFooter() {
         <div className="dq-shell dq-footer-title"><Brand /><p>Empowering a global community of innovators.</p></div>
         <div className="dq-shell dq-footer-grid">
           <div><h3>Reach us</h3><a href="tel:+923704489589"><Phone /> +92 370 4489589</a><a href="mailto:hello@devquestpk.com"><Mail /> hello@devquestpk.com</a><span><MapPin /> Multan, Pakistan</span></div>
-          <div><h3>Explore</h3><Link href="/about">About</Link><Link href="/services">Services</Link><Link href="/events">Events &amp; Academy</Link><Link href="/portal">Portals</Link><Link href="/careers">Careers</Link><Link href="/application-status">Application status</Link><Link href="/contact">Contact</Link></div>
+          <div><h3>Explore</h3><Link href="/about">About</Link><Link href="/services">Services</Link><Link href="/events">Events &amp; Academy</Link><Link href="/careers">Careers</Link><Link href="/application-status">Application status</Link><Link href="/contact">Contact</Link></div>
           <div><h3>Community</h3><Link href="/about#team">Our team</Link><Link href="/community#chapters">University chapters</Link><Link href="/teams-in-collaboration">Teams in Collaboration</Link><Link href="/careers#campus-ambassador">Become an ambassador</Link></div>
           <div><h3>Follow</h3><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer"><Linkedin /> LinkedIn</a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer"><Instagram /> Instagram</a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer"><Facebook /> Facebook</a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer"><Youtube /> YouTube</a></div>
           <div className="dq-newsletter"><h3>Join our newsletter</h3><p>Updates on events, learning, and community opportunities.</p><a href="mailto:hello@devquestpk.com?subject=Subscribe%20me%20to%20DevQuest">Subscribe by email</a></div>
