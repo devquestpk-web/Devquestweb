@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { processIntegrationJobs, processNotificationJobs } from "../../../lib/background-jobs";
 import { configuredSpreadsheetId } from "../../../lib/google-sheets-api";
+import { getSupabaseAdminClient } from "../../../lib/supabase-admin";
 
 export const runtime = "nodejs";
 
@@ -18,7 +19,13 @@ export async function POST(request: Request) {
   try {
     const spreadsheetId = configuredSpreadsheetId();
     const [sheets, notifications] = await Promise.all([processIntegrationJobs(100), processNotificationJobs(100)]);
-    return NextResponse.json({ ok: true, spreadsheetId, sheets, notifications });
+    const { data: failedJobs } = await getSupabaseAdminClient()
+      .from("integration_outbox")
+      .select("entity_type, entity_id, status, attempts, last_error")
+      .in("status", ["failed", "dead"])
+      .order("created_at", { ascending: false })
+      .limit(10);
+    return NextResponse.json({ ok: true, spreadsheetId, sheets, notifications, failedJobs: failedJobs || [] });
   } catch (error) {
     console.error("Background processing failed", error);
     return NextResponse.json({ error: "Background processing failed" }, { status: 503 });

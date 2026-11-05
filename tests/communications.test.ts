@@ -33,6 +33,18 @@ test("background worker authenticates before flushing the DevQuest master spread
   assert.match(route, /configuredSpreadsheetId/);
   assert.match(route, /processIntegrationJobs\(100\)/);
   assert.match(route, /processNotificationJobs\(100\)/);
+  assert.match(route, /failedJobs/);
+  assert.match(route, /last_error/);
+});
+
+test("protected test-email route sends only to the configured reply mailbox", async () => {
+  const route = await readFile(new URL("../app/api/internal/test-email/route.ts", import.meta.url), "utf8");
+  assert.match(route, /timingSafeEqual/);
+  assert.match(route, /BACKGROUND_WORKER_SECRET/);
+  assert.match(route, /process\.env\.EMAIL_FROM/);
+  assert.match(route, /process\.env\.EMAIL_REPLY_TO/);
+  assert.match(route, /new Resend\(apiKey\)/);
+  assert.match(route, /to,/);
 });
 
 test("Sheet worker projects courses and full certificate scope", async () => {
