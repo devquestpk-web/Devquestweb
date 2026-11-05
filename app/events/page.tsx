@@ -16,7 +16,7 @@ const featuredEvents = [
     title: "AWS Cloud Practitioner Exam Preparation",
     eyebrow: "CERTIFIED EXAM PREP SERIES",
     image: "/events/logo.png",
-    format: "Virtual · Friday to Sunday · 8–10 PM",
+    format: "Virtual · Saturday to Sunday · 8–10 PM",
     description: "A focused AWS Cloud Practitioner preparation series organized by DevQuest PK and AWS Student Builder Group BZU, delivered virtually through Google Meet.",
     className: "aws-cloud",
   },

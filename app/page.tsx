@@ -94,7 +94,7 @@ export default function Home() {
               <span><GraduationCap /></span>
               <small>AWS EXAM PREP SERIES</small>
               <strong>AWS Cloud Practitioner Exam Preparation</strong>
-              <p><CalendarDays /> Friday–Sunday · 8–10 PM</p>
+              <p><CalendarDays /> Saturday–Sunday · 8–10 PM</p>
               <p><MapPin /> Virtual · Google Meet</p>
               <Link href="/events#student-enrollment">Create account and enroll <ArrowUpRight /></Link>
             </article>
