@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { processIntegrationJobs, queueMissingProgramJobs } from "../../../lib/background-jobs";
 import { requireAdmin } from "../../../lib/supabase-admin";
 
 type Recipient = { id: string; email: string };
@@ -48,6 +49,16 @@ export async function POST(request: Request) {
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const body = await request.json();
   const action = String(body.action || "send");
+  if (action === "sync_sheets") {
+    try {
+      const queuedPrograms = await queueMissingProgramJobs(1000);
+      const result = await processIntegrationJobs(20);
+      await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: "sheets.manual_sync", entity_type: "integration_outbox", entity_id: auth.user.id, details: { queued_programs: queuedPrograms, ...result } });
+      return NextResponse.json({ ok: true, queuedPrograms, ...result });
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : "Sheet sync could not start" }, { status: 503 });
+    }
+  }
   if (action === "template") {
     const templateKey = String(body.templateKey || "").trim().replace(/[^a-z0-9_]/g, "").slice(0, 60);
     const subject = String(body.subject || "").trim().slice(0, 200);

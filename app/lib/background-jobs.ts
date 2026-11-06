@@ -43,11 +43,11 @@ async function syncEntity(supabase: SupabaseClient, job: OutboxRecord) {
     return;
   }
   if (job.entity_type === "courses") {
-    const { data, error } = await supabase.from("courses").select("id, title, is_published, created_at, updated_at").eq("id", job.entity_id).maybeSingle();
+    const { data, error } = await supabase.from("courses").select("id, title, is_published, created_at").eq("id", job.entity_id).maybeSingle();
     if (error) throw error;
     const { count } = await supabase.from("enrollments").select("id", { count: "exact", head: true }).eq("item_type", "COURSE").eq("course_id", job.entity_id);
     await ensureSheetHeaders("Events", [...sheetHeaders.Events]);
-    const values = data ? [data.id, data.title, "course", data.is_published ? "published" : "draft", data.created_at, data.updated_at, data.is_published, count || 0] : [job.entity_id, "", "course", "deleted", "", "", false, 0];
+    const values = data ? [data.id, data.title, "course", data.is_published ? "published" : "draft", data.created_at, "", data.is_published, count || 0] : [job.entity_id, "", "course", "deleted", "", "", false, 0];
     const row = await upsertSheetRow("Events", job.entity_id, values);
     await supabase.from("sheet_row_mapping").upsert({ entity_type: "courses", entity_id: job.entity_id, sheet_name: "Events", row_number: row, last_version: job.entity_version, last_synced_at: syncedAt, last_error: null });
     return;
@@ -102,6 +102,89 @@ async function syncEntity(supabase: SupabaseClient, job: OutboxRecord) {
 
 function retryAt(attempts: number) {
   return new Date(Date.now() + Math.min(60, 2 ** Math.max(attempts, 1)) * 60_000).toISOString();
+}
+
+export type ProgramSyncType = "webinars" | "courses" | "event_sessions";
+
+// Admin writes can sync at once. The outbox remains the durable retry path if
+// Google is temporarily unavailable or a deployment ends during the request.
+export async function syncProgramNow(entityType: ProgramSyncType, entityId: string) {
+  const supabase = getSupabaseAdminClient();
+  const { data: pending, error: lookupError } = await supabase.from("integration_outbox")
+    .select("id, entity_version, attempts, payload")
+    .eq("entity_type", entityType)
+    .eq("entity_id", entityId)
+    .in("status", ["pending", "failed"])
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (lookupError) throw lookupError;
+
+  let jobs = pending || [];
+  if (!jobs.length) {
+    const { data: fallback, error: queueError } = await supabase.from("integration_outbox")
+      .insert({ event_type: "sync", entity_type: entityType, entity_id: entityId, entity_version: Date.now() * 1000, payload: { source: "admin_write" } })
+      .select("id, entity_version, attempts, payload")
+      .single();
+    if (queueError) throw queueError;
+    jobs = [fallback];
+  }
+
+  const latest = jobs[0];
+  await syncEntity(supabase, { ...latest, entity_type: entityType, entity_id: entityId });
+  const { error: completionError } = await supabase.from("integration_outbox")
+    .update({ status: "completed", completed_at: new Date().toISOString(), last_error: null })
+    .in("id", jobs.map((job) => job.id))
+    .in("status", ["pending", "failed"]);
+  if (completionError) throw completionError;
+  return { synced: true, queuedJobs: jobs.length };
+}
+
+export async function syncProgramAfterWrite(entityType: ProgramSyncType, entityId: string) {
+  try {
+    await syncProgramNow(entityType, entityId);
+    return "synced" as const;
+  } catch (error) {
+    console.error(`Google Sheets sync queued for ${entityType}/${entityId}`, error);
+    return "queued" as const;
+  }
+}
+
+export async function queueMissingProgramJobs(limit = 100) {
+  const supabase = getSupabaseAdminClient();
+  let queued = 0;
+  for (const entityType of ["webinars", "courses", "event_sessions"] as const) {
+    const { data: records, error: recordsError } = await supabase.from(entityType)
+      .select("id")
+      .order("id")
+      .limit(limit);
+    if (recordsError) throw recordsError;
+    const ids = (records || []).map((record) => record.id);
+    if (!ids.length) continue;
+    const { data: mapped, error: mappingError } = await supabase.from("sheet_row_mapping")
+      .select("entity_id")
+      .eq("entity_type", entityType)
+      .in("entity_id", ids);
+    if (mappingError) throw mappingError;
+    const mappedIds = new Set((mapped || []).map((row) => row.entity_id));
+    const missingIds = ids.filter((id) => !mappedIds.has(id));
+    if (!missingIds.length) continue;
+    const { data: existing, error: outboxError } = await supabase.from("integration_outbox")
+      .select("entity_id")
+      .eq("entity_type", entityType)
+      .in("entity_id", missingIds)
+      .in("status", ["pending", "failed", "processing"]);
+    if (outboxError) throw outboxError;
+    const queuedIds = new Set((existing || []).map((row) => row.entity_id));
+    const toQueue = missingIds.filter((id) => !queuedIds.has(id));
+    if (!toQueue.length) continue;
+    const timestamp = Date.now() * 1000;
+    const { error: insertError } = await supabase.from("integration_outbox").insert(toQueue.map((id, index) => ({
+      event_type: "sync", entity_type: entityType, entity_id: id, entity_version: timestamp + index, payload: { source: "missing_sheet_row" },
+    })));
+    if (insertError) throw insertError;
+    queued += toQueue.length;
+  }
+  return queued;
 }
 
 export async function processIntegrationJobs(limit = 20) {

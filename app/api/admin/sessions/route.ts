@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { syncProgramAfterWrite } from "../../../lib/background-jobs";
 import { requireAdmin } from "../../../lib/supabase-admin";
 
 const sessionStatuses = new Set(["draft", "scheduled", "live", "completed", "cancelled"]);
@@ -49,7 +50,8 @@ export async function POST(request: Request) {
       if (parentEnrollments?.length) await auth.supabase.from("session_enrollments").upsert(parentEnrollments.map((entry) => ({ session_id: data.id, user_id: entry.user_id, status: "enrolled" })), { onConflict: "session_id,user_id" });
     }
     await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: "session.created", entity_type: "event_sessions", entity_id: data.id, details: { parent_type: parentType, parent_id: parentId, status } });
-    return NextResponse.json({ ok: true, session: data }, { status: 201 });
+    const sheetSync = await syncProgramAfterWrite("event_sessions", data.id);
+    return NextResponse.json({ ok: true, session: data, sheetSync }, { status: 201 });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid session" }, { status: 400 }); }
 }
 
@@ -69,7 +71,9 @@ export async function PATCH(request: Request) {
     if (body.startsAt) changes.starts_at = body.startsAt; if (body.endsAt) changes.ends_at = body.endsAt; if (body.joinUrl !== undefined) changes.join_url = optionalUrl(body.joinUrl); if (body.recordingUrl !== undefined) changes.recording_url = optionalUrl(body.recordingUrl); if (body.joinReleasesAt !== undefined) changes.join_releases_at = body.joinReleasesAt || null; if (body.resources !== undefined) changes.resources = cleanResources(body.resources);
     if (body.status !== undefined) { if (!sessionStatuses.has(body.status)) return NextResponse.json({ error: "Invalid session status" }, { status: 400 }); changes.status = body.status; if (body.status === "scheduled" && !current.published_at) changes.published_at = new Date().toISOString(); if (body.status === "cancelled") { changes.cancelled_at = new Date().toISOString(); changes.cancellation_reason = String(body.cancellationReason || "").trim().slice(0, 500) || null; } }
     const { error } = await auth.supabase.from("event_sessions").update(changes).eq("id", sessionId); if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: changes.status === "cancelled" ? "session.cancelled" : "session.updated", entity_type: "event_sessions", entity_id: sessionId, details: { changes: Object.keys(changes), reason: changes.cancellation_reason || null } }); return NextResponse.json({ ok: true });
+    await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: changes.status === "cancelled" ? "session.cancelled" : "session.updated", entity_type: "event_sessions", entity_id: sessionId, details: { changes: Object.keys(changes), reason: changes.cancellation_reason || null } });
+    const sheetSync = await syncProgramAfterWrite("event_sessions", sessionId);
+    return NextResponse.json({ ok: true, sheetSync });
   } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid session update" }, { status: 400 }); }
 }
 
@@ -77,5 +81,8 @@ export async function DELETE(request: Request) {
   const auth = await requireAdmin(request); if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status }); const body = await request.json(); const sessionId = String(body.sessionId || ""); if (!sessionId) return NextResponse.json({ error: "Session is required" }, { status: 400 });
   const [{ count: enrollments }, { count: attendance }] = await Promise.all([auth.supabase.from("session_enrollments").select("id", { count: "exact", head: true }).eq("session_id", sessionId), auth.supabase.from("session_attendance").select("id", { count: "exact", head: true }).eq("session_id", sessionId)]); const hasHistory = Boolean(enrollments || attendance);
   const result = hasHistory ? await auth.supabase.from("event_sessions").update({ deleted_at: new Date().toISOString(), deleted_by: auth.user.id, status: "cancelled", cancelled_at: new Date().toISOString(), cancellation_reason: String(body.reason || "Archived by administrator").slice(0, 500) }).eq("id", sessionId) : await auth.supabase.from("event_sessions").delete().eq("id", sessionId);
-  if (result.error) return NextResponse.json({ error: result.error.message }, { status: 500 }); await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: hasHistory ? "session.soft_deleted" : "session.deleted", entity_type: "event_sessions", entity_id: sessionId, details: { reason: body.reason || null } }); return NextResponse.json({ ok: true, softDeleted: hasHistory });
+  if (result.error) return NextResponse.json({ error: result.error.message }, { status: 500 });
+  await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: hasHistory ? "session.soft_deleted" : "session.deleted", entity_type: "event_sessions", entity_id: sessionId, details: { reason: body.reason || null } });
+  const sheetSync = await syncProgramAfterWrite("event_sessions", sessionId);
+  return NextResponse.json({ ok: true, softDeleted: hasHistory, sheetSync });
 }

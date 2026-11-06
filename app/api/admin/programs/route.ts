@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { syncProgramAfterWrite } from "../../../lib/background-jobs";
 import { requireAdmin } from "../../../lib/supabase-admin";
 
 export async function POST(request: Request) {
@@ -34,7 +35,8 @@ export async function POST(request: Request) {
     const { data, error } = await auth.supabase.from(table).insert(fields).select("id, title").single();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: "program.created", entity_type: table, entity_id: data.id, details: { published } });
-    return NextResponse.json({ ok: true, program: data }, { status: 201 });
+    const sheetSync = await syncProgramAfterWrite(table, data.id);
+    return NextResponse.json({ ok: true, program: data, sheetSync }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Invalid program request" }, { status: 400 });
   }

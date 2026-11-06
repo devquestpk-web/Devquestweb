@@ -54,7 +54,9 @@ Call `POST /api/internal/process-background` from a trusted scheduler with:
 Authorization: Bearer <BACKGROUND_WORKER_SECRET>
 ```
 
-A one-minute schedule is appropriate for due email and Sheet jobs. The endpoint processes bounded batches, records failures, and retries with exponential backoff. It must not be called from browser code or exposed without the worker secret.
+The production Vercel cron calls the same worker once a day using `GET` and a separate `CRON_SECRET` in the Authorization header. Vercel Hobby permits daily cron frequency. Admin event and session changes also attempt an immediate Sheets sync; the outbox retains failed jobs for retries. An administrator can run **Communications → Sync Sheets** to backfill events and sessions that were created before the automatic worker was enabled.
+
+The endpoint processes bounded batches, records failures, and retries with exponential backoff. It must not be called from browser code or exposed without the worker secret.
 
 ## Safe rollout
 
