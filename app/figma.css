@@ -1696,3 +1696,37 @@ body {
 @media (max-width:900px) { .admin-portal-shell { grid-template-columns:82px minmax(0,1fr); }.admin-dashboard-sidebar { padding-inline:12px; }.admin-dashboard-brand { padding-inline:4px;justify-content:center; }.admin-dashboard-brand b,.admin-dashboard-brand em,.admin-system-nav,.admin-sidebar-footer { display:none; }.admin-dashboard-sidebar nav button { padding:0;justify-content:center;font-size:0; }.admin-dashboard-sidebar nav { margin-top:22px; }.admin-dashboard-topbar .team-portal-top-user div,.admin-dashboard-topbar .team-portal-top-user>svg,.admin-top-divider { display:none; }.admin-global-search { width:min(440px,58vw); }.admin-dashboard-grid { grid-template-columns:1fr; } }
 @media (max-width:640px) { .admin-portal-shell { display:block; }.admin-dashboard-sidebar { min-height:58px;padding:8px 12px;position:sticky;top:0;z-index:40;display:flex;align-items:center; }.admin-dashboard-brand { padding:0; }.admin-dashboard-brand>span { width:38px;height:38px; }.admin-dashboard-sidebar nav { margin:0 0 0 auto;display:flex;overflow-x:auto;max-width:calc(100vw - 74px); }.admin-dashboard-sidebar nav button { width:42px;min-width:42px;min-height:42px; }.admin-dashboard-main { padding:0 12px 35px; }.admin-dashboard-topbar { min-height:62px;margin:0 -12px 14px;padding:0 13px; }.admin-global-search { width:100%;height:38px; }.admin-global-search input { font-size:.7rem; }.admin-global-search kbd,.admin-top-actions>button:not(:first-child),.admin-quiet-signout { display:none; }.admin-top-actions { gap:3px; }.admin-dashboard-welcome { min-height:154px;padding:21px; }.admin-dashboard-welcome h2 { font-size:1.56rem; }.admin-dashboard-welcome>div>span { font-size:.76rem;line-height:1.45; }.admin-stat-grid { grid-template-columns:1fr 1fr;gap:9px; }.admin-stat-card { min-height:92px;padding:13px;gap:9px; }.admin-stat-card>span { width:39px;height:39px;border-radius:11px; }.admin-stat-card>span svg { width:21px; }.admin-stat-card strong { font-size:1.35rem; }.admin-stat-card p { font-size:.62rem;white-space:normal; }.admin-dashboard-card { min-height:0;padding:15px; }.admin-session-empty { grid-template-columns:31px minmax(0,1fr);padding:15px 0; }.admin-session-empty>button { grid-column:2;justify-self:start;margin-top:2px; }.admin-pending-list article { grid-template-columns:30px minmax(0,1fr);padding:9px 0; }.admin-pending-list button { grid-column:2;justify-self:start; }.admin-activity-list article>div { display:grid;gap:2px; }.admin-activity-list small { white-space:normal; }.admin-bars { gap:6px; } }
 
+
+/* Admin session management: fit actions, rosters, and form fields to the available viewport. */
+.admin-session-layout { grid-template-columns:minmax(0,1fr) minmax(0,1.15fr); align-items:start; }
+.admin-session-layout > .portal-panel,
+.admin-session-layout .portal-task-cards article { min-width:0; }
+.admin-session-layout .portal-inline-form { min-width:0; margin-bottom:0; }
+.admin-session-layout .portal-task-title > div { overflow-wrap:anywhere; }
+.admin-session-layout .portal-task-title > em { flex:none; }
+.admin-session-meta { flex-wrap:wrap; justify-content:space-between; gap:10px; }
+.admin-session-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.admin-session-actions button { min-height:38px; white-space:nowrap; }
+.admin-session-actions .portal-icon-danger { margin-left:0; }
+.admin-session-tools { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+.admin-session-tools button { flex:1 1 155px; min-height:40px; justify-content:center; }
+.admin-session-layout .admin-table-row { min-width:0; gap:10px; }
+.admin-session-layout .admin-table-row > * { min-width:0; overflow-wrap:anywhere; }
+.admin-session-participant { grid-template-columns:minmax(0,1.2fr) minmax(75px,.5fr) minmax(0,.9fr) auto; }
+.admin-session-participant > span:last-child { display:flex; flex-wrap:wrap; gap:6px; }
+.admin-session-student { grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr) minmax(120px,.7fr); }
+.admin-session-student select { width:100%; min-height:38px; }
+@media (max-width:1280px) {
+  .admin-session-layout { grid-template-columns:minmax(0,1fr); }
+}
+@media (max-width:640px) {
+  .admin-session-layout .portal-form-row { grid-template-columns:minmax(0,1fr); }
+  .admin-session-layout .portal-panel { padding:18px; }
+  .admin-session-layout .portal-inline-form { padding:16px; }
+  .admin-session-layout .portal-task-title { flex-wrap:wrap; }
+  .admin-session-meta { align-items:stretch; flex-direction:column; }
+  .admin-session-actions { justify-content:flex-start; }
+  .admin-session-tools button { flex-basis:100%; }
+  .admin-session-layout .admin-table-row { grid-template-columns:minmax(0,1fr); gap:7px; }
+}
+
