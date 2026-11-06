@@ -1669,6 +1669,15 @@ body {
 .portal-inline-form *, .portal-report-form * { box-sizing: border-box; }
 .portal-inline-form label { min-width: 0; }
 .admin-members-layout .portal-form-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.portal-parent-create { padding:14px 16px; background:#eaf2ff; border:1px solid #cbdcf5; border-radius:10px; }
+.portal-parent-create summary { color:#174b9c; font-size:.78rem; font-weight:800; cursor:pointer; }
+.portal-parent-create-fields { display:grid; gap:12px; margin-top:16px; }
+.portal-parent-create-fields .portal-parent-publish { display:flex; align-items:center; gap:9px; }
+.portal-parent-create-fields .portal-parent-publish input { width:17px; height:17px; margin:0; }
+.portal-parent-create-fields .portal-security-note { margin:0; }
+.portal-parent-create-fields .portal-mini-action { min-height:39px; color:#fff; background:#185ee0; border-color:#185ee0; font-weight:750; }
+.portal-parent-create-fields .portal-mini-action:disabled { opacity:.6; cursor:wait; }
+.portal-parent-message { margin:0; color:#174b9c; font-size:.75rem; font-weight:700; }
 .admin-student-accounts { grid-column: 1 / -1; }
 
 /* Admin dashboard refresh */
