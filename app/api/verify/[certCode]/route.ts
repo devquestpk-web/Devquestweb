@@ -6,6 +6,9 @@ export const runtime = "edge";
 export async function GET(request: Request, { params }: { params: Promise<{ certCode: string }> }) {
   try {
     const { certCode } = await params;
+    if (!/^[A-Za-z0-9][A-Za-z0-9-]{3,99}$/.test(certCode)) {
+      return NextResponse.json({ error: "Invalid certificate ID" }, { status: 400, headers: { "Cache-Control": "no-store" } });
+    }
     const adminSupabase = getSupabaseAdminClient();
 
     // Fetch the certificate and joined item data
@@ -21,7 +24,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ cert
       .single();
 
     if (error || !certificate) {
-      return NextResponse.json({ error: "Certificate not found or invalid" }, { status: 404 });
+      return NextResponse.json({ error: "Certificate not found or invalid" }, { status: 404, headers: { "Cache-Control": "no-store" } });
+    }
+
+    if (certificate.revoked_at) {
+      return NextResponse.json({ verified: false, error: "Certificate revoked" }, { status: 410, headers: { "Cache-Control": "no-store" } });
     }
 
     // Prepare safe public response
@@ -35,8 +42,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ cert
       pdfUrl: certificate.pdf_url,
     };
 
-    return NextResponse.json({ verified: true, certificate: verificationData });
-  } catch (error) {
-    return NextResponse.json({ error: "Verification system error" }, { status: 500 });
+    return NextResponse.json({ verified: true, certificate: verificationData }, { headers: { "Cache-Control": "no-store" } });
+  } catch {
+    return NextResponse.json({ error: "Verification system error" }, { status: 500, headers: { "Cache-Control": "no-store" } });
   }
 }

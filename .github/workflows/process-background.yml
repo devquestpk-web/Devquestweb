@@ -1,0 +1,25 @@
+name: Process DevQuest background jobs
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Flush queued Sheets and email jobs
+        env:
+          BACKGROUND_WORKER_SECRET: ${{ secrets.BACKGROUND_WORKER_SECRET }}
+        run: |
+          if [ -z "$BACKGROUND_WORKER_SECRET" ]; then
+            echo "Set BACKGROUND_WORKER_SECRET in repository Actions secrets."
+            exit 1
+          fi
+          curl --fail-with-body --retry 2 --retry-delay 10 \
+            --request POST \
+            --header "Authorization: Bearer $BACKGROUND_WORKER_SECRET" \
+            --header "Content-Type: application/json" \
+            "https://www.devquestpk.com/api/internal/process-background"

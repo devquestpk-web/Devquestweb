@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "../../../lib/supabase-admin";
 import { evaluateCertificateEligibility, resolveCertificateTemplate, type CertificateScope } from "../../../lib/certificate-eligibility";
 import { generateCertCode } from "../../../lib/ticket-codes";
+import { sanitizeCertificateTemplate } from "../../../lib/certificate-template";
 
 export const runtime = "nodejs";
 
-const hexColor = (value: unknown, fallback: string) => /^#[0-9a-f]{6}$/i.test(String(value || "")) ? String(value) : fallback;
 const text = (value: unknown, length = 140) => String(value || "").trim().slice(0, length);
 
 export async function GET(request: Request) {
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     auth.supabase.from("courses").select("id, title").order("title"),
     auth.supabase.from("webinars").select("id, title").order("title"),
     auth.supabase.from("event_sessions").select("id, title, course_id, webinar_id").is("deleted_at", null).order("starts_at", { ascending: false }),
-    auth.supabase.from("profiles").select("id, full_name, student_id, email").eq("role", "student").order("full_name"),
+    auth.supabase.from("profiles").select("id, full_name, student_id, email, phone").eq("role", "student").order("full_name"),
   ]);
   if (templatesResult.error) return NextResponse.json({ error: templatesResult.error.message }, { status: 500 });
   if (certificatesResult.error) return NextResponse.json({ error: certificatesResult.error.message }, { status: 500 });
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     const record = {
       name: text(body.name, 120), scope_type: scopeType,
       course_id: scopeType === "COURSE" ? scopeId : null, webinar_id: scopeType === "WEBINAR" ? scopeId : null, session_id: scopeType === "SESSION" ? scopeId : null,
-      config: { primaryColor: hexColor(body.primaryColor, "#061e3d"), accentColor: hexColor(body.accentColor, "#469bff"), brandName: text(body.brandName, 60) || "DevQuest", issuerName: text(body.issuerName, 100) || "DevQuest Administration", issuerTitle: text(body.issuerTitle, 140) || "Issued digitally by DevQuest PK" },
+      config: sanitizeCertificateTemplate(body),
       eligibility_rules: { minimumAttendancePercent, requireAllSessions: Boolean(body.requireAllSessions) }, is_active: true, created_by: auth.user.id, updated_at: new Date().toISOString(),
     };
     if (!record.name) return NextResponse.json({ error: "Template name is required" }, { status: 400 });
@@ -60,7 +60,7 @@ async function uploadManualCertificate(request: Request, auth: Exclude<Awaited<R
   if (!eligibility.eligible && overrideReason.length < 10) return NextResponse.json({ error: `${eligibility.reason}. Provide an override reason of at least 10 characters.` }, { status: 403 });
   const certCode = generateCertCode(); const path = `${userId}/${certCode}.pdf`; const upload = await auth.supabase.storage.from("certificates").upload(path, bytes, { contentType: "application/pdf", upsert: false });
   if (upload.error) return NextResponse.json({ error: upload.error.message }, { status: 500 });
-  const origin = new URL(request.url).origin; const pdfUrl = auth.supabase.storage.from("certificates").getPublicUrl(path).data.publicUrl;
+  const origin = new URL(process.env.NEXT_PUBLIC_SITE_URL || request.url).origin; const pdfUrl = auth.supabase.storage.from("certificates").getPublicUrl(path).data.publicUrl;
   const { data, error } = await auth.supabase.from("certificates").insert({ cert_code: certCode, user_id: userId, item_type: itemType, course_id: scope.courseId, webinar_id: scope.webinarId, session_id: sessionId, template_id: template?.id || null, issuance_mode: "manual", eligibility_snapshot: { ...eligibility.snapshot, overrideReason: overrideReason || null }, uploaded_by: auth.user.id, pdf_url: pdfUrl, verification_url: `${origin}/verify/${certCode}` }).select("id, cert_code").single();
   if (error) { await auth.supabase.storage.from("certificates").remove([path]); return NextResponse.json({ error: error.code === "23505" ? "A certificate already exists for this student and scope" : error.message }, { status: 409 }); }
   await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: "certificate.manual_upload", entity_type: "certificates", entity_id: data.id, details: { user_id: userId, item_type: itemType, item_id: itemId, session_id: sessionId, override_reason: overrideReason || null } });

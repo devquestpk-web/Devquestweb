@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
-import { LoaderCircle, Save, Camera, UserRound, TriangleAlert, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { BadgeCheck, Camera, IdCard, LoaderCircle, Save, ShieldCheck, Trash2, TriangleAlert, UserRound } from "lucide-react";
 import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
 export function ProfileModule() {
@@ -223,11 +224,13 @@ export function ProfileModule() {
   const skillsList = formData.skills_input.split(",").map(s => s.trim()).filter(s => s.length > 0);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4 pb-12">
+    <div className="student-module-page">
+      <section className="student-module-hero student-profile-hero"><div><span>ACCOUNT SETTINGS</span><h2>Your Profile</h2><p>Manage your personal information, skills, and communication preferences.</p></div><div className="student-profile-hero-card"><IdCard /><BadgeCheck /></div></section>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-12 student-profile-grid">
       
       {/* Left Column: Form */}
       <div className="lg:col-span-2">
-        <section className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+        <section className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm student-profile-form-card">
           <div className="mb-8">
             <span className="text-xs font-bold tracking-widest text-blue-600/80 mb-2 block">ACCOUNT SETTINGS</span>
             <h2 className="text-2xl font-bold text-slate-800">Student Profile</h2>
@@ -318,7 +321,7 @@ export function ProfileModule() {
             </div>
           </form>
 
-          <section className="mt-10 border-t border-red-100 pt-7" aria-labelledby="delete-account-heading">
+          <section className="mt-10 border-t border-red-100 pt-7 student-danger-zone" aria-labelledby="delete-account-heading">
             <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
               <div className="flex items-start gap-3">
                 <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-red-600" aria-hidden="true" />
@@ -343,12 +346,12 @@ export function ProfileModule() {
 
       {/* Right Column: Preview */}
       <aside className="lg:col-span-1">
-        <section className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center text-center sticky top-24">
+        <section className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center text-center sticky top-24 student-profile-summary">
           
           <div className="relative group mb-6">
             <div className="h-28 w-28 overflow-hidden rounded-full border-4 border-white shadow-lg bg-slate-100 flex items-center justify-center">
               {formData.avatar_url ? (
-                <img src={formData.avatar_url} alt={formData.full_name} className="h-full w-full object-cover" />
+                <Image src={formData.avatar_url} alt={formData.full_name} fill sizes="112px" unoptimized className="h-full w-full object-cover" />
               ) : (
                 <span className="text-3xl font-black text-slate-300">
                   {formData.full_name?.charAt(0)?.toUpperCase() || <UserRound size={40} />}
@@ -375,7 +378,7 @@ export function ProfileModule() {
           </div>
 
           <h3 className="text-xl font-bold text-slate-800 mb-1">{formData.full_name || "Student Name"}</h3>
-          <p className="text-sm text-slate-500 font-medium mb-6">{formData.city || "Student"}</p>
+          <p className="text-sm text-slate-500 font-medium mb-6"><ShieldCheck size={15} /> Student {formData.city ? `· ${formData.city}` : ""}</p>
           <div className="mb-6 w-full rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-left"><span className="block text-[11px] font-bold uppercase tracking-wider text-blue-500">DevQuest Student ID</span><strong className="mt-1 block font-mono text-sm text-blue-900">{studentId || "Assigning…"}</strong></div>
           
           {skillsList.length > 0 ? (
@@ -394,6 +397,6 @@ export function ProfileModule() {
           
         </section>
       </aside>
-    </div>
+    </div></div>
   );
 }

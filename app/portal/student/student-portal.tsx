@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
-import { ArrowLeft, Award, BookOpen, CalendarClock, FolderLock, LayoutDashboard, LifeBuoy, LoaderCircle, LogOut, ShieldCheck, Ticket, UserRound, Video } from "lucide-react";
+import { ArrowLeft, Award, Bell, BookOpen, CalendarClock, FolderLock, LayoutDashboard, LifeBuoy, LoaderCircle, LogOut, Menu, Search, ShieldCheck, Ticket, UserRound, Video, X } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
 import { DashboardModule } from "./modules/dashboard";
 import { CoursesModule } from "./modules/courses";
@@ -38,6 +38,9 @@ export function StudentPortal() {
   const [studentId, setStudentId] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [portalSearch, setPortalSearch] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
   const supabase = getSupabaseBrowserClient();
 
   const refresh = useCallback(async (activeUser: User) => {
@@ -73,6 +76,13 @@ export function StudentPortal() {
     return () => data.subscription.unsubscribe();
   }, [refresh, supabase]);
 
+  useEffect(() => {
+    const shortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") { event.preventDefault(); searchRef.current?.focus(); }
+    };
+    window.addEventListener("keydown", shortcut); return () => window.removeEventListener("keydown", shortcut);
+  }, []);
+
   async function signOut() {
     if (!supabase) return;
     setSaving(true);
@@ -92,13 +102,15 @@ export function StudentPortal() {
 
   return (
     <div className="team-portal-shell student-portal-shell">
-      <aside className="team-portal-sidebar student-sidebar">
+      {mobileNavOpen && <button className="student-nav-backdrop" type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)} />}
+      <aside className={`team-portal-sidebar student-sidebar${mobileNavOpen ? " is-open" : ""}`}>
         <Link className="team-portal-wordmark" href="/">
           <span>DQ</span><b>Student<br />Portal</b>
         </Link>
+        <button className="student-nav-close" type="button" aria-label="Close navigation" onClick={() => setMobileNavOpen(false)}><X /></button>
         <nav aria-label="Student portal navigation">
           {navItems.map(({ id, label, icon: Icon }) => (
-            <button key={id} className={tab === id ? "active" : ""} onClick={() => setTab(id)} title={label}>
+            <button key={id} className={tab === id ? "active" : ""} onClick={() => { setTab(id); setPortalSearch(""); setMobileNavOpen(false); }} title={label}>
               <Icon /> {label}
             </button>
           ))}
@@ -113,11 +125,14 @@ export function StudentPortal() {
       </aside>
       <main className="team-portal-main">
         <header className="team-portal-topbar">
-          <div>
+          <button className="student-nav-open" type="button" aria-label="Open navigation" onClick={() => setMobileNavOpen(true)}><Menu /></button>
+          <div className="student-page-heading">
             <p>LEARNING & OPPORTUNITIES</p>
             <h1>{navItems.find((item) => item.id === tab)?.label}</h1>
           </div>
+          <label className="student-global-search"><Search /><input ref={searchRef} value={portalSearch} onChange={(event) => setPortalSearch(event.target.value)} placeholder={`Search ${tab === "tickets" ? "tickets or codes" : tab === "certificates" ? "certificates" : tab === "webinars" ? "webinars or topics" : "courses, sessions, or resources"}...`} aria-label="Search current portal page" /><kbd>Ctrl + K</kbd></label>
           <div className="team-portal-account-actions">
+            <button className="student-notification-button" type="button" aria-label="Notifications"><Bell /><span /></button>
             <div className="team-portal-top-user">
               <span className="student-avatar-placeholder">ST</span>
               <div>
@@ -135,12 +150,12 @@ export function StudentPortal() {
         <div className="student-portal-content">
           {tab === "dashboard" && <DashboardModule setTab={setTab} />}
           {tab === "courses" && <CoursesModule />}
-          {tab === "webinars" && <WebinarsModule />}
+          {tab === "webinars" && <WebinarsModule searchQuery={portalSearch} />}
           {tab === "sessions" && <SessionsModule />}
-          {tab === "tickets" && <TicketsModule />}
+          {tab === "tickets" && <TicketsModule searchQuery={portalSearch} />}
           {tab === "vault" && <VaultModule />}
-          {tab === "certificates" && <CertificatesModule />}
-          {tab === "support" && <SupportModule />}
+          {tab === "certificates" && <CertificatesModule searchQuery={portalSearch} />}
+          {tab === "support" && <SupportModule searchQuery={portalSearch} />}
           {tab === "profile" && <ProfileModule />}
         </div>
       </main>

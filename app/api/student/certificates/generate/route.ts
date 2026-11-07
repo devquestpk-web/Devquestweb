@@ -52,19 +52,21 @@ export async function POST(request: Request) {
     const studentName = profile?.full_name || auth.user.email?.split("@")[0] || "DevQuest Student";
 
     // 3. Check for existing certificate
-    const { data: existingCert } = await adminSupabase
+    const { data: existingCert, error: existingError } = await adminSupabase
       .from("certificates")
-      .select("id")
+      .select("id, cert_code, pdf_url, verification_url")
       .eq("user_id", targetUserId)
       .eq(sessionId ? "session_id" : itemType === "COURSE" ? "course_id" : "webinar_id", sessionId || itemId)
       .is("revoked_at", null)
       .maybeSingle();
 
-    if (existingCert) return NextResponse.json({ error: "Certificate already exists" }, { status: 400 });
+    if (existingError) return NextResponse.json({ error: "Could not check existing certificates" }, { status: 500 });
+    if (existingCert) return NextResponse.json({ success: true, existing: true, certificate: existingCert });
 
     // 4. Enforce eligibility for every automatic/student issuance. Admins may
     // manually issue only by explicitly providing a reason, which is audited.
     const manualReason = typeof body.manualReason === "string" ? body.manualReason.trim().slice(0, 500) : "";
+    if (auth.role === "admin" && manualReason && manualReason.length < 10) return NextResponse.json({ error: "An eligibility override reason must be at least 10 characters" }, { status: 400 });
     if (auth.role === "admin" && manualReason) {
       await adminSupabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: "certificate.manual_issue", entity_type: "certificates", entity_id: itemId, details: { target_user_id: targetUserId, item_type: itemType, reason: manualReason } });
     }
@@ -76,13 +78,14 @@ export async function POST(request: Request) {
     const issueDate = new Intl.DateTimeFormat("en-US", { year: "numeric", month: "long", day: "numeric" }).format(new Date());
     
     // Create a verify URL that goes in the QR
-    const origin = request.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "https://www.devquestpk.com";
+    const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.devquestpk.com";
+    const origin = new URL(configuredSiteUrl).origin;
     const verificationUrl = `${origin}/verify/${certCode}`;
     
     // Create QR Code containing the verification URL
     const qrCodeDataUrl = await QRCode.toDataURL(verificationUrl, {
       errorCorrectionLevel: "H",
-      margin: 0,
+      margin: 1,
       color: { dark: "#061e3d", light: "#ffffff" }
     });
 
@@ -95,7 +98,7 @@ export async function POST(request: Request) {
         certCode,
         qrCodeDataUrl,
         itemType,
-        template: (template?.config || {}) as Record<string, string>
+        template: (template?.config || {}) as Record<string, unknown>
       }) as unknown as React.ReactElement<DocumentProps>
     );
     
@@ -112,7 +115,7 @@ export async function POST(request: Request) {
       .from("certificates")
       .upload(fileName, pdfBuffer, {
         contentType: "application/pdf",
-        upsert: true
+        upsert: false
       });
 
     if (uploadError) throw uploadError;
@@ -140,7 +143,14 @@ export async function POST(request: Request) {
       .select("id, cert_code, pdf_url, verification_url")
       .single();
 
-    if (certError) throw certError;
+    if (certError) {
+      await adminSupabase.storage.from("certificates").remove([fileName]);
+      if (certError.code === "23505") {
+        const { data: racedCertificate } = await adminSupabase.from("certificates").select("id, cert_code, pdf_url, verification_url").eq("user_id", targetUserId).eq(sessionId ? "session_id" : itemType === "COURSE" ? "course_id" : "webinar_id", sessionId || itemId).is("revoked_at", null).maybeSingle();
+        if (racedCertificate) return NextResponse.json({ success: true, existing: true, certificate: racedCertificate });
+      }
+      throw certError;
+    }
 
     return NextResponse.json({ success: true, certificate: cert });
   } catch (error) {

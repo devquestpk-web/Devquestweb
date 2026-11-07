@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Calendar, Circle, LoaderCircle, MapPin, QrCode, Ticket } from "lucide-react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import Image from "next/image";
+import { ArrowLeft, Calendar, CheckCircle2, Circle, Grid2X2, LoaderCircle, MapPin, QrCode, Ticket } from "lucide-react";
 import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
-export function TicketsModule() {
-  const [tickets, setTickets] = useState<any[]>([]);
+type StudentTicket = { id: string; ticket_code: string; item_type: "COURSE" | "WEBINAR"; is_checked_in?: boolean; courses?: { title?: string } | null; webinars?: { title?: string; start_time?: string; venue?: string } | null };
+
+export function TicketsModule({ searchQuery = "" }: { searchQuery?: string }) {
+  const [tickets, setTickets] = useState<StudentTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTicketCode, setSelectedTicketCode] = useState<string | null>(null);
   const supabase = getSupabaseBrowserClient();
@@ -40,39 +44,37 @@ export function TicketsModule() {
     return <TicketDetail ticketCode={selectedTicketCode} onBack={() => setSelectedTicketCode(null)} supabase={supabase!} />;
   }
 
+  const query = searchQuery.trim().toLowerCase();
+  const visibleTickets = tickets.filter((ticket) => !query || [ticket.ticket_code, ticket.item_type, ticket.courses?.title, ticket.webinars?.title].some((value) => String(value || "").toLowerCase().includes(query)));
+
   return (
-    <div className="portal-work-grid" style={{ gridTemplateColumns: '1fr' }}>
-      <section className="portal-panel">
-        <div className="portal-panel-head">
-          <div>
-            <p>ACCESS PASSES</p>
-            <h2>My Tickets</h2>
-          </div>
-        </div>
-        
-        <div className="ticket-passbook">
-          {tickets.map((ticket) => {
+    <div className="student-module-page">
+      <section className="student-module-hero student-ticket-hero"><div><span>ACCESS PASSES</span><h2>Your Event Tickets</h2><p>Access and present your registered event tickets in one secure place.</p></div><div className="student-ticket-art"><Ticket /><QrCode /></div></section>
+      <section className="student-module-toolbar"><div className="student-segmented-tabs"><button className="active"><Ticket /> My tickets ({tickets.length})</button><button><Calendar /> Past tickets</button></div><div className="student-view-toggle"><button className="active" aria-label="Grid view"><Grid2X2 /></button></div></section>
+      <div className="student-module-grid">
+      <section className="student-content-card"><div className="ticket-passbook student-ticket-passbook">
+          {visibleTickets.map((ticket) => {
             const title = ticket.item_type === "COURSE" ? ticket.courses?.title : ticket.webinars?.title;
             const isWebinar = ticket.item_type === "WEBINAR";
             
             return (
-              <article className="ticket-card" key={ticket.id} onClick={() => setSelectedTicketCode(ticket.ticket_code)}>
-                <div className="ticket-card-stub">
-                  <QrCode size={40} color="#fff" style={{ opacity: 0.5 }} />
-                  <span style={{ transform: "rotate(-90deg)", whiteSpace: "nowrap", fontSize: "0.7rem", color: "#fff", fontWeight: 700, marginTop: 20 }}>TAP TO VIEW</span>
+              <article className="ticket-card" key={ticket.id}>
+                <div className="ticket-card-stub student-ticket-stub">
+                  <strong>aws</strong><QrCode />
                 </div>
                 <div className="ticket-card-main">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                     <span className="ticket-type-badge">{ticket.item_type}</span>
-                    <span style={{ fontSize: "0.75rem", color: "#637086", fontWeight: 700 }}>{ticket.ticket_code}</span>
+                    <span className="student-ticket-code">{ticket.ticket_code}</span>
                   </div>
                   <h3>{title}</h3>
                   {isWebinar && ticket.webinars && (
                     <div className="ticket-meta" style={{ marginTop: 16 }}>
-                      <span><Calendar size={14} /> {new Intl.DateTimeFormat("en-PK", { dateStyle: "medium" }).format(new Date(ticket.webinars.start_time))}</span>
+                      <span><Calendar size={14} /> {ticket.webinars.start_time ? new Intl.DateTimeFormat("en-PK", { dateStyle: "medium" }).format(new Date(ticket.webinars.start_time)) : "Schedule pending"}</span>
                       <span><MapPin size={14} /> {ticket.webinars.venue}</span>
                     </div>
                   )}
+                  <button className="portal-primary" type="button" onClick={() => setSelectedTicketCode(ticket.ticket_code)}><Ticket /> View ticket</button>
                 </div>
               </article>
             );
@@ -83,20 +85,22 @@ export function TicketsModule() {
               <Circle /> You have no tickets yet. Enroll in a course or webinar.
             </div>
           )}
-        </div>
-      </section>
+        </div></section>
+        <aside className="student-module-aside"><section className="student-ticket-callout"><div><h3>Show ticket at event</h3><p>Present your QR code for quick and secure check-in.</p><button type="button" onClick={() => visibleTickets[0] && setSelectedTicketCode(visibleTickets[0].ticket_code)}><QrCode /> View QR ticket</button></div><QrCode /></section><section className="student-mini-stats"><div><Ticket /><strong>{tickets.length}</strong><small>Total tickets</small></div><div><CheckCircle2 /><strong>{tickets.filter((ticket) => !ticket.is_checked_in).length}</strong><small>Registered</small></div></section></aside>
+      </div>
     </div>
   );
 }
 
-function TicketDetail({ ticketCode, onBack, supabase }: { ticketCode: string, onBack: () => void, supabase: any }) {
-  const [data, setData] = useState<any>(null);
+function TicketDetail({ ticketCode, onBack, supabase }: { ticketCode: string, onBack: () => void, supabase: SupabaseClient }) {
+  const [data, setData] = useState<{ ticket: StudentTicket; qrDataUrl?: string } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
         const response = await fetch(`/api/student/tickets/${ticketCode}`, {
           headers: { Authorization: `Bearer ${session.access_token}` }
         });
@@ -130,7 +134,7 @@ function TicketDetail({ ticketCode, onBack, supabase }: { ticketCode: string, on
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 32 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 12, color: "rgba(255,255,255,0.8)" }}>
                 <Calendar size={18} color="#469bff" />
-                <span>{new Intl.DateTimeFormat("en-PK", { dateStyle: "full", timeStyle: "short" }).format(new Date(ticket.webinars.start_time))}</span>
+                <span>{ticket.webinars.start_time ? new Intl.DateTimeFormat("en-PK", { dateStyle: "full", timeStyle: "short" }).format(new Date(ticket.webinars.start_time)) : "Schedule pending"}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, color: "rgba(255,255,255,0.8)" }}>
                 <MapPin size={18} color="#469bff" />
@@ -156,7 +160,7 @@ function TicketDetail({ ticketCode, onBack, supabase }: { ticketCode: string, on
           
           <div style={{ background: "white", padding: 16, borderRadius: 16, border: "1px solid #edf0f5", display: "inline-block" }}>
             {qrDataUrl ? (
-              <img src={qrDataUrl} alt="Ticket QR Code" style={{ width: 220, height: 220, display: "block" }} />
+              <Image src={qrDataUrl} alt="Ticket QR Code" width={220} height={220} unoptimized style={{ width: 220, height: 220, display: "block" }} />
             ) : (
               <div style={{ width: 220, height: 220, background: "#f8f9fc", display: "grid", placeItems: "center", color: "#a5b4cc" }}>
                 <QrCode size={48} />

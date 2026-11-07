@@ -11,8 +11,8 @@ export async function GET(request: Request) {
   const auth = await requireAdmin(request); if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const [{ data, error }, { data: webinars, error: webinarsError }, { data: courses, error: coursesError }] = await Promise.all([
     auth.supabase.from("event_sessions").select("*, webinars(title), courses(title), session_enrollments(id, user_id, status, registered_at), session_attendance(id, user_id, status, checked_in_at)").order("starts_at", { ascending: false }),
-    auth.supabase.from("webinars").select("id, title").order("title"),
-    auth.supabase.from("courses").select("id, title").order("title"),
+    auth.supabase.from("webinars").select("id, title").is("archived_at", null).order("title"),
+    auth.supabase.from("courses").select("id, title").is("archived_at", null).order("title"),
   ]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (webinarsError || coursesError) return NextResponse.json({ error: webinarsError?.message || coursesError?.message || "Could not load parent programs" }, { status: 500 });
@@ -38,6 +38,10 @@ export async function POST(request: Request) {
   try {
     const body = await request.json(); const title = String(body.title || "").trim().slice(0, 180); const parentType = body.parentType === "course" ? "course" : "event"; const parentId = String(body.parentId || body.webinarId || "");
     if (!parentId || title.length < 2 || !body.startsAt || !body.endsAt) return NextResponse.json({ error: "Parent, title, start, and end are required" }, { status: 400 });
+    const parentTable = parentType === "event" ? "webinars" : "courses";
+    const { data: parent, error: parentError } = await auth.supabase.from(parentTable).select("id, archived_at").eq("id", parentId).maybeSingle();
+    if (parentError) return NextResponse.json({ error: parentError.message }, { status: 500 });
+    if (!parent || parent.archived_at) return NextResponse.json({ error: "Choose an active event or course" }, { status: 404 });
     const startsAt = new Date(body.startsAt);
     const endsAt = new Date(body.endsAt);
     if (!Number.isFinite(startsAt.getTime()) || !Number.isFinite(endsAt.getTime()) || endsAt <= startsAt) return NextResponse.json({ error: "Session end must be later than its start" }, { status: 400 });

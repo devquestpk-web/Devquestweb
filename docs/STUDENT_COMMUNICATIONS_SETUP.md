@@ -54,9 +54,9 @@ Call `POST /api/internal/process-background` from a trusted scheduler with:
 Authorization: Bearer <BACKGROUND_WORKER_SECRET>
 ```
 
-The production Vercel cron calls the same worker once a day using `GET` and a separate `CRON_SECRET` in the Authorization header. Vercel Hobby permits daily cron frequency. Admin event and session changes also attempt an immediate Sheets sync; the outbox retains failed jobs for retries. An administrator can run **Communications → Sync Sheets** to backfill events and sessions that were created before the automatic worker was enabled.
+The repository includes a GitHub Actions schedule every five minutes. Add the **same** `BACKGROUND_WORKER_SECRET` value to the repository's Actions secrets and the Vercel Production environment before enabling it. The endpoint processes bounded batches, records failures, and retries with exponential backoff. It must not be called from browser code or exposed without the worker secret.
 
-The endpoint processes bounded batches, records failures, and retries with exponential backoff. It must not be called from browser code or exposed without the worker secret.
+Vercel also has a daily fallback cron at `GET /api/internal/process-background`. It is secured by a separate Production `CRON_SECRET` environment variable; without that variable, the GET endpoint returns 401. The daily frequency fits Vercel Hobby's cron limit. The cron runs only on Production deployments. Admin event and session writes attempt an immediate Sheets sync, while the queue remains available for retries. An administrator can also choose **Communications → Sync Sheets** to backfill existing events, courses, and sessions that have no Sheet mapping.
 
 ## Safe rollout
 

@@ -1,9 +1,13 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, Calendar, Circle, ExternalLink, LoaderCircle, MapPin, ShieldCheck, Ticket } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { ArrowLeft, Award, Calendar, Circle, ExternalLink, Layers3, LoaderCircle, MapPin, Play, ShieldCheck, Ticket, Video } from "lucide-react";
 import { getSupabaseBrowserClient } from "../../../lib/supabase-browser";
 
-export function WebinarsModule() {
-  const [data, setData] = useState<{ upcoming: any[], past: any[] }>({ upcoming: [], past: [] });
+type Webinar = { id: string; slug: string; title: string; description?: string; speaker_name?: string; speaker_title?: string; venue: string; start_time: string; meeting_link?: string; price?: number; max_seats?: number; isRegistered: boolean };
+type WebinarDetailData = { webinar: Webinar; isRegistered: boolean };
+
+export function WebinarsModule({ searchQuery = "" }: { searchQuery?: string }) {
+  const [data, setData] = useState<{ upcoming: Webinar[], past: Webinar[] }>({ upcoming: [], past: [] });
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
@@ -41,26 +45,19 @@ export function WebinarsModule() {
     return <WebinarDetail slug={selectedSlug} onBack={() => setSelectedSlug(null)} supabase={supabase!} />;
   }
 
-  const list = tab === "upcoming" ? data.upcoming : data.past;
+  const query = searchQuery.trim().toLowerCase();
+  const list = (tab === "upcoming" ? data.upcoming : data.past).filter((webinar) => !query || [webinar.title, webinar.description, webinar.speaker_name, webinar.venue].some((value) => String(value || "").toLowerCase().includes(query)));
 
   return (
-    <div className="portal-work-grid" style={{ gridTemplateColumns: '1fr' }}>
-      <section className="portal-panel">
-        <div className="portal-panel-head" style={{ marginBottom: 24 }}>
-          <div>
-            <p>LIVE SESSIONS</p>
-            <h2>Webinars & Events</h2>
-          </div>
-        </div>
-
-        <div className="auth-tabs" style={{ maxWidth: 320, margin: "0 0 24px" }}>
-          <button className={tab === "upcoming" ? "active" : ""} onClick={() => setTab("upcoming")}>Upcoming ({data.upcoming.length})</button>
-          <button className={tab === "past" ? "active" : ""} onClick={() => setTab("past")}>Past recorded ({data.past.length})</button>
-        </div>
-        
-        <div className="webinar-catalog">
+    <div className="student-module-page">
+      <section className="student-module-hero student-webinar-hero"><div><span>LIVE LEARNING</span><h2>Join Live Webinars & Events</h2><p>Learn from industry experts, build practical skills, and stay current with technology.</p><div className="student-hero-points"><b><Calendar />Live sessions</b><b><Layers3 />Expert speakers</b><b><Award />Certificates</b></div></div><div className="student-hero-illustration"><Video /><Play /></div></section>
+      <section className="student-module-toolbar"><div className="student-segmented-tabs"><button className={tab === "upcoming" ? "active" : ""} onClick={() => setTab("upcoming")}><Calendar /> Upcoming ({data.upcoming.length})</button><button className={tab === "past" ? "active" : ""} onClick={() => setTab("past")}><Play /> Past recorded ({data.past.length})</button></div></section>
+      <div className="student-module-grid student-module-grid--wide">
+        <section className="student-content-card">
+        <div className="webinar-catalog student-webinar-catalog">
           {list.map((webinar) => (
-            <article className="webinar-card" key={webinar.id} onClick={() => setSelectedSlug(webinar.slug)}>
+            <article className="webinar-card" key={webinar.id}>
+              <div className="student-webinar-poster" aria-hidden="true"><span>ONLINE</span><strong>aws</strong><small>cloud learning</small></div>
               <div className="webinar-card-content">
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                   <span className={`venue-badge ${webinar.venue.toLowerCase()}`}>{webinar.venue}</span>
@@ -73,9 +70,8 @@ export function WebinarsModule() {
                   <span><MapPin size={14} /> {webinar.venue}</span>
                 </div>
                 
-                <p style={{ marginTop: 12, fontSize: "0.8rem", color: "#637086" }}>
-                  Speaker: <strong>{webinar.speaker_name}</strong>
-                </p>
+                <p className="student-webinar-speaker">Speaker: <strong>{webinar.speaker_name || "To be announced"}</strong></p>
+                <button className="portal-primary" type="button" onClick={() => setSelectedSlug(webinar.slug)}><Play /> {webinar.isRegistered ? "View webinar" : "View details"}</button>
               </div>
             </article>
           ))}
@@ -85,20 +81,22 @@ export function WebinarsModule() {
               <Circle /> No {tab} webinars found.
             </div>
           )}
-        </div>
-      </section>
+        </div></section>
+        <aside className="student-module-aside"><section className="student-mini-stats"><div><Calendar /><strong>{data.upcoming.length}</strong><small>Upcoming</small></div><div><Play /><strong>{data.past.length}</strong><small>Recorded</small></div><div><Award /><strong>{data.upcoming.filter((item) => item.isRegistered).length}</strong><small>Registered</small></div></section><section className="student-side-card"><h3>Next events</h3>{data.upcoming.slice(0,3).map((item) => <button key={item.id} onClick={() => setSelectedSlug(item.slug)}><span>{new Date(item.start_time).toLocaleDateString("en-PK", { month:"short", day:"2-digit" })}</span><b>{item.title}</b></button>)}{!data.upcoming.length && <p>No upcoming events yet.</p>}</section></aside>
+      </div>
     </div>
   );
 }
 
-function WebinarDetail({ slug, onBack, supabase }: { slug: string, onBack: () => void, supabase: any }) {
-  const [data, setData] = useState<any>(null);
+function WebinarDetail({ slug, onBack, supabase }: { slug: string, onBack: () => void, supabase: SupabaseClient }) {
+  const [data, setData] = useState<WebinarDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
       const response = await fetch(`/api/student/webinars/${slug}`, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
@@ -109,14 +107,16 @@ function WebinarDetail({ slug, onBack, supabase }: { slug: string, onBack: () =>
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug, supabase]);
 
-  useEffect(() => { load(); }, [slug, supabase]);
+  useEffect(() => { queueMicrotask(() => void load()); }, [load]);
 
   const handleRegister = async () => {
+    if (!data) return;
     setRegistering(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Session expired");
       const response = await fetch("/api/student/checkout", {
         method: "POST",
         headers: { 
@@ -132,7 +132,7 @@ function WebinarDetail({ slug, onBack, supabase }: { slug: string, onBack: () =>
       } else {
         alert(result.error || "Registration failed");
       }
-    } catch (e) {
+    } catch {
       alert("Checkout error");
     } finally {
       setRegistering(false);
@@ -170,7 +170,7 @@ function WebinarDetail({ slug, onBack, supabase }: { slug: string, onBack: () =>
         
         {isRegistered && webinar.meeting_link && !isPast && (
           <div style={{ marginTop: 32, padding: 24, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12 }}>
-            <h3 style={{ margin: "0 0 12px", color: "#166534", fontSize: "1rem" }}>You're registered</h3>
+            <h3 style={{ margin: "0 0 12px", color: "#166534", fontSize: "1rem" }}>You&apos;re registered</h3>
             <p style={{ margin: "0 0 16px", color: "#15803d", fontSize: "0.85rem" }}>Join the session using the link below at the scheduled time.</p>
             <a href={webinar.meeting_link} target="_blank" rel="noopener noreferrer" className="portal-primary" style={{ background: "#16a34a", color: "white" }}>
               Join Meeting <ExternalLink size={16} style={{ marginLeft: 6 }} />
