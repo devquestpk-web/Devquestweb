@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { syncProgramAfterWrite } from "../../../lib/background-jobs";
 import { requireAdmin } from "../../../lib/supabase-admin";
 
@@ -6,13 +7,19 @@ const sessionStatuses = new Set(["draft", "scheduled", "live", "completed", "can
 const attendanceStatuses = new Set(["present", "late", "absent", "excused"]);
 function optionalUrl(value: unknown) { const text = String(value || "").trim(); if (!text) return null; const url = new URL(text); if (url.protocol !== "https:") throw new Error("Session links must use HTTPS"); return url.toString(); }
 function cleanResources(value: unknown) { if (!Array.isArray(value)) return []; return value.slice(0, 20).map((entry) => { const item = entry && typeof entry === "object" ? entry as Record<string, unknown> : {}; return { title: String(item.title || "Resource").trim().slice(0, 120), url: optionalUrl(item.url) }; }).filter((item) => item.url); }
+function isMissingArchiveColumn(error: { code?: string; message?: string } | null) { return error?.code === "42703" || Boolean(error?.message?.includes("archived_at") && error.message.includes("does not exist")); }
+async function loadActivePrograms(supabase: SupabaseClient, table: "webinars" | "courses") {
+  const activeResult = await supabase.from(table).select("id, title").is("archived_at", null).order("title");
+  if (!isMissingArchiveColumn(activeResult.error)) return activeResult;
+  return supabase.from(table).select("id, title").order("title");
+}
 
 export async function GET(request: Request) {
   const auth = await requireAdmin(request); if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const [{ data, error }, { data: webinars, error: webinarsError }, { data: courses, error: coursesError }] = await Promise.all([
     auth.supabase.from("event_sessions").select("*, webinars(title), courses(title), session_enrollments(id, user_id, status, registered_at), session_attendance(id, user_id, status, checked_in_at)").order("starts_at", { ascending: false }),
-    auth.supabase.from("webinars").select("id, title").is("archived_at", null).order("title"),
-    auth.supabase.from("courses").select("id, title").is("archived_at", null).order("title"),
+    loadActivePrograms(auth.supabase, "webinars"),
+    loadActivePrograms(auth.supabase, "courses"),
   ]);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (webinarsError || coursesError) return NextResponse.json({ error: webinarsError?.message || coursesError?.message || "Could not load parent programs" }, { status: 500 });
@@ -39,7 +46,10 @@ export async function POST(request: Request) {
     const body = await request.json(); const title = String(body.title || "").trim().slice(0, 180); const parentType = body.parentType === "course" ? "course" : "event"; const parentId = String(body.parentId || body.webinarId || "");
     if (!parentId || title.length < 2 || !body.startsAt || !body.endsAt) return NextResponse.json({ error: "Parent, title, start, and end are required" }, { status: 400 });
     const parentTable = parentType === "event" ? "webinars" : "courses";
-    const { data: parent, error: parentError } = await auth.supabase.from(parentTable).select("id, archived_at").eq("id", parentId).maybeSingle();
+    let parentResult = await auth.supabase.from(parentTable).select("id, archived_at").eq("id", parentId).maybeSingle();
+    if (isMissingArchiveColumn(parentResult.error)) parentResult = await auth.supabase.from(parentTable).select("id").eq("id", parentId).maybeSingle();
+    const parent = parentResult.data as { id: string; archived_at?: string | null } | null;
+    const parentError = parentResult.error;
     if (parentError) return NextResponse.json({ error: parentError.message }, { status: 500 });
     if (!parent || parent.archived_at) return NextResponse.json({ error: "Choose an active event or course" }, { status: 404 });
     const startsAt = new Date(body.startsAt);

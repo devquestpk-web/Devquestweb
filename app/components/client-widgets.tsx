@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { AlertCircle, ArrowLeft, BriefcaseBusiness, CheckCircle2, ChevronRight, GraduationCap, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, MapPin, ShieldCheck, UserRound, UsersRound, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Award, BookOpen, BriefcaseBusiness, CalendarDays, CheckCircle2, ChevronRight, Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, LogOut, Mail, MapPin, ShieldCheck, UserRound, UsersRound, X } from "lucide-react";
 import { deliverWebsiteForm } from "../lib/form-delivery";
 
 const getSupabase = getSupabaseBrowserClient;
@@ -99,6 +99,8 @@ export function AuthDock() {
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [resendingConfirmation, setResendingConfirmation] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (!resendCooldown) return;
@@ -110,7 +112,7 @@ export function AuthDock() {
     const syncHash = () => {
       if (["#student-enrollment", "#member-signup", "#member-signin", "#member-access", "#team-login", "#admin-login"].includes(window.location.hash)) {
         const enrollment = ["#student-enrollment", "#member-signup"].includes(window.location.hash);
-        const directRole = window.location.hash === "#team-login" ? "team" : window.location.hash === "#admin-login" ? "admin" : null;
+        const directRole = window.location.hash === "#team-login" ? "team" : window.location.hash === "#admin-login" ? "admin" : window.location.hash === "#member-signin" ? "student" : null;
         setPortalRole(enrollment ? "student" : directRole);
         setStudentSignup(enrollment);
         setMessage(null); setConfirmationSent(false); setConfirmationEmail(""); setResendCooldown(0);
@@ -216,6 +218,17 @@ export function AuthDock() {
     setMessage({ type: "success", text: "A new confirmation email has been sent." });
   }
 
+  async function resetStudentPassword() {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    if (!loginEmail.trim()) { setMessage({ type: "error", text: "Enter your email address first, then select password recovery." }); return; }
+    setWorking(true); setMessage(null);
+    const recoveryPath = portalRole === "admin" ? "/admin" : portalRole === "team" ? "/team" : "/portal/student";
+    const { error } = await supabase.auth.resetPasswordForEmail(loginEmail.trim(), { redirectTo: `${window.location.origin}${recoveryPath}` });
+    setWorking(false);
+    setMessage(error ? { type: "error", text: error.message } : { type: "success", text: "Password recovery instructions have been sent to your email." });
+  }
+
   async function signOut() { const supabase = getSupabase(); if (!supabase) return; setWorking(true); const { error } = await supabase.auth.signOut({ scope: "global" }); if (error) { setWorking(false); setMessage({ type: "error", text: error.message }); return; } window.location.replace("/#member-signin"); }
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Member";
   const isPortalWorkspace = pathname === "/admin" || pathname === "/team" || pathname.startsWith("/portal/");
@@ -224,8 +237,26 @@ export function AuthDock() {
   return <div className={`auth-dock ${open ? "is-open" : ""}`}>
     {open && <>
       <button className="auth-backdrop" onClick={close} aria-label="Close account dialog" />
-      <section className={`auth-popup auth-${portalRole ? "signin" : "role"} ${portalRole === "student" && studentSignup ? "auth-student-signup" : ""}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
+      <section className={`auth-popup auth-${portalRole ? "signin" : "role"} ${portalRole === "student" && studentSignup ? "auth-student-signup" : ""} ${(portalRole === "student" || portalRole === "admin" || portalRole === "team") && !studentSignup && !user ? `auth-student-login ${portalRole === "admin" ? "auth-admin-login" : portalRole === "team" ? "auth-team-login" : ""}` : ""}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
         <button className="auth-close" type="button" onClick={close} aria-label="Close portal access"><X /></button>
+        {portalRole === "student" && !studentSignup && !user && !loading && <aside className="student-login-showcase" aria-label="Student Portal benefits">
+          <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={158} height={64} /><span>Student Portal</span></div>
+          <div className="student-login-copy"><p>WELCOME TO</p><h2>Welcome to<br /><strong>Student Portal</strong></h2><span>Access your courses, sessions, certificates, and track your learning progress.</span></div>
+          <div className="student-login-benefits"><article><i><BookOpen /></i><div><b>My Courses</b><small>Access enrolled courses and learning material.</small></div></article><article><i><CalendarDays /></i><div><b>My Sessions</b><small>Join live sessions, webinars, and events.</small></div></article><article><i><Award /></i><div><b>My Certificates</b><small>View and download your achievements.</small></div></article></div>
+          <div className="student-login-illustration" aria-hidden="true"><span><GraduationCap /></span><i /><b>DQ</b><em><BookOpen /></em></div>
+        </aside>}
+        {portalRole === "admin" && !user && !loading && <aside className="student-login-showcase admin-login-showcase" aria-label="Admin Portal benefits">
+          <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={158} height={64} /><span>Admin Portal</span></div>
+          <div className="student-login-copy"><p>DEVQUEST OPERATIONS</p><h2>Manage, Track &amp;<br /><strong>Grow Your Programs</strong></h2><span>A centralized portal for administrators to manage students, events, certificates, and more.</span></div>
+          <div className="student-login-benefits"><article><i><UsersRound /></i><div><b>Student Management</b><small>Keep student records and progress in one place.</small></div></article><article><i><CalendarDays /></i><div><b>Event &amp; Session Control</b><small>Create, schedule, and track sessions and webinars.</small></div></article><article><i><Award /></i><div><b>Certificates &amp; Reports</b><small>Verify, issue certificates, and generate detailed reports.</small></div></article></div>
+          <div className="student-login-illustration admin-login-illustration" aria-hidden="true"><span><ShieldCheck /></span><i /><b>DQ</b><em><Award /></em></div>
+        </aside>}
+        {portalRole === "team" && !user && !loading && <aside className="student-login-showcase team-login-showcase" aria-label="Team Portal benefits">
+          <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={158} height={64} /><span>Team Portal</span></div>
+          <div className="student-login-copy"><p>DEVQUEST COLLABORATION</p><h2>Welcome to<br /><strong>Team Portal</strong></h2><span>A dedicated workspace for DevQuest PK team members to collaborate, manage events, and run operations together.</span></div>
+          <div className="student-login-benefits"><article><i><UsersRound /></i><div><b>Team Collaboration</b><small>Work together, assign tasks, and stay aligned.</small></div></article><article><i><CalendarDays /></i><div><b>Event Operations</b><small>Manage sessions, attendees, and deliverables.</small></div></article><article><i><ShieldCheck /></i><div><b>Role-based Access</b><small>Secure access with team-specific permissions.</small></div></article></div>
+          <div className="team-login-collage" aria-hidden="true"><Image src="/team/humair-tariq.webp" alt="" width={180} height={220} /><Image src="/team/mohsin-nawaz.jpeg" alt="" width={180} height={220} /><Image src="/team/anza-tamveel.jpeg" alt="" width={180} height={220} /><span>DevQuest PK</span></div>
+        </aside>}
         <div className="auth-main">
           <div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div>
           {loading ? <div className="auth-loading"><LoaderCircle className="spin" /> Checking your session...</div> : user ? <>
@@ -249,7 +280,7 @@ export function AuthDock() {
             </div>
           </> : <>
             <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); clearConfirmationState(); }}><ArrowLeft /> Change role</button>
-            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : `Sign in to the ${portalRole} portal`}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Use your approved DevQuest team account." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Access your learning and event dashboard."}</p></div></div>
+            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : portalRole === "admin" ? "Sign in to your account" : portalRole === "team" ? "Sign in to your team account" : "Sign in to your student account"}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Access the DevQuest PK team workspace." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Access your learning and event dashboard."}</p></div></div>
             <form className={`auth-form ${portalRole === "student" && studentSignup ? "auth-enrollment-form" : ""}`} onSubmit={submit}>
               {portalRole === "student" && (
                 <div className="auth-mode-row">
@@ -257,29 +288,31 @@ export function AuthDock() {
                 </div>
               )}
               {portalRole === "student" && studentSignup && <><label><span>Full name</span><div><UserRound /><input name="fullName" required autoComplete="name" placeholder="Your full name" /></div></label><label><span>Phone number</span><div><UserRound /><input name="phone" required autoComplete="tel" placeholder="+92 300 0000000" /></div></label><label><span>City</span><div><MapPin /><input name="city" autoComplete="address-level2" placeholder="Your city" /></div></label><label><span>Semester</span><div><GraduationCap /><input name="semester" placeholder="e.g. 6th semester" /></div></label><label><span>University / institute</span><div><GraduationCap /><input name="university" required autoComplete="organization" placeholder="Your university or institute" /></div></label><label><span>Degree / program</span><div><GraduationCap /><input name="degree" required placeholder="e.g. BS Computer Science" /></div></label></>}
-              <label><span>Email address</span><div><Mail /><input name="email" type="email" required placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "you@example.com"} autoComplete="email" /></div></label>
-              <label><span>Password</span><div><LockKeyhole /><input name="password" type="password" required minLength={8} placeholder="Use 8 or more characters" autoComplete={studentSignup ? "new-password" : "current-password"} /></div></label>
+              <label><span>Email address</span><div><Mail /><input name="email" type="email" required value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "your@email.com"} autoComplete="email" /></div></label>
+              <label><span>Password</span><div><LockKeyhole /><input name="password" type={showPassword ? "text" : "password"} required minLength={8} placeholder="Enter your password" autoComplete={studentSignup ? "new-password" : "current-password"} />{!studentSignup && <button className="auth-password-toggle" type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff /> : <Eye />}</button>}</div></label>
+              {(portalRole === "student" || portalRole === "admin" || portalRole === "team") && !studentSignup && <div className="student-login-options"><label><input type="checkbox" defaultChecked /> <span>Remember me</span></label><button type="button" onClick={() => void resetStudentPassword()} disabled={working}>Forgot your password?</button></div>}
               {message && <Status {...message} />}
               {portalRole === "student" && studentSignup && confirmationSent && <div className="auth-confirmation-help" role="status"><p>Didn&apos;t receive the email? Check your <strong>Spam</strong> or <strong>Junk</strong> folder.</p><button type="button" onClick={() => void resendConfirmationEmail()} disabled={resendingConfirmation || resendCooldown > 0}>{resendingConfirmation ? <><LoaderCircle className="spin" /> Sending…</> : resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Resend confirmation email"}</button></div>}
-              <button className="auth-submit" type="submit" disabled={working || (portalRole === "student" && studentSignup && confirmationSent)}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup && confirmationSent ? <>Confirmation email sent <CheckCircle2 /></> : studentSignup ? <>Create student account <ChevronRight /></> : <>Open {portalRole === "admin" ? "Admin" : portalRole === "team" ? "Team" : "Student"} Portal <LogIn /></>}</button>
+              <button className="auth-submit" type="submit" disabled={working || (portalRole === "student" && studentSignup && confirmationSent)}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup && confirmationSent ? <>Confirmation email sent <CheckCircle2 /></> : studentSignup ? <>Create student account <ChevronRight /></> : portalRole === "student" ? <>Sign In to Student Portal <ArrowRight /></> : portalRole === "admin" ? <>Sign In to Admin Portal <ArrowRight /></> : <>Sign In to Team Portal <ArrowRight /></>}</button>
             </form>
             
             {portalRole === "student" && !studentSignup && (
-              <div style={{ marginTop: 16 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "16px 0", color: "#637086", fontSize: "0.8rem", textTransform: "uppercase", fontWeight: 700 }}>
-                  <div style={{ flex: 1, height: 1, background: "#edf0f5" }}></div>
+              <div className="student-login-google">
+                <div className="student-login-divider">
+                  <div></div>
                   <span>OR</span>
-                  <div style={{ flex: 1, height: 1, background: "#edf0f5" }}></div>
+                  <div></div>
                 </div>
                 <button 
+                  className="student-google-button"
                   type="button" 
                   onClick={signInWithGoogle}
                   disabled={working}
-                  style={{ width: "100%", padding: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "white", border: "1px solid #d4e2fa", borderRadius: "12px", color: "#07162c", fontWeight: 600, cursor: "pointer", fontSize: "0.9rem" }}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                   Continue with Google
                 </button>
+                <p><ShieldCheck /> Your account is securely managed by DevQuest PK.</p>
               </div>
             )}
             {portalRole !== "student" && <p className="auth-team-note"><ShieldCheck /> Portal accounts are issued and controlled by DevQuest administrators.</p>}

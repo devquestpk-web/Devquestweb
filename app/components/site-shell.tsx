@@ -141,7 +141,7 @@ export function SiteFooter() {
           <div><h3>Follow</h3><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer"><Linkedin /> LinkedIn</a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer"><Instagram /> Instagram</a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer"><Facebook /> Facebook</a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer"><Youtube /> YouTube</a></div>
           <div className="dq-newsletter"><h3>Join our newsletter</h3><p>Updates on events, learning, and community opportunities.</p><a href="mailto:hello@devquestpk.com?subject=Subscribe%20me%20to%20DevQuest">Subscribe by email</a></div>
         </div>
-        <div className="dq-shell dq-footer-bottom"><span>&copy; {new Date().getFullYear()} DevQuest Pakistan</span><span>Learn. Build. Lead.</span></div>
+        <div className="dq-shell dq-footer-bottom"><span>&copy; {new Date().getFullYear()} DevQuest Pakistan</span><span><Link href="/privacy">Privacy &amp; cookies</Link> · Learn. Build. Lead.</span></div>
       </footer>
       <a className="floating-contact" href="https://wa.me/923704489589?text=Hello%20DevQuest" target="_blank" rel="noreferrer" aria-label="Chat with DevQuest on WhatsApp"><span>We are here!</span><MessageCircle /></a>
     </>

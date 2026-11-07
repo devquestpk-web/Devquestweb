@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { syncProgramAfterWrite } from "../../../lib/background-jobs";
 import { requireAdmin } from "../../../lib/supabase-admin";
 
+function isMissingArchiveColumn(error: { code?: string; message?: string } | null) { return error?.code === "42703" || Boolean(error?.message?.includes("archived_at") && error.message.includes("does not exist")); }
+
 export async function POST(request: Request) {
   const auth = await requireAdmin(request);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
@@ -56,7 +58,14 @@ export async function DELETE(request: Request) {
 
     const table = parentType === "event" ? "webinars" : "courses";
     const sessionKey = parentType === "event" ? "webinar_id" : "course_id";
-    const { data: program, error: lookupError } = await auth.supabase.from(table).select("id, title, archived_at").eq("id", parentId).maybeSingle();
+    let archiveSupported = true;
+    let lookupResult = await auth.supabase.from(table).select("id, title, archived_at").eq("id", parentId).maybeSingle();
+    if (isMissingArchiveColumn(lookupResult.error)) {
+      archiveSupported = false;
+      lookupResult = await auth.supabase.from(table).select("id, title").eq("id", parentId).maybeSingle();
+    }
+    const program = lookupResult.data as { id: string; title: string; archived_at?: string | null } | null;
+    const lookupError = lookupResult.error;
     if (lookupError) return NextResponse.json({ error: lookupError.message }, { status: 500 });
     if (!program) return NextResponse.json({ error: "Event or course not found" }, { status: 404 });
     if (program.archived_at) return NextResponse.json({ ok: true, alreadyArchived: true });
@@ -88,6 +97,10 @@ export async function DELETE(request: Request) {
       await auth.supabase.from("admin_audit_logs").insert({ actor_id: auth.user.id, action: "program.deleted", entity_type: table, entity_id: parentId, details: { title: program.title } });
       const sheetSync = await syncProgramAfterWrite(table, parentId);
       return NextResponse.json({ ok: true, deleted: true, archived: false, sheetSync });
+    }
+
+    if (!archiveSupported) {
+      return NextResponse.json({ error: "This program has historical records and cannot be deleted until the program archiving migration is applied." }, { status: 409 });
     }
 
     const { data: archived, error: archiveError } = await auth.supabase.from(table)
