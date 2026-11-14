@@ -273,13 +273,13 @@ export function AuthDock() {
           </> : !portalRole ? <>
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
             <div className="auth-role-grid">
-              <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student</b><small>Learning, events, certificates, and opportunities</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student Portal</b><small>Courses, events, certificates, and learning progress</small></div><ChevronRight /></button>
               <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services</b><small>Client projects and delivery â€” coming soon</small></div><ChevronRight /></button>
             </div>
           </> : <>
             <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); clearConfirmationState(); }}><ArrowLeft /> Change role</button>
             {portalRole === "student" && !studentSignup && <div className="member-login-icon"><UsersRound /></div>}
-            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : portalRole === "admin" ? "Sign in to your account" : portalRole === "team" ? "Sign in to your team account" : "Member Login"}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Access the DevQuest PK team workspace." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Sign in to your DevQuest PK member account."}</p></div></div>
+            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : portalRole === "admin" ? "Sign in to your account" : portalRole === "team" ? "Sign in to your team account" : "Student Portal Login"}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Access the DevQuest PK team workspace." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Sign in to access your DevQuest PK student portal."}</p></div></div>
             <form className={`auth-form ${portalRole === "student" && studentSignup ? "auth-enrollment-form" : ""}`} onSubmit={submit}>
               {portalRole === "student" && studentSignup && (
                 <div className="auth-mode-row">
