@@ -2152,12 +2152,13 @@ body {
 .auth-popup.auth-student-login:not(.auth-admin-login):not(.auth-team-login){
   grid-template-columns:minmax(470px,560px) minmax(610px,725px);justify-content:center;align-items:stretch;gap:40px;
   left:0;right:0;top:0;bottom:0;transform:none;animation:none;
-  padding:57px 34px 64px;background:url('/member-login-background.png') center/cover no-repeat;
+  padding:clamp(28px,6.05vh,57px) 34px;background:#eaf4ff url('/member-login-background.png') center/cover no-repeat;
 }
 .auth-dock.is-open>.auth-trigger{display:none}
+.auth-dock:has(.auth-student-login:not(.auth-admin-login):not(.auth-team-login))>.auth-backdrop{display:none}
 .auth-popup.auth-student-login:not(.auth-admin-login):not(.auth-team-login):before,
 .auth-popup.auth-student-login:not(.auth-admin-login):not(.auth-team-login):after{display:none}
-.auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-showcase{height:820px;color:#07133d}
+.auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-showcase{height:min(820px,calc(100dvh - 56px));color:#07133d}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-brand{left:0;top:-25px}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-brand img{width:300px;height:106px;filter:none}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-copy{left:0;top:105px}
@@ -2184,7 +2185,7 @@ body {
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-benefits b{display:block;color:#0a1538;font-size:1rem;line-height:1.15}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-benefits small{display:block;margin-top:4px;color:#263b6b;font-size:.82rem;line-height:1.25}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-main{
-  width:100%;height:820px;padding:29px 82px 37px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.98);border-radius:62px;box-shadow:0 24px 65px rgba(75,115,190,.18);overflow:hidden;
+  width:100%;height:min(820px,calc(100dvh - 56px));padding:clamp(20px,3vh,29px) 82px 30px;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.98);border-radius:62px;box-shadow:0 24px 65px rgba(75,115,190,.18);overflow:auto;
 }
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-main:before{
   right:-1px;top:-1px;width:142px;height:164px;background:linear-gradient(145deg,#075cf0 0 43%,rgba(46,172,248,.66) 44% 68%,rgba(202,239,255,.58) 69%);border-radius:0 61px 0 100%;
