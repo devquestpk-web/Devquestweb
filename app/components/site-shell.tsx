@@ -88,7 +88,7 @@ export function SiteHeader() {
           </nav>
           <div className="dq-account-actions">
             <a className="dq-login" href="#member-access">Log In</a>
-            <Link className="dq-member-login" href="/team">Member Login</Link>
+            <a className="dq-member-login" href="#team-login">Member Login</a>
           </div>
           <div className="dq-mobile-nav" ref={mobileNavRef}>
           <button
@@ -115,7 +115,7 @@ export function SiteHeader() {
                   <Link key={item.href} href={item.href} onClick={() => setIsMobileMenuOpen(false)}>{item.label}</Link>
                 )
               )}
-              <Link href="/team" onClick={() => setIsMobileMenuOpen(false)}>Member Login</Link>
+              <a href="#team-login" onClick={() => setIsMobileMenuOpen(false)}>Member Login</a>
               <a href="#member-access" onClick={() => setIsMobileMenuOpen(false)}>Log In</a>
             </nav>
           )}
