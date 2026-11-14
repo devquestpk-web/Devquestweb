@@ -2243,3 +2243,35 @@ body {
   .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-form{margin-top:22px;gap:15px}.auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-create-account{margin-top:24px}
 }
 
+/* Team login: copy-led layout without portrait collage */
+.auth-popup.auth-team-login{height:min(860px,calc(100dvh - 34px));padding-block:26px}
+.auth-team-login .team-login-showcase{padding:18px 0 24px;justify-content:center}
+.auth-team-login .student-login-brand{top:0}
+.auth-team-login .student-login-copy{transform:translateY(-36px)}
+.auth-team-login .student-login-copy h2{font-size:clamp(2.8rem,4vw,4.6rem);line-height:1.02}
+.auth-team-login .student-login-copy>span{max-width:600px;margin-top:22px;font-size:1.05rem;line-height:1.5}
+.auth-team-login .student-login-benefits{margin-top:0;transform:translateY(-8px);gap:16px}
+.auth-team-login .student-login-benefits article{gap:16px}
+.auth-team-login .student-login-benefits i{width:58px;height:58px;flex:none}
+.auth-team-login .student-login-benefits b{font-size:.95rem}
+.auth-team-login .student-login-benefits small{font-size:.74rem;line-height:1.4}
+.auth-team-login .auth-main{height:100%;align-self:stretch;overflow:hidden;padding:28px 54px 30px}
+.auth-team-login .auth-logo{margin-bottom:5px}
+.auth-team-login .auth-logo img{width:142px}
+.auth-team-login .auth-role-back{margin-bottom:2px}
+.auth-team-login .auth-popup-head h2{margin-top:14px;font-size:1.9rem}
+.auth-team-login .auth-popup-head p{margin-top:5px}
+.auth-team-login .auth-form{margin-top:22px;gap:14px}
+.auth-team-login .auth-form>label>div{height:50px}
+.auth-team-login .auth-submit{min-height:54px;margin-top:4px}
+.auth-team-login .auth-team-note{margin-top:18px;padding-top:15px}
+@media(max-height:760px) and (min-width:821px){
+  .auth-popup.auth-team-login{height:calc(100dvh - 20px);padding-block:14px}
+  .auth-team-login .auth-main{padding-top:18px;padding-bottom:20px}
+  .auth-team-login .auth-logo img{width:115px;height:48px}
+  .auth-team-login .auth-popup-head h2{font-size:1.65rem}
+  .auth-team-login .auth-form{margin-top:15px;gap:10px}
+  .auth-team-login .auth-form>label>div{height:46px}
+  .auth-team-login .auth-submit{min-height:48px}
+}
+

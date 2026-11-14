@@ -254,7 +254,6 @@ export function AuthDock() {
           <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={158} height={64} /><span>Team Portal</span></div>
           <div className="student-login-copy"><p>DEVQUEST COLLABORATION</p><h2>Welcome to<br /><strong>Team Portal</strong></h2><span>A dedicated workspace for DevQuest PK team members to collaborate, manage events, and run operations together.</span></div>
           <div className="student-login-benefits"><article><i><UsersRound /></i><div><b>Team Collaboration</b><small>Work together, assign tasks, and stay aligned.</small></div></article><article><i><CalendarDays /></i><div><b>Event Operations</b><small>Manage sessions, attendees, and deliverables.</small></div></article><article><i><ShieldCheck /></i><div><b>Role-based Access</b><small>Secure access with team-specific permissions.</small></div></article></div>
-          <div className="team-login-collage" aria-hidden="true"><Image src="/team/humair-tariq.webp" alt="" width={180} height={220} /><Image src="/team/mohsin-nawaz.jpeg" alt="" width={180} height={220} /><Image src="/team/anza-tamveel.jpeg" alt="" width={180} height={220} /><span>DevQuest PK</span></div>
         </aside>}
         <div className="auth-main">
           <div className="auth-logo"><Image src="/figma/auth-logo.png" alt="DevQuest" width={126} height={56} /></div>
