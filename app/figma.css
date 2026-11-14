@@ -2185,7 +2185,7 @@ body {
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-benefits b{display:block;color:#0a1538;font-size:1rem;line-height:1.15}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-benefits small{display:block;margin-top:4px;color:#263b6b;font-size:.82rem;line-height:1.25}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-main{
-  width:100%;height:min(820px,calc(100dvh - 56px));padding:clamp(20px,3vh,29px) 82px 30px;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.98);border-radius:62px;box-shadow:0 24px 65px rgba(75,115,190,.18);overflow:auto;
+  width:100%;height:min(820px,calc(100dvh - 56px));padding:clamp(20px,3vh,29px) 82px 30px;background:rgba(255,255,255,.96);border:1px solid rgba(255,255,255,.98);border-radius:62px;box-shadow:0 24px 65px rgba(75,115,190,.18);overflow:hidden;
 }
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-main:before{
   right:-1px;top:-1px;width:142px;height:164px;background:linear-gradient(145deg,#075cf0 0 43%,rgba(46,172,248,.66) 44% 68%,rgba(202,239,255,.58) 69%);border-radius:0 61px 0 100%;
@@ -2211,6 +2211,19 @@ body {
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-create-account{margin-top:39px;font-size:.8rem}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-create-account:before,
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-create-account:after{width:100px}
+@media(max-height:920px) and (min-width:821px){
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-main{padding-top:16px;padding-bottom:22px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-logo{height:78px;margin:-8px auto 0}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-logo img{height:78px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .member-login-icon{width:86px;height:86px;margin:0 auto 7px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .member-login-icon svg{width:48px;height:48px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-popup-head h2{font-size:2rem}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-popup-head p{margin-top:7px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-form{margin-top:22px;gap:14px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-form>label>div{height:52px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-submit{min-height:54px;margin-top:5px}
+  .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-create-account{margin-top:22px}
+}
 @media(max-width:1320px){
   .auth-popup.auth-student-login:not(.auth-admin-login):not(.auth-team-login){grid-template-columns:minmax(420px,500px) minmax(570px,660px);gap:25px;padding-inline:25px}
   .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .auth-main{padding-inline:60px}
