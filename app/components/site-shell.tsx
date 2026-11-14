@@ -64,7 +64,7 @@ export function SiteHeader() {
     <header className="dq-header">
       <div className="dq-announcement">
         <div className="dq-shell dq-announcement-inner">
-          <a href="/events#student-enrollment"><Megaphone /> <span>Upcoming: AWS Cloud Practitioner Prep Series</span><b /> <span>Sat–Sun, 8 PM – 10 PM</span><b /> <strong>Register now <ArrowRight /></strong></a>
+          <a href="/events#student-enrollment"><Megaphone /> <span>Upcoming: AWS Cloud Practitioner Prep Series</span><b /> <span>Satâ€“Sun, 8 PM â€“ 10 PM</span><b /> <strong>Register now <ArrowRight /></strong></a>
           <div className="dq-announcement-meta"><span><UsersRound /> Dev Community</span><i /><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer" aria-label="DevQuest PK on LinkedIn"><Linkedin /></a><a href="https://github.com/DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on GitHub"><Github /></a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer" aria-label="DevQuest PK on YouTube"><Youtube /></a><a href="https://discord.com" target="_blank" rel="noreferrer" aria-label="DevQuest PK community"><MessageCircle /></a></div>
         </div>
       </div>
@@ -87,7 +87,7 @@ export function SiteHeader() {
           )}
           </nav>
           <div className="dq-account-actions">
-            <a className="dq-login" href="#member-signin">Log In</a>
+            <a className="dq-login" href="#member-access">Log In</a>
             <Link className="dq-member-login" href="/team">Member Login</Link>
           </div>
           <div className="dq-mobile-nav" ref={mobileNavRef}>
@@ -116,7 +116,7 @@ export function SiteHeader() {
                 )
               )}
               <Link href="/team" onClick={() => setIsMobileMenuOpen(false)}>Member Login</Link>
-              <a href="#member-signin" onClick={() => setIsMobileMenuOpen(false)}>Log In</a>
+              <a href="#member-access" onClick={() => setIsMobileMenuOpen(false)}>Log In</a>
             </nav>
           )}
           </div>
@@ -141,9 +141,10 @@ export function SiteFooter() {
           <div><h3>Follow</h3><a href="https://pk.linkedin.com/company/devquest-pk" target="_blank" rel="noreferrer"><Linkedin /> LinkedIn</a><a href="https://www.instagram.com/devquestpk/" target="_blank" rel="noreferrer"><Instagram /> Instagram</a><a href="https://www.facebook.com/DevQuestPKOfficial" target="_blank" rel="noreferrer"><Facebook /> Facebook</a><a href="https://www.youtube.com/@DevQuestPK" target="_blank" rel="noreferrer"><Youtube /> YouTube</a></div>
           <div className="dq-newsletter"><h3>Join our newsletter</h3><p>Updates on events, learning, and community opportunities.</p><a href="mailto:hello@devquestpk.com?subject=Subscribe%20me%20to%20DevQuest">Subscribe by email</a></div>
         </div>
-        <div className="dq-shell dq-footer-bottom"><span>&copy; {new Date().getFullYear()} DevQuest Pakistan</span><span><Link href="/privacy">Privacy &amp; cookies</Link> · Learn. Build. Lead.</span></div>
+        <div className="dq-shell dq-footer-bottom"><span>&copy; {new Date().getFullYear()} DevQuest Pakistan</span><span><Link href="/privacy">Privacy &amp; cookies</Link> Â· Learn. Build. Lead.</span></div>
       </footer>
       <a className="floating-contact" href="https://wa.me/923704489589?text=Hello%20DevQuest" target="_blank" rel="noreferrer" aria-label="Chat with DevQuest on WhatsApp"><span>We are here!</span><MessageCircle /></a>
     </>
   );
 }
+
