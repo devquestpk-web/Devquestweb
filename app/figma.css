@@ -2151,8 +2151,10 @@ body {
 /* Bright member-login composition from the latest reference */
 .auth-popup.auth-student-login:not(.auth-admin-login):not(.auth-team-login){
   grid-template-columns:minmax(470px,560px) minmax(610px,725px);justify-content:center;align-items:stretch;gap:40px;
+  left:0;right:0;top:0;bottom:0;transform:none;animation:none;
   padding:57px 34px 64px;background:url('/member-login-background.png') center/cover no-repeat;
 }
+.auth-dock.is-open>.auth-trigger{display:none}
 .auth-popup.auth-student-login:not(.auth-admin-login):not(.auth-team-login):before,
 .auth-popup.auth-student-login:not(.auth-admin-login):not(.auth-team-login):after{display:none}
 .auth-student-login:not(.auth-admin-login):not(.auth-team-login) .student-login-showcase{height:820px;color:#07133d}
