@@ -2247,6 +2247,12 @@ body {
 .auth-popup.auth-team-login{height:min(860px,calc(100dvh - 34px));padding-block:26px}
 .auth-team-login .team-login-showcase{padding:18px 0 24px;justify-content:center}
 .auth-team-login .student-login-brand{top:0}
+.auth-team-login .team-brand-lockup{display:flex;align-items:center;gap:12px;color:#fff}
+.auth-team-login .team-brand-lockup>img{width:52px;height:52px;filter:none}
+.auth-team-login .team-brand-lockup>div{display:grid;gap:3px}
+.auth-team-login .team-brand-lockup b{font-size:1.35rem;line-height:1;letter-spacing:-.035em}
+.auth-team-login .team-brand-lockup b strong{color:#16bdf3}
+.auth-team-login .team-brand-lockup small{color:#cce3ff;font-size:.62rem;letter-spacing:.04em}
 .auth-team-login .student-login-copy{transform:translateY(-36px)}
 .auth-team-login .student-login-copy h2{font-size:clamp(2.8rem,4vw,4.6rem);line-height:1.02}
 .auth-team-login .student-login-copy>span{max-width:600px;margin-top:22px;font-size:1.05rem;line-height:1.5}

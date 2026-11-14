@@ -251,7 +251,7 @@ export function AuthDock() {
           <div className="student-login-illustration admin-login-illustration" aria-hidden="true"><span><ShieldCheck /></span><i /><b>DQ</b><em><Award /></em></div>
         </aside>}
         {portalRole === "team" && !user && !loading && <aside className="student-login-showcase team-login-showcase" aria-label="Team Portal benefits">
-          <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={158} height={64} /><span>Team Portal</span></div>
+          <div className="student-login-brand"><div className="team-brand-lockup"><Image src="/favicon.svg" alt="" width={52} height={52} /><div><b>DevQuest <strong>PK</strong></b><small>Learn Â· Build Â· Compete Â· Grow</small></div></div><span>Team Portal</span></div>
           <div className="student-login-copy"><p>DEVQUEST COLLABORATION</p><h2>Welcome to<br /><strong>Team Portal</strong></h2><span>A dedicated workspace for DevQuest PK team members to collaborate, manage events, and run operations together.</span></div>
           <div className="student-login-benefits"><article><i><UsersRound /></i><div><b>Team Collaboration</b><small>Work together, assign tasks, and stay aligned.</small></div></article><article><i><CalendarDays /></i><div><b>Event Operations</b><small>Manage sessions, attendees, and deliverables.</small></div></article><article><i><ShieldCheck /></i><div><b>Role-based Access</b><small>Secure access with team-specific permissions.</small></div></article></div>
         </aside>}
@@ -277,7 +277,7 @@ export function AuthDock() {
               <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services</b><small>Client projects and delivery â€” coming soon</small></div><ChevronRight /></button>
             </div>
           </> : <>
-            <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); clearConfirmationState(); }}><ArrowLeft /> Change role</button>
+            <button className="auth-role-back" type="button" onClick={() => { window.history.replaceState(null, "", "#member-access"); setPortalRole(null); setStudentSignup(false); setMessage(null); clearConfirmationState(); }}><ArrowLeft /> Back to portals</button>
             {portalRole === "student" && !studentSignup && <div className="member-login-icon"><UsersRound /></div>}
             <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : portalRole === "admin" ? "Sign in to your account" : portalRole === "team" ? "Sign in to your team account" : "Student Portal Login"}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Access the DevQuest PK team workspace." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Sign in to access your DevQuest PK student portal."}</p></div></div>
             <form className={`auth-form ${portalRole === "student" && studentSignup ? "auth-enrollment-form" : ""}`} onSubmit={submit}>
