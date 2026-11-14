@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
-import { AlertCircle, ArrowLeft, ArrowRight, Award, BookOpen, BriefcaseBusiness, CalendarDays, CheckCircle2, ChevronRight, Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, LogOut, Mail, MapPin, ShieldCheck, UserRound, UsersRound, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Award, BookOpen, BriefcaseBusiness, CalendarDays, CheckCircle2, ChevronRight, Eye, EyeOff, GraduationCap, LoaderCircle, LockKeyhole, LogIn, LogOut, Mail, MapPin, ShieldCheck, UserRound, UsersRound, X } from "lucide-react";
 import { deliverWebsiteForm } from "../lib/form-delivery";
 
 const getSupabase = getSupabaseBrowserClient;
@@ -80,7 +80,7 @@ export function FigmaContactForm() {
       setState("error");
     }
   }
-  return <form className="dq-contact-form" onSubmit={submit}><div className="dq-form-pair"><label>First Name<input name="firstName" required autoComplete="given-name" /></label><label>Last Name<input name="lastName" required autoComplete="family-name" /></label></div><div className="dq-form-pair"><label>Business Email<input name="email" type="email" required autoComplete="email" /></label><label>Phone Number<input name="phone" type="tel" placeholder="+92" autoComplete="tel" /></label></div><div className="dq-form-pair"><label>Company or University<input name="company" autoComplete="organization" /></label><label>Estimated Budget<select name="budget" defaultValue=""><option value="" disabled>Select a range</option><option>Community / free event</option><option>Under PKR 100,000</option><option>PKR 100,000–500,000</option><option>PKR 500,000+</option><option>Let&apos;s discuss</option></select></label></div><fieldset><legend>How can we help?</legend><label><input type="radio" name="subject" value="General Inquiry" defaultChecked /> General</label><label><input type="radio" name="subject" value="Software Development" /> Development</label><label><input type="radio" name="subject" value="UI/UX Design" /> UI/UX</label><label><input type="radio" name="subject" value="Talent Augmentation" /> Talent</label><label><input type="radio" name="subject" value="Academy or Event" /> Academy</label><label><input type="radio" name="subject" value="Partnership" /> Partnership</label></fieldset><label>Project or Enquiry Details<textarea name="message" required rows={4} placeholder="Tell us about your project, event, partnership, or community idea..." /></label><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><DeliveryMessage state={state} error={error} /><button type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending..." : state === "sent" ? "Message sent" : "Send Message"}</button></form>;
+  return <form className="dq-contact-form" onSubmit={submit}><div className="dq-form-pair"><label>First Name<input name="firstName" required autoComplete="given-name" /></label><label>Last Name<input name="lastName" required autoComplete="family-name" /></label></div><div className="dq-form-pair"><label>Business Email<input name="email" type="email" required autoComplete="email" /></label><label>Phone Number<input name="phone" type="tel" placeholder="+92" autoComplete="tel" /></label></div><div className="dq-form-pair"><label>Company or University<input name="company" autoComplete="organization" /></label><label>Estimated Budget<select name="budget" defaultValue=""><option value="" disabled>Select a range</option><option>Community / free event</option><option>Under PKR 100,000</option><option>PKR 100,000â€“500,000</option><option>PKR 500,000+</option><option>Let&apos;s discuss</option></select></label></div><fieldset><legend>How can we help?</legend><label><input type="radio" name="subject" value="General Inquiry" defaultChecked /> General</label><label><input type="radio" name="subject" value="Software Development" /> Development</label><label><input type="radio" name="subject" value="UI/UX Design" /> UI/UX</label><label><input type="radio" name="subject" value="Talent Augmentation" /> Talent</label><label><input type="radio" name="subject" value="Academy or Event" /> Academy</label><label><input type="radio" name="subject" value="Partnership" /> Partnership</label></fieldset><label>Project or Enquiry Details<textarea name="message" required rows={4} placeholder="Tell us about your project, event, partnership, or community idea..." /></label><input className="form-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" /><DeliveryMessage state={state} error={error} /><button type="submit" disabled={state === "sending"}>{state === "sending" ? "Sending..." : state === "sent" ? "Message sent" : "Send Message"}</button></form>;
 }
 
 type PortalRole = "team" | "admin" | "student" | "services";
@@ -240,10 +240,9 @@ export function AuthDock() {
       <section className={`auth-popup auth-${portalRole ? "signin" : "role"} ${portalRole === "student" && studentSignup ? "auth-student-signup" : ""} ${(portalRole === "student" || portalRole === "admin" || portalRole === "team") && !studentSignup && !user ? `auth-student-login ${portalRole === "admin" ? "auth-admin-login" : portalRole === "team" ? "auth-team-login" : ""}` : ""}`} role="dialog" aria-modal="true" aria-label="DevQuest portal access">
         <button className="auth-close" type="button" onClick={close} aria-label="Close portal access"><X /></button>
         {portalRole === "student" && !studentSignup && !user && !loading && <aside className="student-login-showcase" aria-label="Student Portal benefits">
-          <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={158} height={64} /><span>Student Portal</span></div>
-          <div className="student-login-copy"><p>WELCOME TO</p><h2>Welcome to<br /><strong>Student Portal</strong></h2><span>Access your courses, sessions, certificates, and track your learning progress.</span></div>
-          <div className="student-login-benefits"><article><i><BookOpen /></i><div><b>My Courses</b><small>Access enrolled courses and learning material.</small></div></article><article><i><CalendarDays /></i><div><b>My Sessions</b><small>Join live sessions, webinars, and events.</small></div></article><article><i><Award /></i><div><b>My Certificates</b><small>View and download your achievements.</small></div></article></div>
-          <div className="student-login-illustration" aria-hidden="true"><span><GraduationCap /></span><i /><b>DQ</b><em><BookOpen /></em></div>
+          <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={205} height={86} /></div>
+          <div className="student-login-copy"><h2>Welcome to<br /><strong>DevQuest PK</strong></h2><span>A modern learning and events platform for<br />students, members, and tech enthusiasts.</span></div>
+          <div className="student-login-benefits"><article><i><GraduationCap /></i><div><b>Learning</b><small>Access courses and resources.</small></div></article><article><i><CalendarDays /></i><div><b>Events</b><small>Join sessions, workshops, and hackathons.</small></div></article><article><i><Award /></i><div><b>Certificates</b><small>Earn and manage your achievements.</small></div></article></div>
         </aside>}
         {portalRole === "admin" && !user && !loading && <aside className="student-login-showcase admin-login-showcase" aria-label="Admin Portal benefits">
           <div className="student-login-brand"><Image src="/figma/auth-logo.png" alt="DevQuest PK" width={158} height={64} /><span>Admin Portal</span></div>
@@ -276,45 +275,28 @@ export function AuthDock() {
             <div className="auth-popup-head"><div><small>DEVQUEST PORTALS</small><h2>Choose your portal</h2><p>Select your role to continue to the correct workspace.</p></div></div>
             <div className="auth-role-grid">
               <button type="button" onClick={() => chooseRole("student")}><span><GraduationCap /></span><div><b>Student</b><small>Learning, events, certificates, and opportunities</small></div><ChevronRight /></button>
-              <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services</b><small>Client projects and delivery — coming soon</small></div><ChevronRight /></button>
+              <button type="button" onClick={() => chooseRole("services")}><span><BriefcaseBusiness /></span><div><b>Services</b><small>Client projects and delivery â€” coming soon</small></div><ChevronRight /></button>
             </div>
           </> : <>
             <button className="auth-role-back" type="button" onClick={() => { setPortalRole(null); setStudentSignup(false); setMessage(null); clearConfirmationState(); }}><ArrowLeft /> Change role</button>
-            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : portalRole === "admin" ? "Sign in to your account" : portalRole === "team" ? "Sign in to your team account" : "Sign in to your student account"}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Access the DevQuest PK team workspace." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Access your learning and event dashboard."}</p></div></div>
+            {portalRole === "student" && !studentSignup && <div className="member-login-icon"><UsersRound /></div>}
+            <div className="auth-popup-head"><div><small>{portalRole === "admin" ? "ADMIN PORTAL" : portalRole === "team" ? "TEAM PORTAL" : "STUDENT PORTAL"}</small><h2>{portalRole === "student" && studentSignup ? "Create your student account" : portalRole === "admin" ? "Sign in to your account" : portalRole === "team" ? "Sign in to your team account" : "Member Login"}</h2><p>{portalRole === "admin" ? "Use your approved DevQuest administrator account." : portalRole === "team" ? "Access the DevQuest PK team workspace." : studentSignup ? "Register once to access learning, events, certificates, and support." : "Sign in to your DevQuest PK member account."}</p></div></div>
             <form className={`auth-form ${portalRole === "student" && studentSignup ? "auth-enrollment-form" : ""}`} onSubmit={submit}>
-              {portalRole === "student" && (
+              {portalRole === "student" && studentSignup && (
                 <div className="auth-mode-row">
                   <button type="button" className="auth-mode-switch" onClick={() => { setStudentSignup((value) => !value); setMessage(null); clearConfirmationState(); }}>{studentSignup ? "Already have an account? Sign in" : "New student? Create an account"}</button>
                 </div>
               )}
               {portalRole === "student" && studentSignup && <><label><span>Full name</span><div><UserRound /><input name="fullName" required autoComplete="name" placeholder="Your full name" /></div></label><label><span>Phone number</span><div><UserRound /><input name="phone" required autoComplete="tel" placeholder="+92 300 0000000" /></div></label><label><span>City</span><div><MapPin /><input name="city" autoComplete="address-level2" placeholder="Your city" /></div></label><label><span>Semester</span><div><GraduationCap /><input name="semester" placeholder="e.g. 6th semester" /></div></label><label><span>University / institute</span><div><GraduationCap /><input name="university" required autoComplete="organization" placeholder="Your university or institute" /></div></label><label><span>Degree / program</span><div><GraduationCap /><input name="degree" required placeholder="e.g. BS Computer Science" /></div></label></>}
-              <label><span>Email address</span><div><Mail /><input name="email" type="email" required value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "your@email.com"} autoComplete="email" /></div></label>
+              <label><span>Email address</span><div><Mail /><input name="email" type="email" required value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} placeholder={portalRole === "admin" ? "admin@devquest.pk" : portalRole === "team" ? "team@devquest.pk" : "Enter your student email"} autoComplete="email" /></div></label>
               <label><span>Password</span><div><LockKeyhole /><input name="password" type={showPassword ? "text" : "password"} required minLength={8} placeholder="Enter your password" autoComplete={studentSignup ? "new-password" : "current-password"} />{!studentSignup && <button className="auth-password-toggle" type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <EyeOff /> : <Eye />}</button>}</div></label>
               {(portalRole === "student" || portalRole === "admin" || portalRole === "team") && !studentSignup && <div className="student-login-options"><label><input type="checkbox" defaultChecked /> <span>Remember me</span></label><button type="button" onClick={() => void resetStudentPassword()} disabled={working}>Forgot your password?</button></div>}
               {message && <Status {...message} />}
-              {portalRole === "student" && studentSignup && confirmationSent && <div className="auth-confirmation-help" role="status"><p>Didn&apos;t receive the email? Check your <strong>Spam</strong> or <strong>Junk</strong> folder.</p><button type="button" onClick={() => void resendConfirmationEmail()} disabled={resendingConfirmation || resendCooldown > 0}>{resendingConfirmation ? <><LoaderCircle className="spin" /> Sending…</> : resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Resend confirmation email"}</button></div>}
-              <button className="auth-submit" type="submit" disabled={working || (portalRole === "student" && studentSignup && confirmationSent)}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup && confirmationSent ? <>Confirmation email sent <CheckCircle2 /></> : studentSignup ? <>Create student account <ChevronRight /></> : portalRole === "student" ? <>Sign In to Student Portal <ArrowRight /></> : portalRole === "admin" ? <>Sign In to Admin Portal <ArrowRight /></> : <>Sign In to Team Portal <ArrowRight /></>}</button>
+              {portalRole === "student" && studentSignup && confirmationSent && <div className="auth-confirmation-help" role="status"><p>Didn&apos;t receive the email? Check your <strong>Spam</strong> or <strong>Junk</strong> folder.</p><button type="button" onClick={() => void resendConfirmationEmail()} disabled={resendingConfirmation || resendCooldown > 0}>{resendingConfirmation ? <><LoaderCircle className="spin" /> Sendingâ€¦</> : resendCooldown > 0 ? `Resend available in ${resendCooldown}s` : "Resend confirmation email"}</button></div>}
+              <button className="auth-submit" type="submit" disabled={working || (portalRole === "student" && studentSignup && confirmationSent)}>{working ? <><LoaderCircle className="spin" /> Please wait</> : studentSignup && confirmationSent ? <>Confirmation email sent <CheckCircle2 /></> : studentSignup ? <>Create student account <ChevronRight /></> : portalRole === "student" ? <><LogIn /> Login</> : portalRole === "admin" ? <>Sign In to Admin Portal <ArrowRight /></> : <>Sign In to Team Portal <ArrowRight /></>}</button>
             </form>
             
-            {portalRole === "student" && !studentSignup && (
-              <div className="student-login-google">
-                <div className="student-login-divider">
-                  <div></div>
-                  <span>OR</span>
-                  <div></div>
-                </div>
-                <button 
-                  className="student-google-button"
-                  type="button" 
-                  onClick={signInWithGoogle}
-                  disabled={working}
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                  Continue with Google
-                </button>
-                <p><ShieldCheck /> Your account is securely managed by DevQuest PK.</p>
-              </div>
-            )}
+            {portalRole === "student" && !studentSignup && <div className="student-create-account"><span>Not a member yet?</span><button type="button" onClick={() => { setStudentSignup(true); setMessage(null); clearConfirmationState(); }}>Create an account</button></div>}
             {portalRole !== "student" && <p className="auth-team-note"><ShieldCheck /> Portal accounts are issued and controlled by DevQuest administrators.</p>}
           </>}
 
@@ -326,3 +308,4 @@ export function AuthDock() {
 }
 
 function Status({ type, text }: {type: "error" | "success"; text: string}) { return <div className={`auth-status ${type}`}>{type === "success" ? <CheckCircle2 /> : <AlertCircle />}{text}</div>; }
+
